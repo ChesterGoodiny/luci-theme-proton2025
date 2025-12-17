@@ -6,6 +6,10 @@
 ![LuCI](https://img.shields.io/badge/LuCI-ucode-green)
 ![License](https://img.shields.io/badge/License-Apache%202.0-orange)
 
+## Скриншот
+
+![LuCI Status](docs/status.png)
+
 ## Особенности
 
 - 🌙 Тёмный glass/blur дизайн
