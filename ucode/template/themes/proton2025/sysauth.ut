@@ -1,0 +1,141 @@
+{#
+ Proton2025 Theme - Login Template
+ Licensed under Apache License 2.0
+-#}
+
+{%
+	const boardinfo = ubus.call('system', 'board');
+
+	http.prepare_content('text/html; charset=UTF-8');
+-%}
+
+<!DOCTYPE html>
+<html lang="{{ dispatcher.lang }}">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0f1419" />
+<meta name="color-scheme" content="dark" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="stylesheet" href="{{ media }}/cascade.css" />
+<link rel="icon" href="{{ media }}/logo.svg" sizes="any" />
+<title>{{ _('Authorization Required') }} - {{ boardinfo.hostname ?? '?' }} - LuCI</title>
+<style>
+body.login-page {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+	padding: 20px;
+}
+
+.login-container {
+	width: 100%;
+	max-width: 400px;
+}
+
+.login-card {
+	background: var(--proton-bg-secondary);
+	border: 1px solid var(--proton-border);
+	border-radius: var(--proton-radius);
+	padding: 32px;
+	box-shadow: var(--proton-shadow);
+}
+
+.login-header {
+	text-align: center;
+	margin-bottom: 32px;
+}
+
+.login-header img {
+	height: 48px;
+	margin-bottom: 16px;
+}
+
+.login-header h1 {
+	font-size: 1.25rem;
+	margin: 0 0 8px;
+	color: var(--proton-fg);
+}
+
+.login-header .hostname {
+	color: var(--proton-accent);
+	font-weight: 600;
+}
+
+.login-header p {
+	color: var(--proton-muted);
+	font-size: 0.9rem;
+	margin: 0;
+}
+
+.login-form .form-group {
+	margin-bottom: 20px;
+}
+
+.login-form label {
+	display: block;
+	margin-bottom: 8px;
+	color: var(--proton-fg-secondary);
+	font-size: 0.9rem;
+	font-weight: 500;
+}
+
+.login-form input {
+	width: 100%;
+	max-width: 100%;
+	padding: 12px 16px;
+	font-size: 1rem;
+}
+
+.login-form button {
+	width: 100%;
+	padding: 14px 20px;
+	font-size: 1rem;
+}
+
+.login-error {
+	background: rgba(248, 113, 113, 0.1);
+	border: 1px solid rgba(248, 113, 113, 0.3);
+	color: var(--proton-danger);
+	padding: 12px 16px;
+	border-radius: var(--proton-radius-sm);
+	margin-bottom: 20px;
+	font-size: 0.9rem;
+}
+</style>
+</head>
+<body class="login-page lang_{{ dispatcher.lang }}">
+<div class="login-container">
+	<div class="login-card">
+		<div class="login-header">
+			<img src="{{ media }}/logo.svg" alt="Proton2025" />
+		</div>
+
+		{% if (fuser): %}
+		<div class="login-error">
+			{{ _('Invalid username and/or password! Please try again.') }}
+		</div>
+		{% endif %}
+
+		<form class="login-form" method="post" action="{{ dispatcher.build_url(...ctx.request_path) }}">
+			<div class="form-group">
+				<label for="luci_username">{{ _('Username') }}</label>
+				<input type="text" id="luci_username" name="luci_username"
+					value="{{ fuser ?? 'root' }}" autocomplete="username"
+					autocapitalize="off" autofocus />
+			</div>
+
+			<div class="form-group">
+				<label for="luci_password">{{ _('Password') }}</label>
+				<input type="password" id="luci_password" name="luci_password"
+					autocomplete="current-password" />
+			</div>
+
+			<button type="submit">{{ _('Login') }}</button>
+		</form>
+	</div>
+</div>
+</body>
+</html>

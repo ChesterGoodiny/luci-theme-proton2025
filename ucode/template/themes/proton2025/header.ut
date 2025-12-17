@@ -1,0 +1,126 @@
+{#
+ Proton2025 Theme - Header Template
+ Licensed under Apache License 2.0
+-#}
+
+{%
+	import { getuid, getspnam } from 'luci.core';
+
+	const boardinfo = ubus.call('system', 'board');
+
+	http.prepare_content('text/html; charset=UTF-8');
+-%}
+
+<!DOCTYPE html>
+<html lang="{{ dispatcher.lang }}">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0f1419" />
+<meta name="color-scheme" content="dark" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<style>
+/* Critical: keep header height stable before cascade.css loads */
+:root {
+	--proton-page-max-width: 1200px;
+	--proton-page-gutter: 20px;
+}
+
+#menubar {
+	min-height: 64px;
+	padding: 0;
+}
+
+#menubar-inner {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	height: 64px;
+	max-width: var(--proton-page-max-width);
+	margin: 0 auto;
+	padding: 0 var(--proton-page-gutter);
+}
+
+/* Critical: prevent "Loading view…" flash/jump before cascade.css is loaded */
+#maincontent > .spinning,
+#maincontent > p.spinning,
+#view > .spinning,
+#view > p.spinning {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	width: 100%;
+	min-height: calc(100vh - 64px);
+	padding: 24px !important;
+	text-align: center;
+	padding-left: 0 !important;
+}
+
+#maincontent > .spinning::before,
+#maincontent > p.spinning::before,
+#view > .spinning::before,
+#view > p.spinning::before {
+	position: static;
+	left: auto;
+	top: auto;
+	margin-top: 0;
+}
+</style>
+<link rel="stylesheet" media="screen" href="{{ media }}/cascade.css" />
+<link rel="icon" href="{{ media }}/logo.svg" sizes="any" />
+<script src="{{ dispatcher.build_url('admin/translations', dispatcher.lang) }}"></script>
+<script src="{{ resource }}/promis.min.js"></script>
+<script src="{{ resource }}/luci.js"></script>
+<script src="{{ resource }}/xhr.js"></script>
+<script src="{{ resource }}/form.js"></script>
+<script src="{{ resource }}/ui.js"></script>
+<script src="{{ resource }}/cbi.js"></script>
+<title>{{ striptags(`${dispatched ? `${dispatched.title} | ` : ''}${boardinfo.hostname ?? '?'}`) }} | LuCI</title>
+{% if (css): %}
+<style title="text/css">{{ css }}</style>
+{% endif %}
+</head>
+<body class="lang_{{ dispatcher.lang }}" data-page="{{ entityencode(join('-', ctx.request_path), true) }}">
+
+<p class="skiplink">
+<span id="skiplink1"><a href="#navigation">{{ _('Skip to navigation') }}</a></span>
+<span id="skiplink2"><a href="#content">{{ _('Skip to content') }}</a></span>
+</p>
+
+<div id="menubar">
+	<div id="menubar-inner">
+		<h2 class="navigation"><a id="navigation" name="navigation">{{ _('Navigation') }}</a></h2>
+
+		<span class="hostname"><a href="/">{{ striptags(boardinfo.hostname ?? '?') }}</a></span>
+		<div id="mainmenu"></div>
+		<span id="indicators"></span>
+	</div>
+</div>
+
+<div id="modemenu" style="display:none"></div>
+
+<div id="maincontainer">
+	<div id="maincontent">
+		{% if (getuid() == 0 && getspnam('root')?.pwdp === '' && join('-', ctx.request_path) != 'admin-system-admin'): %}
+		<div class="alert-message warning">
+			<h4>{{ _('No password set!') }}</h4>
+			<p>{{ _('There is no password set on this router. Please configure a root password to protect the web interface.') }}</p>
+			{% if (dispatcher.lookup("admin/system/admin")): %}
+				<div class="right"><a class="btn" href="{{ dispatcher.build_url("admin/system/admin") }}">{{ _('Go to password configuration...') }}</a></div>
+			{% endif %}
+		</div>
+		{% endif %}
+
+		{% if (boardinfo.rootfs_type == "initramfs"): %}
+		<div class="alert-message warning">
+			<h4>{{ _('System running in recovery (initramfs) mode.') }}</h4>
+			<p>{{ _('No changes to settings will be stored and are lost after rebooting. This mode should only be used to install a firmware upgrade') }}</p>
+			{% if (dispatcher.lookup("admin/system/flash")): %}
+			  <div class="right"><a class="btn" href="{{ dispatcher.build_url("admin/system/flash") }}">{{ _('Go to firmware upgrade...') }}</a></div>
+			{% endif %}
+		</div>
+		{% endif %}
+
+		<div id="tabmenu" style="display:none"></div>

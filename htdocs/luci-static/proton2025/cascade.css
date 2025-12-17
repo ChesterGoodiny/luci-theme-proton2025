@@ -1,0 +1,2211 @@
+/*
+ * Proton2025 - Elegant Dark Theme for LuCI
+ * Licensed under Apache License 2.0
+ */
+
+/* =====================================================
+   CSS Variables - Proton Dark Theme
+   ===================================================== */
+:root {
+    /* Primary Colors */
+    --proton-bg: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+    --proton-bg-solid: #0f1419;
+    --proton-bg-secondary: rgba(255, 255, 255, 0.03);
+    --proton-bg-tertiary: rgba(255, 255, 255, 0.025);
+    --proton-bg-hover: rgba(255, 255, 255, 0.05);
+
+    /* Text Colors */
+    --proton-fg: #f5f7fa;
+    --proton-fg-secondary: #c5cad5;
+    --proton-muted: #8b92a8;
+
+    /* Accent Colors */
+    --proton-accent: #5e9eff;
+    --proton-accent-hover: #7db2ff;
+    --proton-accent-glow: rgba(94, 158, 255, 0.15);
+
+    /* Status Colors */
+    --proton-success: #6bcf7f;
+    --proton-warning: #ffd93d;
+    --proton-danger: #ff6b6b;
+
+    /* Borders & Shadows */
+    --proton-border: rgba(255, 255, 255, 0.06);
+    --proton-border-light: rgba(255, 255, 255, 0.03);
+    --proton-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --proton-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+    --proton-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
+    --proton-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+    /* Radius & Transitions */
+    --proton-radius: 12px;
+    --proton-radius-sm: 8px;
+    --proton-radius-lg: 16px;
+    --proton-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Layout */
+    --proton-page-max-width: 900px;
+    --proton-page-gutter: 20px;
+
+    /* Legacy compatibility */
+    --main-bright-color: #5e9eff;
+    --main-dark-color: #0f1419;
+    --secondary-bright-color: #f5f7fa;
+    --secondary-dark-color: #1a1f2e;
+    --danger-color: #f87171;
+    --warning-color: #fbbf24;
+    --success-color: #34d399;
+}
+
+/* =====================================================
+   Base Reset & Typography
+   ===================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    height: 100%;
+    width: 100%;
+    font-size: 16px;
+    -webkit-text-size-adjust: none;
+    color-scheme: dark;
+}
+
+body {
+    background: var(--proton-bg-solid);
+    background-image:
+        radial-gradient(circle at 20% 30%, rgba(94, 158, 255, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(107, 207, 127, 0.04) 0%, transparent 50%),
+        var(--proton-bg);
+    background-attachment: fixed;
+    color: var(--proton-fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: 0.01em;
+}
+
+/* Center the initial LuCI "Loading view…" placeholder as early as possible */
+#maincontent>.spinning,
+#maincontent>p.spinning,
+#view>.spinning,
+#view>p.spinning {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    min-height: calc(100vh - 64px);
+    padding: 24px !important;
+    color: var(--proton-fg-secondary);
+    text-align: center;
+    padding-left: 0 !important;
+}
+
+#maincontent>.spinning::before,
+#maincontent>p.spinning::before,
+#view>.spinning::before,
+#view>p.spinning::before {
+    position: static;
+    left: auto;
+    top: auto;
+    margin-top: 0;
+}
+
+a {
+    color: var(--proton-accent);
+    text-decoration: none;
+    transition: var(--proton-transition);
+    position: relative;
+}
+
+a:hover {
+    color: var(--proton-accent-hover);
+    transform: translateY(-1px);
+}
+
+a:active {
+    transform: translateY(0);
+}
+
+/* =====================================================
+   Menubar (Top Header)
+   ===================================================== */
+#menubar {
+    min-height: 64px;
+    background: rgba(15, 20, 25, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--proton-border);
+    box-shadow: var(--proton-shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    flex: 0 0 auto;
+    padding: 0;
+}
+
+#menubar-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 64px;
+    max-width: var(--proton-page-max-width);
+    margin: 0 auto;
+    padding: 0 var(--proton-page-gutter);
+}
+
+#menubar-inner>* {
+    flex: 0 0 auto;
+}
+
+#menubar-inner>h2,
+#menubar-inner>.navigation,
+.skiplink {
+    display: none;
+}
+
+#menubar-inner .hostname {
+    font-weight: 600;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#menubar-inner .hostname a {
+    color: var(--proton-fg);
+}
+
+#menubar-inner .hostname a:hover {
+    color: var(--proton-accent);
+    transform: scale(1.02);
+}
+
+#menubar .distversion {
+    color: var(--proton-muted);
+    font-size: 0.85rem;
+    flex: 1;
+}
+
+#indicators {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+}
+
+#indicators>* {
+    background: var(--proton-accent-glow);
+    color: var(--proton-accent);
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    border-radius: var(--proton-radius-sm);
+    cursor: pointer;
+    white-space: nowrap;
+    padding: 6px 12px;
+    transition: var(--proton-transition);
+    font-weight: 500;
+}
+
+#indicators>*:hover {
+    background: rgba(94, 158, 255, 0.25);
+}
+
+/* Avoid global link lift effect in header/menu */
+#menubar a:hover,
+#mainmenu a:hover {
+    transform: none;
+}
+
+#indicators>[data-style="inactive"] {
+    background: transparent;
+    border: 1px solid var(--proton-border);
+    color: var(--proton-muted);
+}
+
+/* =====================================================
+   Mode Menu
+   ===================================================== */
+#modemenu {
+    background: var(--proton-bg-secondary);
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--proton-border);
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+}
+
+#modemenu>* {
+    padding: 6px 12px;
+    border-radius: var(--proton-radius-sm);
+    color: var(--proton-fg-secondary);
+    transition: var(--proton-transition);
+}
+
+#modemenu>.active {
+    background: var(--proton-accent-glow);
+    color: var(--proton-accent);
+    font-weight: 600;
+}
+
+#modemenu>*:hover:not(.active) {
+    background: var(--proton-bg-hover);
+    color: var(--proton-fg);
+}
+
+/* =====================================================
+   Main Container Layout
+   ===================================================== */
+#maincontainer {
+    display: flex;
+    flex: 1 0 auto;
+    min-height: 0;
+}
+
+/* =====================================================
+   Main Menu (Sidebar)
+   ===================================================== */
+#mainmenu {
+    width: 240px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.02);
+    border-right: 1px solid var(--proton-border);
+    padding: 16px 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#mainmenu:empty {
+    width: 0;
+    padding: 0;
+    transition: all 0.2s ease;
+}
+
+#mainmenu>div {
+    position: sticky;
+    top: 16px;
+}
+
+#mainmenu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#mainmenu .mainmenu.l1>li {
+    margin-bottom: 4px;
+}
+
+#mainmenu .mainmenu.l1>li>a {
+    display: block;
+    padding: 12px 20px;
+    color: var(--proton-fg-secondary);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: var(--proton-transition);
+}
+
+#mainmenu .mainmenu.l1>li>a:hover {
+    background: var(--proton-bg-hover);
+    color: var(--proton-fg);
+}
+
+#mainmenu .mainmenu.l1>li.selected>a,
+#mainmenu li.selected>a {
+    color: var(--proton-accent);
+    background: var(--proton-accent-glow);
+}
+
+/* Submenu Level 2 */
+#mainmenu li>ul {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-in-out;
+}
+
+#mainmenu ul:not(.active)>li.selected>ul,
+#mainmenu li.active>ul {
+    max-height: 500px;
+    transition: max-height 0.4s ease-in-out;
+}
+
+#mainmenu .mainmenu.l2>li>a {
+    display: block;
+    padding: 8px 20px 8px 32px;
+    color: var(--proton-muted);
+    font-size: 0.875rem;
+    transition: var(--proton-transition);
+}
+
+#mainmenu .mainmenu.l2>li>a:hover {
+    color: var(--proton-fg);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+#mainmenu .mainmenu.l2>li.selected>a {
+    color: var(--proton-accent);
+    font-weight: 500;
+}
+
+/* =====================================================
+   Main Content Area
+   ===================================================== */
+#maincontent {
+    flex: 1;
+    width: 100%;
+    max-width: var(--proton-page-max-width);
+    margin: 0 auto;
+    padding: 24px var(--proton-page-gutter);
+    min-width: 0;
+    overflow-x: auto;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =====================================================
+   Footer
+   ===================================================== */
+.proton-footer,
+body>.luci {
+    flex: 0 0 auto;
+    padding: 24px 32px;
+    text-align: center;
+    background: var(--proton-bg-secondary);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--proton-border);
+    color: var(--proton-muted);
+    font-size: 12px;
+    margin-top: 60px;
+}
+
+.proton-footer a,
+body>.luci a {
+    color: var(--proton-accent);
+}
+
+/* =====================================================
+   Typography
+   ===================================================== */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--proton-fg);
+    font-weight: 600;
+    margin: 0 0 1rem;
+    line-height: 1.3;
+}
+
+h1 {
+    font-size: 1.75rem;
+}
+
+h2 {
+    font-size: 1.5rem;
+}
+
+h3 {
+    font-size: 1.25rem;
+}
+
+h4 {
+    font-size: 1.125rem;
+}
+
+h5 {
+    font-size: 1rem;
+}
+
+h6 {
+    font-size: 0.875rem;
+}
+
+p, ul, ol {
+    margin: 0 0 1rem;
+}
+
+strong, b {
+    font-weight: 600;
+}
+
+code {
+    font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
+    background: var(--proton-bg-tertiary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: var(--proton-accent);
+}
+
+pre {
+    background: var(--proton-bg-tertiary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    padding: 16px;
+    overflow-x: auto;
+    font-family: "SF Mono", Monaco, monospace;
+    font-size: 0.875rem;
+    margin: 0 0 1rem;
+}
+
+/* =====================================================
+   Buttons
+   ===================================================== */
+button, .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--proton-accent);
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: var(--proton-radius);
+    cursor: pointer;
+    transition: var(--proton-transition);
+    white-space: nowrap;
+}
+
+button:hover, .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--proton-shadow-md);
+}
+
+button:active, .btn:active {
+    transform: translateY(0);
+}
+
+button+button, .btn+.btn, .cbi-button+.cbi-button {
+    margin-left: 8px;
+}
+
+/* LuCI CBI buttons: closer to proton (glass + border) */
+.cbi-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--proton-fg);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--proton-transition);
+    box-shadow: none;
+    transform: none;
+}
+
+.cbi-button:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--proton-accent);
+    box-shadow: none;
+    transform: none;
+}
+
+.cbi-button-apply, .cbi-button-positive {
+    background: var(--proton-success);
+    border-color: var(--proton-success);
+    color: #fff;
+}
+
+.cbi-button-apply:hover, .cbi-button-positive:hover {
+    background: rgba(52, 211, 153, 0.9);
+    border-color: rgba(52, 211, 153, 0.9);
+}
+
+.cbi-button-remove, .cbi-button-negative {
+    background: rgba(255, 107, 107, 0.1);
+    border-color: rgba(255, 107, 107, 0.3);
+    color: var(--proton-danger);
+}
+
+.cbi-button-remove:hover, .cbi-button-negative:hover {
+    background: rgba(255, 107, 107, 0.2);
+    border-color: var(--proton-danger);
+}
+
+.cbi-button-reset, .cbi-button-neutral {
+    background: var(--proton-bg-tertiary);
+    color: var(--proton-fg);
+    border: 1px solid var(--proton-border);
+}
+
+.cbi-button-reset:hover, .cbi-button-neutral:hover {
+    background: var(--proton-bg-hover);
+    box-shadow: none;
+}
+
+button[disabled], .btn[disabled], .cbi-button[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+button.disabled, .btn.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+button.important, .btn.important {
+    background: var(--proton-bg-tertiary);
+    border: 1px solid var(--proton-accent);
+    color: var(--proton-accent);
+}
+
+.cbi-button-save, .cbi-button-action {
+    background: var(--proton-accent);
+    border-color: var(--proton-accent);
+    color: #fff;
+}
+
+.cbi-button-edit {
+    background: var(--proton-bg-secondary);
+    color: var(--proton-fg);
+    border: 1px solid var(--proton-border);
+    box-shadow: none;
+}
+
+.cbi-button-edit:hover {
+    background: var(--proton-bg-hover);
+    border-color: var(--proton-accent);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+}
+
+.cbi-button-add {
+    background: var(--proton-success);
+    border-color: var(--proton-success);
+    color: #fff;
+}
+
+.cbi-button-add:hover {
+    background: rgba(107, 207, 127, 0.9);
+    border-color: rgba(107, 207, 127, 0.9);
+}
+
+.cbi-button-link, .cbi-button-link:hover {
+    background: transparent;
+    box-shadow: none;
+    color: var(--proton-accent);
+    padding: 0;
+    transform: none;
+}
+
+.cbi-section-actions {
+    text-align: right;
+}
+
+.cbi-section-actions>div {
+    display: inline-flex;
+    gap: 8px;
+}
+
+/* =====================================================
+   Form Elements
+   ===================================================== */
+input:not([type]),
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+select,
+textarea {
+    background: var(--proton-bg-secondary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    padding: 10px 14px;
+    color: var(--proton-fg);
+    font-size: 14px;
+    transition: var(--proton-transition);
+    width: 100%;
+    max-width: 400px;
+    font-family: inherit;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--proton-accent);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 0 3px var(--proton-accent-glow);
+}
+
+input:hover:not([disabled]),
+select:hover:not([disabled]),
+textarea:hover:not([disabled]) {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+input[disabled], select[disabled], textarea[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+select {
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    color-scheme: dark;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+/* Native <select> popup styling (browser support varies) */
+option,
+optgroup {
+    background-color: var(--proton-bg-solid);
+    color: var(--proton-fg);
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+    max-width: 100%;
+}
+
+/* Checkbox & Radio */
+input[type="checkbox"],
+input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--proton-accent);
+    cursor: pointer;
+}
+
+/* =====================================================
+   CBI Form Layouts
+   ===================================================== */
+.cbi-map {
+    margin-bottom: 24px;
+}
+
+.cbi-map>h2 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    color: var(--proton-fg);
+}
+
+.cbi-map-descr {
+    color: var(--proton-muted);
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+}
+
+.cbi-section {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius);
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: var(--proton-shadow-sm);
+    transition: var(--proton-transition);
+}
+
+.cbi-section:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: var(--proton-shadow-md);
+}
+
+.cbi-section>h3,
+.cbi-section>legend:first-child {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--proton-fg);
+    margin: 0 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--proton-border);
+    letter-spacing: -0.01em;
+}
+
+.cbi-section-descr {
+    color: var(--proton-muted);
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+.cbi-value {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--proton-border-light);
+}
+
+.cbi-value:last-child {
+    border-bottom: none;
+}
+
+.cbi-value>label:first-child,
+.cbi-value-title {
+    flex: 0 0 200px;
+    padding-right: 16px;
+    color: var(--proton-fg);
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.cbi-value-field {
+    flex: 1;
+    min-width: 200px;
+}
+
+.cbi-value-field>div:first-child+br,
+.cbi-value-field>input+br {
+    display: none;
+}
+
+/* Ensure .control-group inside .cbi-value-field displays buttons */
+.cbi-value-field>.control-group,
+.cbi-value-field>span.control-group,
+span.control-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+/* Add vertical breathing room when buttons follow an input (e.g. Sync with browser/NTP) */
+.cbi-value-field>.control-group,
+.cbi-value-field>span.control-group {
+    margin-top: 10px;
+}
+
+/* Section create row (input + Add button) */
+.cbi-section-create {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.cbi-section-create>div {
+    flex: 1 1 240px;
+    min-width: 200px;
+}
+
+.cbi-section-create .cbi-section-create-name {
+    max-width: none;
+}
+
+/* Buttons inside span.control-group */
+span.control-group>button,
+span.control-group>.btn,
+span.control-group>.cbi-button {
+    display: inline-flex;
+    margin: 0.25rem;
+}
+
+.cbi-value-description {
+    flex-basis: 100%;
+    color: var(--proton-muted);
+    font-size: 0.85rem;
+    margin-top: 6px;
+    padding-left: 0;
+}
+
+/* =====================================================
+   Tables
+   ===================================================== */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--proton-bg-secondary);
+    border-radius: var(--proton-radius);
+    overflow: hidden;
+    box-shadow: var(--proton-shadow-sm);
+    margin-bottom: 24px;
+}
+
+th {
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--proton-fg-secondary);
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid var(--proton-border);
+}
+
+td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--proton-border-light);
+    color: var(--proton-fg-secondary);
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+tr:hover td {
+    color: var(--proton-fg);
+}
+
+.cbi-section-table-titles th {
+    border-radius: var(--proton-radius-sm) var(--proton-radius-sm) 0 0;
+}
+
+/* Table cells with inputs and control-groups */
+td input:not([type]),
+td input[type="text"],
+td input[type="password"],
+td select,
+td .cbi-dropdown:not(.btn):not(.cbi-button),
+td .cbi-dynlist,
+td .control-group {
+    /* Allow table cells to shrink instead of forcing overflow */
+    min-width: 0;
+    width: 100%;
+}
+
+/* Status page: Associated Stations table can contain very long labels (AP name + phy).
+   Allow wrapping so the table does not overflow the content container. */
+table.assoclist {
+    /* Make it look denser + prevent layout blowouts */
+    font-size: 13px;
+    line-height: 1.35;
+    table-layout: fixed;
+}
+
+table.assoclist th,
+table.assoclist td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+
+/* Keep rows single-line, but gracefully truncate long content */
+table.assoclist td {
+    white-space: nowrap;
+}
+
+/* Network badge (usually the culprit): truncate instead of wrapping */
+table.assoclist td.nowrap {
+    /* Override global .nowrap { white-space: nowrap !important; } */
+    white-space: nowrap !important;
+}
+
+table.assoclist td.nowrap .ifacebadge {
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+
+table.assoclist td.nowrap .ifacebadge>span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Actions: keep button compact, never stretched */
+table.assoclist td.cbi-section-actions {
+    white-space: nowrap;
+}
+
+table.assoclist td.cbi-section-actions .control-group {
+    width: auto;
+}
+
+table.assoclist td.cbi-section-actions .cbi-button,
+table.assoclist td.cbi-section-actions .btn,
+table.assoclist td.cbi-section-actions button {
+    width: auto;
+}
+
+/* Network -> Devices table: make it compact like assoclist */
+#cbi-network-device table.cbi-section-table {
+    font-size: 13px;
+    line-height: 1.35;
+    table-layout: fixed;
+}
+
+#cbi-network-device table.cbi-section-table th,
+#cbi-network-device table.cbi-section-table td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#cbi-network-device table.cbi-section-table td {
+    white-space: nowrap;
+}
+
+/* First column contains ifacebadge + name; keep it on one line and truncate nicely */
+#cbi-network-device table.cbi-section-table td .ifacebadge {
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+
+#cbi-network-device table.cbi-section-table td .ifacebadge>span:not(.cbi-tooltip-container) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#cbi-network-device table.cbi-section-table td.cbi-section-actions {
+    white-space: nowrap;
+}
+
+#cbi-network-device table.cbi-section-table td.cbi-section-actions .control-group,
+#cbi-network-device table.cbi-section-table td.cbi-section-actions>div {
+    width: auto;
+    display: inline-flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#cbi-network-device table.cbi-section-table td.cbi-section-actions .cbi-button,
+#cbi-network-device table.cbi-section-table td.cbi-section-actions .btn,
+#cbi-network-device table.cbi-section-table td.cbi-section-actions button {
+    width: auto;
+}
+
+/* Network -> Interfaces table: compact + elegant (ifacebox + stats + actions) */
+#cbi-network-interface table.cbi-section-table {
+    font-size: 13px;
+    line-height: 1.35;
+    table-layout: fixed;
+}
+
+#cbi-network-interface table.cbi-section-table td {
+    padding: 12px 12px;
+    vertical-align: top;
+}
+
+/* Column widths (no header row here) */
+#cbi-network-interface table.cbi-section-table td:nth-child(1) {
+    width: 42%;
+}
+
+#cbi-network-interface table.cbi-section-table td:nth-child(2) {
+    width: 43%;
+}
+
+#cbi-network-interface table.cbi-section-table td:nth-child(3) {
+    width: 15%;
+}
+
+/* Make the colored ifacebox header less "plastic" (override inline rgb background) */
+#cbi-network-interface .ifacebox {
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius);
+    background: rgba(255, 255, 255, 0.02);
+    max-width: 100%;
+}
+
+/* In the Interfaces table, make iface boxes consistently full-width */
+#cbi-network-interface td[data-name="_ifacebox"] .ifacebox {
+    display: flex;
+    width: 100%;
+}
+
+#cbi-network-interface .ifacebox-head {
+    /* Restore bright zone colors (lan/wan/etc) */
+    background-color: rgb(var(--zone-color-rgb)) !important;
+    border-bottom: 1px solid rgba(var(--zone-color-rgb), 0.45);
+    color: var(--proton-bg-solid) !important;
+    padding: 10px 12px;
+    letter-spacing: 0.01em;
+}
+
+#cbi-network-interface .ifacebox-body {
+    padding: 10px 12px;
+    color: var(--proton-fg-secondary);
+}
+
+#cbi-network-interface .ifacebox-body small {
+    color: var(--proton-muted);
+}
+
+/* Stats block: allow wrapping (global .nowrap is too aggressive here) */
+#cbi-network-interface td[data-name="_ifacestat"] .nowrap {
+    white-space: normal !important;
+}
+
+#cbi-network-interface td[data-name="_ifacestat"] strong {
+    color: var(--proton-fg);
+    font-weight: 600;
+}
+
+/* Actions: keep buttons compact and aligned */
+#cbi-network-interface table.cbi-section-table td.cbi-section-actions {
+    white-space: nowrap;
+}
+
+#cbi-network-interface table.cbi-section-table td.cbi-section-actions>div {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+#cbi-network-interface table.cbi-section-table td.cbi-section-actions .cbi-button,
+#cbi-network-interface table.cbi-section-table td.cbi-section-actions .btn,
+#cbi-network-interface table.cbi-section-table td.cbi-section-actions button {
+    width: auto;
+}
+
+/* Row hover overlay (JS-assisted): shows the full row values without clipping */
+.proton-assoclist-row-hover {
+    position: fixed;
+    z-index: 10050;
+    max-width: min(820px, 92vw);
+    padding: 10px 12px;
+    background: rgba(20, 25, 35, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--proton-radius);
+    box-shadow: var(--proton-shadow-md);
+    color: var(--proton-fg);
+    font-size: 13px;
+    line-height: 1.35;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    pointer-events: none;
+}
+
+.proton-assoclist-row-hover .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+}
+
+.proton-assoclist-row-hover .cell {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+}
+
+.proton-assoclist-row-hover .k {
+    color: var(--proton-fg-secondary);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.proton-assoclist-row-hover .v {
+    color: var(--proton-fg);
+    min-width: 0;
+}
+
+/* =====================================================
+   Dynamic List (cbi-dynlist)
+   ===================================================== */
+.cbi-dynlist {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+    gap: 8px;
+    min-width: 20rem;
+}
+
+.cbi-dynlist>.item {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    background: var(--proton-bg-tertiary);
+    border: 1px solid var(--proton-border);
+    box-shadow: var(--proton-shadow-sm);
+    margin: 0;
+    padding: 0 12px;
+    border-radius: var(--proton-radius-sm);
+    position: relative;
+    overflow: hidden;
+    flex: 1 1 100%;
+    cursor: move;
+    user-select: text;
+    color: var(--proton-fg);
+}
+
+.cbi-dynlist>.item>span {
+    display: block;
+    min-width: 0;
+    padding-right: calc(1.6rem + 10px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cbi-dynlist>.item::after {
+    content: "−";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 1.6rem;
+    background: var(--proton-danger);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.cbi-dynlist>.item:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: var(--proton-shadow-md);
+}
+
+.cbi-dynlist>.add-item {
+    flex: 1;
+    display: flex;
+    min-height: 40px;
+    align-items: stretch;
+}
+
+/* Override control-group min-width for add-item */
+.cbi-dynlist>.add-item.control-group {
+    min-width: auto;
+}
+
+.cbi-dynlist>.add-item>input {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+    height: 40px;
+    border-radius: var(--proton-radius-sm) 0 0 var(--proton-radius-sm);
+}
+
+.cbi-dynlist>.add-item>.btn,
+.cbi-dynlist>.add-item>.cbi-button-add,
+.cbi-dynlist>.add-item>div.btn {
+    flex: 0 0 40px;
+    margin: 0;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    text-align: center;
+    border-radius: 0 var(--proton-radius-sm) var(--proton-radius-sm) 0;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cbi-dynlist[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.cbi-dynlist[disabled]>.item::after {
+    pointer-events: none;
+}
+
+/* =====================================================
+   Tab Menu
+   ===================================================== */
+.cbi-tabmenu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    list-style: none;
+    margin: 0 0 24px;
+    padding: 0;
+    border-bottom: 1px solid var(--proton-border);
+}
+
+.cbi-tabmenu>li {
+    margin-bottom: -1px;
+}
+
+.cbi-tabmenu>li>a {
+    display: block;
+    padding: 12px 20px;
+    color: var(--proton-fg-secondary);
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    border-radius: var(--proton-radius-sm) var(--proton-radius-sm) 0 0;
+    transition: var(--proton-transition);
+}
+
+.cbi-tabmenu>li>a:hover {
+    color: var(--proton-fg);
+    background: var(--proton-bg-hover);
+}
+
+.cbi-tabmenu>.cbi-tab>a {
+    color: var(--proton-accent);
+    border-bottom-color: var(--proton-accent);
+    background: var(--proton-accent-glow);
+}
+
+/* Legacy LuCI tabs */
+#tabmenu {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--proton-border);
+    padding-bottom: 0;
+}
+
+#tabmenu li {
+    list-style: none;
+}
+
+#tabmenu a {
+    display: block;
+    padding: 12px 20px;
+    color: var(--proton-muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    border-radius: var(--proton-radius-sm) var(--proton-radius-sm) 0 0;
+    transition: var(--proton-transition);
+    font-weight: 500;
+}
+
+#tabmenu a:hover {
+    color: var(--proton-fg);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+#tabmenu a.active {
+    color: var(--proton-accent);
+    background: var(--proton-accent-glow);
+}
+
+/* Tabs: only hide/show tab PANELS, not tab headers */
+.cbi-tabmenu>li {
+    display: inline-flex;
+}
+
+/* Tab panels may be direct children of different tabbed containers */
+.cbi-section-node-tabbed>[data-tab],
+.cbi-map-tabbed>[data-tab] {
+    display: none;
+}
+
+.cbi-section-node-tabbed>[data-tab][data-tab-active="true"],
+.cbi-map-tabbed>[data-tab][data-tab-active="true"] {
+    display: block;
+}
+
+/* =====================================================
+   Dropdowns
+   ===================================================== */
+.cbi-dropdown {
+    display: inline-flex !important;
+    position: relative;
+    cursor: pointer;
+    min-width: 200px;
+    padding: 0 !important;
+    background: var(--proton-bg-tertiary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+}
+
+.cbi-dropdown>ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.cbi-dropdown>ul>li {
+    display: none;
+    padding: 10px 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1 1 auto;
+    align-items: center;
+}
+
+/* В закрытом состоянии показываем только выбранный пункт */
+.cbi-dropdown>ul>li[selected],
+.cbi-dropdown>ul>li[display] {
+    display: flex !important;
+}
+
+/* RichListValue: краткий/полный вид */
+.cbi-dropdown>ul>li .hide-open {
+    display: initial;
+}
+
+.cbi-dropdown>ul>li .hide-close {
+    display: none;
+}
+
+.cbi-dropdown>.more {
+    display: none;
+}
+
+.cbi-dropdown>.open {
+    padding: 10px;
+    border-left: 1px solid var(--proton-border);
+    display: flex;
+    align-items: center;
+}
+
+.cbi-dropdown[open]>ul.dropdown {
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(15, 20, 25, 0.96);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    box-shadow: var(--proton-shadow);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    min-width: 100%;
+    width: auto;
+}
+
+.cbi-dropdown[open]>ul.dropdown>li {
+    display: flex;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--proton-border-light);
+    transition: var(--proton-transition);
+}
+
+.cbi-dropdown[open]>ul.dropdown>li .hide-open {
+    display: none;
+}
+
+.cbi-dropdown[open]>ul.dropdown>li .hide-close {
+    display: initial;
+}
+
+.cbi-dropdown[open]>ul.dropdown>li:hover {
+    background: var(--proton-bg-hover);
+}
+
+.cbi-dropdown[open]>ul.dropdown>li[selected] {
+    background: var(--proton-accent-glow);
+    color: var(--proton-accent);
+}
+
+/* =====================================================
+   Alerts & Messages
+   ===================================================== */
+.alert-message {
+    padding: 16px 20px;
+    border-radius: var(--proton-radius);
+    margin-bottom: 20px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-left: 3px solid transparent;
+    box-shadow: var(--proton-shadow-sm);
+    transition: var(--proton-transition);
+}
+
+.alert-message:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--proton-shadow-md);
+}
+
+.alert-message.warning {
+    background: rgba(255, 217, 61, 0.08);
+    border: 1px solid rgba(255, 217, 61, 0.2);
+    border-left-color: var(--proton-warning);
+    color: #ffeb99;
+}
+
+.alert-message.danger {
+    background: rgba(255, 107, 107, 0.08);
+    border: 1px solid rgba(255, 107, 107, 0.2);
+    border-left-color: var(--proton-danger);
+    color: #ffa5a5;
+}
+
+.alert-message.success {
+    background: rgba(107, 207, 127, 0.08);
+    border: 1px solid rgba(107, 207, 127, 0.2);
+    border-left-color: var(--proton-success);
+    color: #a3e7b5;
+}
+
+.alert-message.info {
+    background: var(--proton-accent-glow);
+    border: 1px solid rgba(94, 158, 255, 0.3);
+    color: var(--proton-accent);
+}
+
+.alert-message h4 {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.alert-message p {
+    margin: 0;
+    line-height: 1.6;
+    opacity: 0.95;
+}
+
+/* =====================================================
+   Progress Bars
+   ===================================================== */
+.cbi-progressbar {
+    position: relative;
+    height: 24px;
+    background: var(--proton-bg-tertiary);
+    border-radius: 12px;
+    overflow: hidden;
+    min-width: 200px;
+}
+
+.cbi-progressbar>div {
+    height: 100%;
+    background: linear-gradient(90deg, var(--proton-accent), var(--proton-accent-hover));
+    border-radius: 12px;
+    transition: width 0.3s ease;
+}
+
+.cbi-progressbar::after {
+    content: attr(title);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--proton-fg);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* =====================================================
+   Badges & Labels
+   ===================================================== */
+.ifacebox, .ifacebadge, .zonebadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--proton-bg-tertiary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    font-size: 0.85rem;
+}
+
+.ifacebox {
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+}
+
+.ifacebox-head {
+    background: var(--proton-accent-glow);
+    color: var(--proton-accent);
+    padding: 8px 12px;
+    font-weight: 600;
+    width: 100%;
+    text-align: center;
+}
+
+.ifacebox-head.active {
+    background: var(--proton-accent);
+    color: #fff;
+}
+
+.ifacebox-body {
+    padding: 12px;
+}
+
+.network-status-table {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.network-status-table>.ifacebox {
+    flex: 1 1 280px;
+    min-width: 250px;
+}
+
+/* =====================================================
+   Tooltips
+   ===================================================== */
+.cbi-tooltip {
+    position: absolute;
+    z-index: 10001;
+    background: rgba(20, 25, 35, 0.95);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--proton-fg);
+    box-shadow: var(--proton-shadow-md);
+    max-width: 300px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.cbi-tooltip-container:hover .cbi-tooltip:not(:empty) {
+    opacity: 1;
+}
+
+/* =====================================================
+   Modal
+   ===================================================== */
+#modal_overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+}
+
+body.modal-overlay-active #modal_overlay {
+    opacity: 1;
+    visibility: visible;
+}
+
+#modal_overlay>.modal {
+    background: rgba(20, 25, 35, 0.98);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-lg);
+    box-shadow: var(--proton-shadow-md);
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.modal>h4:first-child {
+    margin: 0 0 12px 0;
+    padding: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--proton-fg);
+}
+
+/* =====================================================
+   Spinner
+   ===================================================== */
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.spinning {
+    position: relative;
+    padding-left: 2.5em !important;
+}
+
+.spinning::before {
+    content: "";
+    position: absolute;
+    left: 0.75em;
+    top: 50%;
+    width: 1.2em;
+    height: 1.2em;
+    margin-top: -0.6em;
+    border: 2px solid var(--proton-border);
+    border-top-color: var(--proton-accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* =====================================================
+   Utility Classes
+   ===================================================== */
+.hidden {
+    display: none !important;
+}
+
+.left {
+    text-align: left !important;
+}
+
+.right {
+    text-align: right !important;
+}
+
+.center {
+    text-align: center !important;
+}
+
+.nowrap {
+    white-space: nowrap !important;
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =====================================================
+   Page Actions
+   ===================================================== */
+.cbi-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 20px;
+    margin-top: 20px;
+    margin-bottom: 1em;
+    border-top: 1px solid var(--proton-border);
+    width: 100%;
+    text-align: right;
+}
+
+.cbi-page-actions .cbi-button,
+.cbi-page-actions .btn,
+.cbi-page-actions button {
+    display: inline-flex;
+}
+
+.button-row {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.button-row> :not(:last-child) {
+    margin-right: 0.5em;
+}
+
+.button-row> :first-child {
+    margin-right: auto;
+}
+
+.control-group {
+    display: inline-flex;
+    margin: 0 -0.125rem;
+    min-width: 20.25em;
+    flex-wrap: wrap;
+}
+
+.control-group>* {
+    margin: 0.125rem !important;
+    min-width: auto !important;
+}
+
+.control-group>button,
+.control-group>.btn,
+.control-group>.cbi-button {
+    display: inline-flex;
+    flex: 0 0 auto;
+}
+
+.control-group>*,
+.control-group>.cbi-dropdown>ul>li {
+    justify-content: space-around;
+}
+
+.control-group>select,
+.control-group>input:not([type]),
+.control-group>input[type="text"],
+.control-group>input[type="password"] {
+    flex: 10;
+}
+
+/* =====================================================
+   Responsive Design - Mobile (max 800px)
+   ===================================================== */
+@media only screen and (max-width: 800px) {
+    body {
+        padding-top: 64px;
+    }
+
+    #menubar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        min-height: 64px;
+    }
+
+    #menubar-inner {
+        max-width: none;
+        margin: 0;
+        padding: 0 16px;
+        height: 64px;
+    }
+
+    /* Hamburger Button */
+    #menubar-inner>h2,
+    #menubar-inner>.navigation {
+        flex: 0 0 auto;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        margin: 0 12px 0 0;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--proton-border);
+        border-radius: var(--proton-radius-sm);
+        cursor: pointer;
+        transition: var(--proton-transition);
+        color: var(--proton-fg);
+    }
+
+    #menubar-inner>h2:hover,
+    #menubar-inner>.navigation:hover {
+        background: var(--proton-bg-hover);
+        border-color: rgba(255, 255, 255, 0.12);
+        color: var(--proton-fg);
+    }
+
+    #menubar-inner>h2>*,
+    #menubar-inner>.navigation>* {
+        display: none;
+    }
+
+    #menubar-inner>h2::before,
+    #menubar-inner>.navigation::before {
+        content: "☰";
+        display: block;
+        text-align: center;
+        font-size: 1.25rem;
+        color: inherit;
+        font-weight: 700;
+    }
+
+    #menubar-inner>h2.active,
+    #menubar-inner>.navigation.active {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.12);
+        color: var(--proton-fg);
+    }
+
+    #menubar-inner>h2.active::before,
+    #menubar-inner>.navigation.active::before {
+        /* U+2715 обычно визуально ровнее, чем × в системных шрифтах */
+        content: "✕";
+        font-size: 1.25rem;
+        font-weight: 700;
+        line-height: 40px;
+    }
+
+    #menubar-inner .hostname {
+        font-size: 1.1rem;
+        flex: 1;
+    }
+
+    #menubar .distversion {
+        display: none;
+    }
+
+    /* Sidebar as slide-out panel - position:fixed pulls it out of menubar flow */
+    #mainmenu {
+        position: fixed;
+        top: 64px;
+        left: 0;
+        bottom: 0;
+        width: 260px;
+        max-width: 80vw;
+        z-index: 999;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease-in-out;
+        overflow-y: auto;
+        padding: 16px 0;
+        background: rgba(15, 20, 25, 0.98);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-right: 1px solid var(--proton-border);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.4);
+    }
+
+    #mainmenu.active {
+        transform: translateX(0);
+    }
+
+    #mainmenu>div {
+        position: static;
+    }
+
+    #mainmenu ul>li {
+        padding: 2px 0;
+    }
+
+    #mainmenu .mainmenu.l1>li>a {
+        padding: 14px 20px;
+        font-size: 1rem;
+        color: var(--proton-fg-secondary);
+        border-left: 3px solid transparent;
+    }
+
+    #mainmenu .mainmenu.l1>li.selected>a,
+    #mainmenu li.selected>a {
+        color: var(--proton-accent);
+        background: var(--proton-accent-glow);
+        border-left-color: var(--proton-accent);
+    }
+
+    #mainmenu .mainmenu.l2>li>a {
+        padding: 10px 20px 10px 36px;
+        font-size: 0.95rem;
+    }
+
+    /* Restore mobile submenu expansion */
+    #mainmenu li>ul {
+        position: static;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.2s ease-in-out;
+        display: block;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+        min-width: 0;
+    }
+
+    #mainmenu ul:not(.active)>li.selected>ul,
+    #mainmenu li.active>ul {
+        max-height: 500px;
+    }
+
+    /* Content adjustments */
+    #maincontent {
+        padding: 16px;
+        max-width: 100%;
+        margin: 0;
+    }
+
+    /* Tables */
+    table {
+        display: flex;
+        flex-direction: column;
+        font-size: 13px;
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+        overflow: visible;
+    }
+
+    tr {
+        display: block;
+        border-bottom: 1px solid var(--proton-border);
+        padding: 12px 0;
+        margin-bottom: 12px;
+    }
+
+    th {
+        display: none;
+    }
+
+    td {
+        display: block;
+        padding: 6px 0;
+        border: none;
+        text-align: left !important;
+        color: var(--proton-fg);
+        word-break: break-word;
+    }
+
+    td[data-title]::before {
+        content: attr(data-title) ": ";
+        font-weight: 600;
+        color: var(--proton-fg);
+        display: inline-block;
+        min-width: 120px;
+    }
+
+    /* Form layout */
+    .cbi-value {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cbi-value>label:first-child,
+    .cbi-value-title {
+        flex: none;
+        margin-bottom: 8px;
+    }
+
+    .cbi-value-description {
+        padding-left: 0;
+    }
+
+    input:not([type]),
+    input[type="text"],
+    input[type="password"],
+    select,
+    .cbi-dropdown {
+        max-width: 100%;
+        font-size: 16px;
+        /* Prevent zoom on iOS */
+    }
+
+    /* Buttons */
+    button, .btn, .cbi-button {
+        font-size: 1rem;
+        padding: 12px 20px;
+    }
+
+    .cbi-page-actions {
+        flex-direction: column;
+    }
+
+    .cbi-page-actions>* {
+        width: 100%;
+    }
+
+    /* Hide on mobile */
+    .hide-xs {
+        display: none !important;
+    }
+
+    /* Modal */
+    #modal_overlay>.modal {
+        width: 95%;
+        margin: 20px;
+        max-height: calc(100vh - 40px);
+    }
+}
+
+/* =====================================================
+   Desktop Top Menu (keep mobile burger)
+   ===================================================== */
+@media only screen and (min-width: 801px) {
+
+    /* Allow dropdowns to overflow the header area */
+    #menubar {
+        overflow: visible;
+    }
+
+    /* Top navigation inline inside menubar (desktop) */
+    #mainmenu {
+        flex: 1 1 auto;
+        width: auto;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        overflow: visible;
+        background: transparent;
+    }
+
+    #mainmenu>div {
+        position: static;
+        top: auto;
+    }
+
+    #mainmenu .mainmenu.l1 {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 4px;
+        align-items: center;
+        overflow: visible;
+    }
+
+    #mainmenu .mainmenu.l1>li {
+        margin: 0;
+        position: relative;
+    }
+
+    #mainmenu .mainmenu.l1>li>a {
+        padding: 8px 16px;
+        border-left: 0;
+        border-radius: var(--proton-radius-sm);
+        white-space: nowrap;
+        font-weight: 500;
+        color: var(--proton-fg-secondary);
+    }
+
+    #mainmenu .mainmenu.l1>li>a:hover {
+        background: var(--proton-bg-hover);
+        color: var(--proton-fg);
+    }
+
+    #mainmenu .mainmenu.l1>li.selected>a,
+    #mainmenu li.selected>a {
+        background: var(--proton-accent-glow);
+        color: var(--proton-accent);
+    }
+
+    /* No chevrons in header menu */
+    #mainmenu .mainmenu.l1>li>a:has(+ ul)::after {
+        content: none;
+    }
+
+    /* Level 2 as dropdown */
+    #mainmenu li>ul {
+        max-height: none;
+        overflow: visible;
+        position: absolute;
+        left: 0;
+        top: calc(100% + 6px);
+        min-width: 240px;
+        padding: 8px;
+        border-radius: var(--proton-radius);
+        border: 1px solid var(--proton-border);
+        background: rgba(20, 25, 35, 0.98);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: var(--proton-shadow-lg);
+        z-index: 1001;
+        /* Animation */
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-8px);
+        transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    }
+
+    #mainmenu li>ul.align-left {
+        left: auto;
+        right: 0;
+    }
+
+    /* Show dropdown on hover or active (click) */
+    #mainmenu li:hover>ul,
+    #mainmenu li.active>ul {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    #mainmenu .mainmenu.l2>li>a {
+        display: block;
+        padding: 10px 12px;
+        border-radius: var(--proton-radius-sm);
+        color: var(--proton-fg-secondary);
+    }
+
+    #mainmenu .mainmenu.l2>li>a:hover {
+        background: var(--proton-bg-hover);
+        color: var(--proton-fg);
+    }
+
+    #mainmenu .mainmenu.l2>li.selected>a {
+        color: var(--proton-accent);
+        background: var(--proton-accent-glow);
+    }
+}
+
+/* =====================================================
+   Dropdowns - Typography Override
+   (kept at end to override legacy rules)
+   ===================================================== */
+.cbi-dropdown:not(.btn):not(.cbi-button) {
+    font-size: 0.95rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--proton-fg);
+}
+
+.cbi-dropdown:not(.btn):not(.cbi-button)>ul>li {
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    justify-content: flex-start;
+}
+
+.cbi-dropdown:not(.btn):not(.cbi-button)>.open,
+.cbi-dropdown:not(.btn):not(.cbi-button)>.more {
+    color: var(--proton-fg-secondary);
+}
+
+.cbi-dropdown:not(.btn):not(.cbi-button)[open]>ul.dropdown>li[selected] {
+    background: var(--proton-accent-glow);
+    color: var(--proton-fg);
+    font-weight: 500;
+}
+
+.cbi-dropdown:not(.btn):not(.cbi-button)[open]>ul.dropdown>li:hover {
+    color: var(--proton-fg);
+}
+
+.cbi-dropdown>ul>li .hide-close {
+    color: var(--proton-fg-secondary);
+    font-size: 0.92em;
+    line-height: 1.35;
+}
+
+.cbi-dropdown>ul>li .hide-close strong {
+    color: var(--proton-fg);
+    font-weight: 600;
+}
+
+/* =====================================================
+   Print Styles
+   ===================================================== */
+@media print {
+    #menubar, #mainmenu, #modemenu, .proton-footer, .cbi-page-actions {
+        display: none !important;
+    }
+
+    body {
+        background: #fff;
+        color: #000;
+    }
+
+    #maincontent {
+        padding: 0;
+        max-width: none;
+        margin: 0;
+    }
+}

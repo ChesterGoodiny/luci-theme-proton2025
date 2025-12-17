@@ -1,0 +1,20 @@
+{#
+ Proton2025 Theme - Footer Template
+ Licensed under Apache License 2.0
+-#}
+
+		<a id="content" name="content"></a>
+	</div>
+</div>
+
+<footer class="proton-footer">
+	Powered by <a href="https://github.com/openwrt/luci">LuCI</a> ({{ version.luciversion }})
+	/ {{ version.distname }} ({{ version.distversion }}) {{ version.distrevision }}
+	/ Proton2025 Theme
+	/ <a href="https://github.com/ChesterGoodiny/luci-theme-proton2025" target="_blank" rel="noopener noreferrer">GitHub</a>
+</footer>
+
+<script>L.require('menu-proton2025')</script>
+
+</body>
+</html>
