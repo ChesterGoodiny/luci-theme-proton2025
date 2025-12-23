@@ -1,12 +1,17 @@
 #!/bin/sh
 
-if [ "$PKG_UPGRADE" != 1 ]; then
-	uci get luci.themes.Proton2025 >/dev/null 2>&1 || \
-	uci batch <<-EOF
-		set luci.themes.Proton2025=/luci-static/proton2025
-		set luci.main.mediaurlbase=/luci-static/proton2025
-		commit luci
-	EOF
+if [ ! -f /etc/config/luci ]; then
+	touch /etc/config/luci
+fi
+
+if ! uci -q get luci.themes >/dev/null; then
+	uci set luci.themes=internal
+	uci commit luci
+fi
+
+if ! uci -q get luci.themes.Proton2025 >/dev/null; then
+	uci set luci.themes.Proton2025="/luci-static/proton2025"
+	uci commit luci
 fi
 
 exit 0
