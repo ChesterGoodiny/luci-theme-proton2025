@@ -1,0 +1,100 @@
+name: Build IPK Package
+
+on:
+  push:
+    branches: [main, master]
+    tags:
+      - "v*"
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build OpenWrt Package
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch:
+          - name: aarch64_cortex-a53
+            sdk: mediatek-filogic
+          - name: x86_64
+            sdk: x86-64
+          - name: mipsel_24kc
+            sdk: ramips-mt7621
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup OpenWrt SDK
+        run: |
+          OPENWRT_VERSION="24.10.4"
+          SDK_URL="https://downloads.openwrt.org/releases/${OPENWRT_VERSION}/targets/${{ matrix.arch.sdk }}/openwrt-sdk-${OPENWRT_VERSION}-${{ matrix.arch.sdk }}_gcc-13.3.0_musl.Linux-x86_64.tar.xz"
+
+          echo "Downloading SDK from: $SDK_URL"
+          wget -q "$SDK_URL" -O sdk.tar.xz
+          tar xJf sdk.tar.xz
+          mv openwrt-sdk-* openwrt-sdk
+
+      - name: Install feeds
+        working-directory: ./openwrt-sdk
+        run: |
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Copy theme to SDK
+        run: |
+          mkdir -p openwrt-sdk/package/luci-theme-proton2025
+          cp -r htdocs openwrt-sdk/package/luci-theme-proton2025/
+          cp -r po openwrt-sdk/package/luci-theme-proton2025/
+          cp -r root openwrt-sdk/package/luci-theme-proton2025/
+          cp -r ucode openwrt-sdk/package/luci-theme-proton2025/
+          cp Makefile openwrt-sdk/package/luci-theme-proton2025/
+
+      - name: Compile package
+        working-directory: ./openwrt-sdk
+        run: |
+          make package/luci-theme-proton2025/compile V=s
+
+      - name: Find IPK files
+        id: find_ipk
+        run: |
+          IPK_FILE=$(find openwrt-sdk/bin/packages -name "luci-theme-proton2025*.ipk" | head -n 1)
+          if [ -z "$IPK_FILE" ]; then
+            echo "Error: IPK file not found"
+            exit 1
+          fi
+          echo "ipk_path=$IPK_FILE" >> $GITHUB_OUTPUT
+          echo "ipk_name=$(basename $IPK_FILE)" >> $GITHUB_OUTPUT
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: luci-theme-proton2025-${{ matrix.arch.name }}
+          path: ${{ steps.find_ipk.outputs.ipk_path }}
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ steps.find_ipk.outputs.ipk_path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  summary:
+    name: Build Summary
+    needs: build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "## 📦 Build Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Packages built for:" >> $GITHUB_STEP_SUMMARY
+          echo "- aarch64_cortex-a53 (MediaTek Filogic)" >> $GITHUB_STEP_SUMMARY
+          echo "- x86_64 (Generic x86)" >> $GITHUB_STEP_SUMMARY
+          echo "- mipsel_24kc (MT7621)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Download artifacts from Actions tab or Releases page" >> $GITHUB_STEP_SUMMARY
