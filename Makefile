@@ -11,6 +11,10 @@ LUCI_DEPENDS:=+luci-base
 
 PKG_LICENSE:=Apache-2.0
 
-include ../../luci.mk
+ifneq ($(wildcard $(TOPDIR)/feeds/luci/luci.mk),)
+  include $(TOPDIR)/feeds/luci/luci.mk
+else
+  include ../../luci.mk
+endif
 
-# call BuildPackage - OpenWrt buildance
+# call BuildPackage - OpenWrt buildroot signature
