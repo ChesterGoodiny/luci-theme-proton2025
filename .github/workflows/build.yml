@@ -17,11 +17,11 @@ jobs:
       matrix:
         arch:
           - name: aarch64_cortex-a53
-            sdk: mediatek-filogic
+            sdk: mediatek/filogic
           - name: x86_64
-            sdk: x86-64
+            sdk: x86/64
           - name: mipsel_24kc
-            sdk: ramips-mt7621
+            sdk: ramips/mt7621
 
     steps:
       - name: Checkout
@@ -30,11 +30,11 @@ jobs:
       - name: Setup OpenWrt SDK
         run: |
           OPENWRT_VERSION="24.10.4"
-          SDK_URL="https://downloads.openwrt.org/releases/${OPENWRT_VERSION}/targets/${{ matrix.arch.sdk }}/openwrt-sdk-${OPENWRT_VERSION}-${{ matrix.arch.sdk }}_gcc-13.3.0_musl.Linux-x86_64.tar.xz"
+          SDK_URL="https://downloads.openwrt.org/releases/${OPENWRT_VERSION}/targets/${{ matrix.arch.sdk }}/openwrt-sdk-${OPENWRT_VERSION}-$(echo ${{ matrix.arch.sdk }} | tr '/' '-')_gcc-13.3.0_musl.Linux-x86_64.tar.zst"
 
           echo "Downloading SDK from: $SDK_URL"
-          wget -q "$SDK_URL" -O sdk.tar.xz
-          tar xJf sdk.tar.xz
+          wget -q "$SDK_URL" -O sdk.tar.zst
+          tar --use-compress-program=unzstd -xf sdk.tar.zst
           mv openwrt-sdk-* openwrt-sdk
 
       - name: Install feeds
