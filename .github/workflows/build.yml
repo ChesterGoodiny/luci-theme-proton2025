@@ -11,101 +11,137 @@ on:
 
 jobs:
   build:
-    name: Build OpenWrt Package
+    name: Build LuCI Theme Package
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch:
-          - name: aarch64_cortex-a53
-            sdk: mediatek/filogic
-          - name: x86_64
-            sdk: x86/64
-          - name: mipsel_24kc
-            sdk: ramips/mt7621
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup OpenWrt SDK
+      - name: Get version
+        id: version
         run: |
-          OPENWRT_VERSION="24.10.4"
-          SDK_URL="https://downloads.openwrt.org/releases/${OPENWRT_VERSION}/targets/${{ matrix.arch.sdk }}/openwrt-sdk-${OPENWRT_VERSION}-$(echo ${{ matrix.arch.sdk }} | tr '/' '-')_gcc-13.3.0_musl.Linux-x86_64.tar.zst"
-
-          echo "Downloading SDK from: $SDK_URL"
-          wget -q "$SDK_URL" -O sdk.tar.zst
-          tar --use-compress-program=unzstd -xf sdk.tar.zst
-          mv openwrt-sdk-* openwrt-sdk
-
-      - name: Install feeds
-        working-directory: ./openwrt-sdk
-        run: |
-          # git.openwrt.org периодически рвёт соединение; для сборки темы достаточно feed luci
-          sed -i -E 's/^(src-git(-full)?[[:space:]]+base[[:space:]]+)/#\1/' feeds.conf.default || true
-          ./scripts/feeds update luci
-          ./scripts/feeds install luci-base
-
-      - name: Copy theme to SDK
-        run: |
-          mkdir -p openwrt-sdk/package/luci-theme-proton2025
-          cp -r htdocs openwrt-sdk/package/luci-theme-proton2025/
-          cp -r po openwrt-sdk/package/luci-theme-proton2025/
-          cp -r root openwrt-sdk/package/luci-theme-proton2025/
-          cp -r ucode openwrt-sdk/package/luci-theme-proton2025/
-          cp Makefile openwrt-sdk/package/luci-theme-proton2025/
-
-      - name: Configure SDK
-        working-directory: ./openwrt-sdk
-        run: |
-          # Создаём минимальный конфиг для сборки темы
-          echo "CONFIG_PACKAGE_luci-theme-proton2025=m" > .config
-          make defconfig
-
-      - name: Compile package
-        working-directory: ./openwrt-sdk
-        env:
-          TERM: xterm
-        run: |
-          make package/luci-theme-proton2025/compile V=s
-
-      - name: Find IPK files
-        id: find_ipk
-        run: |
-          IPK_FILE=$(find openwrt-sdk/bin/packages -name "luci-theme-proton2025*.ipk" | head -n 1)
-          if [ -z "$IPK_FILE" ]; then
-            echo "Error: IPK file not found"
-            exit 1
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            VERSION="1.0.0-$(date +%Y%m%d)-${GITHUB_SHA::7}"
           fi
-          echo "ipk_path=$IPK_FILE" >> $GITHUB_OUTPUT
-          echo "ipk_name=$(basename $IPK_FILE)" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build po2lmo
+        run: |
+          git clone --depth=1 https://github.com/openwrt/luci.git luci-repo
+          cd luci-repo/modules/luci-base/src
+          make po2lmo
+          sudo cp po2lmo /usr/local/bin/
+          cd ../../../..
+          rm -rf luci-repo
+
+      - name: Build IPK
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          PKG_NAME="luci-theme-proton2025"
+
+          # Создаём структуру пакета
+          mkdir -p pkg/data/www/luci-static/proton2025
+          mkdir -p pkg/data/usr/share/ucode/luci/template/themes/proton2025
+          mkdir -p pkg/data/usr/share/luci/menu.d
+          mkdir -p pkg/data/etc/uci-defaults
+          mkdir -p pkg/data/usr/lib/lua/luci/i18n
+          mkdir -p pkg/control
+
+          # Копируем файлы темы
+          cp -r htdocs/luci-static/proton2025/* pkg/data/www/luci-static/proton2025/
+          cp -r ucode/template/themes/proton2025/* pkg/data/usr/share/ucode/luci/template/themes/proton2025/
+          cp root/etc/uci-defaults/30_luci-theme-proton2025 pkg/data/etc/uci-defaults/
+
+          # Копируем JS меню если есть
+          if [ -d "htdocs/luci-static/resources" ]; then
+            mkdir -p pkg/data/www/luci-static/resources
+            cp -r htdocs/luci-static/resources/* pkg/data/www/luci-static/resources/ 2>/dev/null || true
+          fi
+
+          # Компилируем переводы .po -> .lmo
+          for po_file in po/*/theme-proton2025.po; do
+            if [ -f "$po_file" ]; then
+              lang=$(basename $(dirname "$po_file"))
+              if [ "$lang" != "templates" ]; then
+                echo "Compiling translation: $lang"
+                po2lmo "$po_file" "pkg/data/usr/lib/lua/luci/i18n/theme-proton2025.$lang.lmo"
+              fi
+            fi
+          done
+
+          # Показываем скомпилированные переводы
+          echo "Compiled translations:"
+          ls -la pkg/data/usr/lib/lua/luci/i18n/ 2>/dev/null || echo "No translations found"
+
+          # Вычисляем размер
+          INSTALLED_SIZE=$(du -sb pkg/data | cut -f1)
+
+          # Создаём control файл
+          cat > pkg/control/control << EOF
+          Package: ${PKG_NAME}
+          Version: ${VERSION}
+          Depends: libc, luci-base
+          Source: https://github.com/${{ github.repository }}
+          SourceName: ${PKG_NAME}
+          License: Apache-2.0
+          Section: luci
+          Architecture: all
+          Installed-Size: ${INSTALLED_SIZE}
+          Description: Proton2025 - Elegant Dark Theme for LuCI
+          EOF
+
+          # Убираем лишние пробелы в начале строк
+          sed -i 's/^[[:space:]]*//' pkg/control/control
+
+          # Создаём postinst скрипт
+          cat > pkg/control/postinst << 'EOF'
+          #!/bin/sh
+          [ -n "${IPKG_INSTROOT}" ] || {
+            uci -q batch <<-EOI
+              set luci.themes.Proton2025=/luci-static/proton2025
+              commit luci
+          EOI
+          }
+          exit 0
+          EOF
+          chmod 755 pkg/control/postinst
+
+          # Создаём prerm скрипт
+          cat > pkg/control/prerm << 'EOF'
+          #!/bin/sh
+          [ -n "${IPKG_INSTROOT}" ] || {
+            uci -q delete luci.themes.Proton2025
+            uci commit luci
+          }
+          exit 0
+          EOF
+          chmod 755 pkg/control/prerm
+
+          # Собираем архивы
+          cd pkg/control && tar czvf ../control.tar.gz . && cd ../..
+          cd pkg/data && tar czvf ../data.tar.gz . && cd ../..
+          echo "2.0" > pkg/debian-binary
+
+          # Собираем IPK
+          cd pkg && tar czvf "../${PKG_NAME}_${VERSION}_all.ipk" ./debian-binary ./control.tar.gz ./data.tar.gz && cd ..
+
+          echo "ipk_file=${PKG_NAME}_${VERSION}_all.ipk" >> $GITHUB_OUTPUT
+          echo "Built: ${PKG_NAME}_${VERSION}_all.ipk"
+          ls -la *.ipk
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: luci-theme-proton2025-${{ matrix.arch.name }}
-          path: ${{ steps.find_ipk.outputs.ipk_path }}
+          name: luci-theme-proton2025-all
+          path: "*.ipk"
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ steps.find_ipk.outputs.ipk_path }}
+          files: "*.ipk"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  summary:
-    name: Build Summary
-    needs: build
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Summary
-        run: |
-          echo "## 📦 Build Complete!" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Packages built for:" >> $GITHUB_STEP_SUMMARY
-          echo "- aarch64_cortex-a53 (MediaTek Filogic)" >> $GITHUB_STEP_SUMMARY
-          echo "- x86_64 (Generic x86)" >> $GITHUB_STEP_SUMMARY
-          echo "- mipsel_24kc (MT7621)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Download artifacts from Actions tab or Releases page" >> $GITHUB_STEP_SUMMARY
