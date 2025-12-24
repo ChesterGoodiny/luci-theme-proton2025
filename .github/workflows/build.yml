@@ -40,10 +40,10 @@ jobs:
       - name: Install feeds
         working-directory: ./openwrt-sdk
         run: |
-          # Отключаем проблемный feed 'base' - он не нужен для сборки темы
-          sed -i 's/^src-git base/#src-git base/' feeds.conf.default
+          # git.openwrt.org периодически рвёт соединение; для сборки темы достаточно feed luci
+          sed -i -E 's/^(src-git(-full)?[[:space:]]+base[[:space:]]+)/#\1/' feeds.conf.default || true
           ./scripts/feeds update luci
-          ./scripts/feeds install -a -p luci
+          ./scripts/feeds install luci-base
 
       - name: Copy theme to SDK
         run: |
