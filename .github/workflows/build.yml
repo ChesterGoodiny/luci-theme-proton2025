@@ -54,8 +54,17 @@ jobs:
           cp -r ucode openwrt-sdk/package/luci-theme-proton2025/
           cp Makefile openwrt-sdk/package/luci-theme-proton2025/
 
+      - name: Configure SDK
+        working-directory: ./openwrt-sdk
+        run: |
+          # Создаём минимальный конфиг для сборки темы
+          echo "CONFIG_PACKAGE_luci-theme-proton2025=m" > .config
+          make defconfig
+
       - name: Compile package
         working-directory: ./openwrt-sdk
+        env:
+          TERM: xterm
         run: |
           make package/luci-theme-proton2025/compile V=s
 
