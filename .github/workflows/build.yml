@@ -40,7 +40,11 @@ jobs:
       - name: Install feeds
         working-directory: ./openwrt-sdk
         run: |
-          ./scripts/feeds update -a
+          git config --global http.postBuffer 524288000
+          git config --global core.compression 0
+          for i in 1 2 3; do
+            ./scripts/feeds update -a && break || sleep 10
+          done
           ./scripts/feeds install -a
 
       - name: Copy theme to SDK
