@@ -1,0 +1,51 @@
+name: Compile Translations
+
+on:
+  push:
+    paths:
+      - "po/**/*.po"
+  workflow_dispatch:
+
+jobs:
+  compile:
+    name: Compile PO to LMO
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install po2lmo
+        run: |
+          git clone https://github.com/openwrt/luci.git --depth=1
+          cd luci/modules/luci-base/src
+          make
+          sudo cp po2lmo /usr/local/bin/
+
+      - name: Compile translations
+        run: |
+          mkdir -p i18n
+          for po_file in po/*/theme-proton2025.po; do
+            if [ -f "$po_file" ]; then
+              lang=$(basename $(dirname "$po_file"))
+              if [ "$lang" != "templates" ]; then
+                echo "Compiling $lang..."
+                po2lmo "$po_file" "i18n/theme-proton2025.$lang.lmo"
+              fi
+            fi
+          done
+
+      - name: Upload LMO files
+        uses: actions/upload-artifact@v4
+        with:
+          name: translations-lmo
+          path: i18n/*.lmo
+
+      - name: Commit LMO files (optional)
+        if: github.event_name != 'pull_request'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add i18n/*.lmo || true
+          git diff --staged --quiet || git commit -m "chore: compile translations to LMO"
+          git push || true
