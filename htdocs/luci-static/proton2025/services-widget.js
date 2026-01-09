@@ -437,7 +437,17 @@
         const settingsBtn = document.createElement("button");
         settingsBtn.className = "proton-widgets-settings-btn";
         settingsBtn.title = this._t("Widget Settings");
-        settingsBtn.innerHTML = "⚙";
+        settingsBtn.innerHTML = `
+          <svg class="proton-widgets-settings-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="6" x2="20" y2="6"></line>
+            <circle cx="9" cy="6" r="2"></circle>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+            <circle cx="15" cy="12" r="2"></circle>
+            <line x1="4" y1="18" x2="20" y2="18"></line>
+            <circle cx="7" cy="18" r="2"></circle>
+          </svg>
+        `;
         settingsBtn.addEventListener("click", () => this.showAddServiceModal());
 
         sectionHeader.appendChild(sectionTitle);
@@ -464,6 +474,36 @@
                     <h3 class="proton-services-title">${this._t(
                       "Services Monitor"
                     )}</h3>
+                    <div class="proton-services-info">?
+                        <div class="proton-services-tooltip">
+                            <div class="proton-services-tooltip-title">${this._t(
+                              "Services Monitor"
+                            )}</div>
+                            <div class="proton-services-tooltip-text">
+                                ${this._t(
+                                  "Monitor and manage system services. Click on service card to view details and control actions."
+                                )}
+                            </div>
+                            <div class="proton-services-tooltip-legend">
+                                <div class="proton-services-tooltip-legend-item">
+                                    <span class="proton-services-tooltip-legend-dot running"></span>
+                                    <span>${this._t("Running")}</span>
+                                </div>
+                                <div class="proton-services-tooltip-legend-item">
+                                    <span class="proton-services-tooltip-legend-dot stopped"></span>
+                                    <span>${this._t("Stopped")}</span>
+                                </div>
+                                <div class="proton-services-tooltip-legend-item">
+                                    <span class="proton-services-tooltip-legend-dot disabled"></span>
+                                    <span>${this._t("Disabled")}</span>
+                                </div>
+                                <div class="proton-services-tooltip-legend-item">
+                                    <span class="proton-services-tooltip-legend-dot unknown"></span>
+                                    <span>${this._t("Unknown")}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="proton-services-grid" id="proton-services-grid"></div>
                 <div class="proton-services-log" id="proton-services-log" aria-live="polite" style="${

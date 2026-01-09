@@ -170,8 +170,35 @@
 		for (var i = 0; i < imgs.length; i++) remapIcon(imgs[i]);
 	}
 
+	// Проставляем data-freq для WiFi-сетей на основе родительского radio
+	// Работает с любыми section-id: wifinet*, default_radio*, custom_name, и т.д.
+	function propagateDataFreq() {
+		var table = document.querySelector('#cbi-wireless table.cbi-section-table');
+		if (!table) return;
+
+		var rows = table.querySelectorAll('tr[data-section-id]');
+		var currentFreq = null;
+
+		for (var i = 0; i < rows.length; i++) {
+			var row = rows[i];
+			var sectionId = row.getAttribute('data-section-id') || '';
+
+			// Если это radio-устройство (radio0, radio1, ...) — запоминаем его частоту
+			if (/^radio\d+$/.test(sectionId)) {
+				currentFreq = row.getAttribute('data-freq');
+				continue;
+			}
+
+			// Всё остальное — WiFi-сети. Если нет data-freq, проставляем от родительского radio
+			if (!row.hasAttribute('data-freq') && currentFreq) {
+				row.setAttribute('data-freq', currentFreq);
+			}
+		}
+	}
+
 	function start() {
 		scan(document.documentElement);
+		propagateDataFreq();
 
 		var mo = new MutationObserver(function(mutations) {
 			for (var i = 0; i < mutations.length; i++) {
@@ -186,6 +213,8 @@
 					}
 				}
 			}
+			// Всегда проверяем data-freq после любых изменений в DOM
+			propagateDataFreq();
 		});
 
 		mo.observe(document.documentElement, {

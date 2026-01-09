@@ -48,7 +48,12 @@ window.ProtonTranslations = {
     Stopped: "Остановлен",
     Error: "Ошибка",
     Unknown: "Неизвестно",
+    Disabled: "Отключён",
     "Checking...": "Проверка...",
+
+    // Tooltips
+    "Monitor and manage system services. Click on service card to view details and control actions.":
+      "Мониторинг и управление системными сервисами. Нажмите на карточку сервиса для просмотра деталей и управления.",
 
     // Actions
     Start: "Запустить",

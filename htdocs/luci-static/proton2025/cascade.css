@@ -346,7 +346,7 @@ a:active {
 }
 
 #indicators>*:hover {
-    background: rgba(94, 158, 255, 0.25);
+    background: var(--proton-accent-glow);
 }
 
 :root[data-theme="light"] #indicators>*:hover {
@@ -1705,12 +1705,12 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 }
 
 #cbi-wireless tr[data-section-id^="radio"] .cbi-section-actions .cbi-button {
-    font-size: 0.8rem;
-    padding: 6px 12px;
+    /* font-size: 0.8rem; */
+    /* padding: 6px 12px; */
 }
 
-/* WiFi сети - вложенные карточки */
-#cbi-wireless tr[data-section-id^="wifinet"] {
+/* WiFi сети - вложенные карточки (любой section-id кроме radio*) */
+#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) {
     display: flex;
     flex-wrap: nowrap;
     align-items: flex-start;
@@ -1724,60 +1724,60 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 }
 
 /* Последняя сеть в группе - закругляем низ */
-#cbi-wireless tr[data-section-id^="wifinet"]:has(+ tr[data-section-id^="radio"]),
-#cbi-wireless tr[data-section-id^="wifinet"]:last-child {
+#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]):has(+ tr[data-section-id^="radio"]),
+#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]):last-child {
     border-radius: 0 0 var(--proton-radius) var(--proton-radius);
     margin-bottom: 0;
 }
 
-#cbi-wireless tr[data-section-id^="wifinet"]:hover {
+#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]):hover {
     background: var(--proton-bg-hover);
 }
 
-#cbi-wireless tr[data-section-id^="wifinet"] td {
+#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td {
     padding: 0;
     border: none;
     background: transparent;
 }
 
-#cbi-wireless tr[data-section-id^="wifinet"] td[data-name="_badge"] {
+#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] {
     flex: 0 0 auto;
     align-self: center;
 }
 
-#cbi-wireless tr[data-section-id^="wifinet"] td[data-name="_stat"] {
+#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_stat"] {
     flex: 1 1 auto;
     min-width: 0;
     font-size: 0.9rem;
     line-height: 1.6;
 }
 
-#cbi-wireless tr[data-section-id^="wifinet"] td[data-name="_stat"]>* {
+#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_stat"]>* {
     display: block;
 }
 
-#cbi-wireless tr[data-section-id^="wifinet"] td[data-name="_stat"] br {
+#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_stat"] br {
     display: block;
     content: "";
     margin: 0;
 }
 
-#cbi-wireless tr[data-section-id^="wifinet"] td[data-name="_stat"] strong {
+#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_stat"] strong {
     color: var(--proton-fg);
 }
 
-#cbi-wireless tr[data-section-id^="wifinet"] td.cbi-section-actions {
+#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td.cbi-section-actions {
     flex: 0 0 auto;
     align-self: center;
     margin-left: auto;
 }
 
 /* WiFi 2.4 GHz - оранжевый акцент (по data-freq атрибуту) */
-#cbi-wireless tr[data-freq="2.4"][data-section-id^="wifinet"] {
+#cbi-wireless tr[data-freq="2.4"][data-section-id]:not([data-section-id^="radio"]) {
     border-left: 4px solid #ff9800;
 }
 
-#cbi-wireless tr[data-freq="2.4"][data-section-id^="wifinet"] td[data-name="_badge"] .ifacebadge {
+#cbi-wireless tr[data-freq="2.4"][data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge {
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -1787,7 +1787,7 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     padding: 8px 12px;
 }
 
-#cbi-wireless tr[data-freq="2.4"][data-section-id^="wifinet"] td[data-name="_badge"] .ifacebadge::after {
+#cbi-wireless tr[data-freq="2.4"][data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge::after {
     content: "2.4 GHz";
     padding: 4px 10px;
     border-radius: 10px;
@@ -1799,11 +1799,11 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 }
 
 /* WiFi 5 GHz - голубой акцент (по data-freq атрибуту) */
-#cbi-wireless tr[data-freq="5"][data-section-id^="wifinet"] {
+#cbi-wireless tr[data-freq="5"][data-section-id]:not([data-section-id^="radio"]) {
     border-left: 4px solid #00bcd4;
 }
 
-#cbi-wireless tr[data-freq="5"][data-section-id^="wifinet"] td[data-name="_badge"] .ifacebadge {
+#cbi-wireless tr[data-freq="5"][data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge {
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -1813,7 +1813,7 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     padding: 8px 12px;
 }
 
-#cbi-wireless tr[data-freq="5"][data-section-id^="wifinet"] td[data-name="_badge"] .ifacebadge::after {
+#cbi-wireless tr[data-freq="5"][data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge::after {
     content: "5 GHz";
     padding: 4px 10px;
     border-radius: 10px;
@@ -1825,11 +1825,11 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 }
 
 /* WiFi 6 GHz - фиолетовый акцент (по data-freq атрибуту) */
-#cbi-wireless tr[data-freq="6"][data-section-id^="wifinet"] {
+#cbi-wireless tr[data-freq="6"][data-section-id]:not([data-section-id^="radio"]) {
     border-left: 4px solid #a78bfa;
 }
 
-#cbi-wireless tr[data-freq="6"][data-section-id^="wifinet"] td[data-name="_badge"] .ifacebadge {
+#cbi-wireless tr[data-freq="6"][data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge {
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -1839,7 +1839,7 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     padding: 8px 12px;
 }
 
-#cbi-wireless tr[data-freq="6"][data-section-id^="wifinet"] td[data-name="_badge"] .ifacebadge::after {
+#cbi-wireless tr[data-freq="6"][data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge::after {
     content: "6 GHz";
     padding: 4px 10px;
     border-radius: 10px;
@@ -1977,7 +1977,7 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 }
 
 #cbi-wireless .cbi-section-actions .actions-dropdown .cbi-button-action:hover {
-    background: rgba(94, 158, 255, 0.15) !important;
+    background: var(--proton-accent-glow) !important;
     color: var(--proton-accent) !important;
 }
 
@@ -2410,11 +2410,23 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     display: inline-flex !important;
     position: relative;
     cursor: pointer;
-    min-width: 200px;
+    min-width: 400px;
     padding: 0 !important;
     background: var(--proton-bg-tertiary);
     border: 1px solid var(--proton-border);
     border-radius: var(--proton-radius-sm);
+}
+
+/* Page actions: "Save & Apply" тоже сделан как .cbi-dropdown, но должен оставаться компактной кнопкой */
+.cbi-page-actions .cbi-dropdown.btn,
+.cbi-page-actions .cbi-dropdown.cbi-button {
+    min-width: 0 !important;
+    width: auto !important;
+}
+
+.cbi-page-actions .cbi-dropdown.btn>ul,
+.cbi-page-actions .cbi-dropdown.cbi-button>ul {
+    width: auto;
 }
 
 :root[data-theme="light"] .cbi-dropdown {
@@ -2472,14 +2484,13 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 .cbi-dropdown[open]>ul.dropdown {
     display: block;
     position: absolute;
-    top: 100%;
     left: 0;
     right: 0;
     background: #1e2530 !important;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: var(--proton-radius-sm);
     box-shadow: var(--proton-shadow);
-    z-index: 10000;
+    z-index: 10001;
     max-height: 300px;
     overflow-y: auto;
     min-width: 100%;
@@ -2592,7 +2603,7 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 
 .alert-message.info {
     background: var(--proton-accent-glow);
-    border: 1px solid rgba(94, 158, 255, 0.3);
+    border: 1px solid var(--proton-accent-glow);
     color: var(--proton-accent);
 }
 
@@ -2695,6 +2706,18 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     padding: 12px;
 }
 
+/* Port Status Grid (Status → Overview): центрируем иконку в ifacebox-body и убираем смещение baseline */
+body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox .ifacebox-body,
+body[data-page=""] .cbi-section>div>div[style*="display:grid"]>.ifacebox .ifacebox-body {
+    text-align: center;
+}
+
+body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox .ifacebox-body img,
+body[data-page=""] .cbi-section>div>div[style*="display:grid"]>.ifacebox .ifacebox-body img {
+    display: block;
+    margin: 0 auto 6px;
+}
+
 .network-status-table {
     display: flex;
     flex-wrap: wrap;
@@ -2759,10 +2782,99 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     background: rgba(0, 0, 0, 0.4);
 }
 
+body.modal-overlay-active {
+    overflow: hidden;
+}
+
 body.modal-overlay-active #modal_overlay {
     display: flex;
     opacity: 1;
     visibility: visible;
+}
+
+/* Network -> Bridge VLAN filtering: держим широкую таблицу внутри модалки */
+#modal_overlay #cbi-network-bridge-vlan {
+    width: 100%;
+    flex: 1 1 100%;
+    max-width: 100%;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
+
+    /* Это tblsection внутри модалки; убираем «карточку внутри карточки» */
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0 !important;
+    margin: 0;
+}
+
+/* В CBI.ContainerValue нет label, поэтому единственный дочерний блок должен растягиваться во всю ширину flex-строки */
+#modal_overlay .cbi-value[data-name="bridge-vlan"] {
+    width: 100%;
+}
+
+#modal_overlay .cbi-value[data-name="bridge-vlan"]>div {
+    flex: 1 1 100%;
+    min-width: 0;
+}
+
+/* Увеличиваем модалку для VLAN-таблицы (много колонок с dropdown) */
+#modal_overlay>.modal:has(#cbi-network-bridge-vlan) {
+    max-width: 1300px;
+}
+
+#modal_overlay #cbi-network-bridge-vlan table.cbi-section-table {
+    width: 100%;
+    max-width: none;
+    table-layout: auto;
+    /* Браузер сам распределит ширину под контент */
+}
+
+/* VLAN ID — узкая колонка */
+#modal_overlay #cbi-network-bridge-vlan table.cbi-section-table th[data-name="vlan"],
+#modal_overlay #cbi-network-bridge-vlan table.cbi-section-table td[data-name="vlan"] {
+    width: 80px;
+    min-width: 80px;
+}
+
+/* Local (чекбокс) — узкая */
+#modal_overlay #cbi-network-bridge-vlan table.cbi-section-table th[data-name="local"],
+#modal_overlay #cbi-network-bridge-vlan table.cbi-section-table td[data-name="local"] {
+    width: 90px;
+    min-width: 90px;
+}
+
+/* Колонки с портами (dropdown меню) — достаточная ширина */
+#modal_overlay #cbi-network-bridge-vlan table.cbi-section-table th[data-name^="port_"],
+#modal_overlay #cbi-network-bridge-vlan table.cbi-section-table td[data-name^="port_"] {
+    min-width: 140px;
+    width: auto;
+}
+
+/* Bridge VLAN: dropdown внутри ячеек не должен быть «узким» (у LuCI бывает inline style="min-width:4em") */
+#modal_overlay #cbi-network-bridge-vlan table.cbi-section-table td[data-name^="port_"]>div {
+    display: block;
+    width: 100%;
+}
+
+#modal_overlay #cbi-network-bridge-vlan table.cbi-section-table td[data-name^="port_"] .cbi-dropdown {
+    width: 100% !important;
+    min-width: 140px !important;
+}
+
+#modal_overlay #cbi-network-bridge-vlan table.cbi-section-table td[data-name^="port_"] .cbi-dropdown[open]>ul.dropdown {
+    left: 0;
+    right: auto;
+    min-width: 240px !important;
+    width: max-content;
+    max-width: calc(100vw - 120px);
+}
+
+/* Actions — узкая */
+#modal_overlay #cbi-network-bridge-vlan table.cbi-section-table .cbi-section-actions {
+    width: 90px;
+    min-width: 90px;
 }
 
 #modal_overlay>.modal {
@@ -2774,8 +2886,7 @@ body.modal-overlay-active #modal_overlay {
     max-width: 800px;
     max-height: none;
     margin: auto 0;
-    overflow-y: visible;
-    overflow-x: hidden;
+    overflow: visible;
     padding: 28px;
     flex-shrink: 0;
 }
@@ -2798,6 +2909,24 @@ body.modal-overlay-active #modal_overlay {
     box-shadow: none;
     padding: 0;
     margin: 0;
+}
+
+/* Разрешить выпадающим меню выходить за границы контейнеров в модальном окне */
+#modal_overlay>.modal,
+#modal_overlay>.modal .cbi-map,
+#modal_overlay>.modal .cbi-section,
+#modal_overlay>.modal .cbi-section-node,
+#modal_overlay>.modal .cbi-section-node-tabbed,
+#modal_overlay>.modal [data-tab],
+#modal_overlay>.modal .cbi-value,
+#modal_overlay>.modal .cbi-value-field,
+#modal_overlay>.modal .cbi-value-field>div {
+    overflow: visible !important;
+}
+
+/* Дополнительно увеличиваем z-index для выпадающих меню в модальном окне */
+#modal_overlay .cbi-dropdown[open]>ul.dropdown {
+    z-index: 10002 !important;
 }
 
 .modal>h4:first-child {
@@ -3292,6 +3421,8 @@ body.modal-overlay-active #modal_overlay {
     select,
     .cbi-dropdown {
         max-width: 100%;
+        width: 100%;
+        min-width: 0 !important;
         font-size: 16px;
         /* Prevent zoom on iOS */
     }
@@ -3335,6 +3466,28 @@ body.modal-overlay-active #modal_overlay {
         width: 100%;
     }
 
+    /* На мобиле кнопки действий должны быть во всю ширину (в т.ч. Save & Apply dropdown-кнопка) */
+    .cbi-page-actions .cbi-dropdown.btn,
+    .cbi-page-actions .cbi-dropdown.cbi-button {
+        width: 100% !important;
+    }
+
+    /* Save & Apply: фиксируем правую «кнопку-стрелку», чтобы не выглядела растянутой */
+    .cbi-page-actions .cbi-dropdown.btn>ul,
+    .cbi-page-actions .cbi-dropdown.cbi-button>ul {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+    }
+
+    .cbi-page-actions .cbi-dropdown.btn>.open,
+    .cbi-page-actions .cbi-dropdown.cbi-button>.open {
+        flex: 0 0 44px;
+        width: 44px;
+        padding: 0;
+        justify-content: center;
+    }
+
     /* Hide on mobile */
     .hide-xs {
         display: none !important;
@@ -3361,9 +3514,23 @@ body.modal-overlay-active #modal_overlay {
         flex-shrink: 0;
     }
 
+    /* Выпадающие меню внутри модального окна */
+    #modal_overlay>.modal .cbi-dropdown[open]>ul.dropdown {
+        /* LuCI может выставлять inline left/right (иногда отрицательные) для "вписывания" в viewport.
+           В модальном окне на мобиле это даёт заметный горизонтальный сдвиг, поэтому фиксируем по ширине поля. */
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 10002;
+    }
+
     #modal_overlay>.modal:has(.cbi-section),
     #modal_overlay>.modal:has(.cbi-value) {
         max-width: calc(100vw - 20px);
+    }
+
+    /* Bridge VLAN modal: desktop max-width не должен перебивать мобильный размер */
+    #modal_overlay>.modal:has(#cbi-network-bridge-vlan) {
+        max-width: calc(100vw - 32px) !important;
     }
 
     /* Контент внутри модального окна */
@@ -3502,16 +3669,16 @@ body.modal-overlay-active #modal_overlay {
         word-break: break-word;
     }
 
-    /* Убираем стили wifinet внутри модальных окон */
-    #modal_overlay [id^="cbi-wireless-wifinet"] {
+    /* Убираем стили WiFi-сетей внутри модальных окон (любой section-id кроме radio) */
+    #modal_overlay #cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) {
         border-left: none !important;
     }
 
-    #modal_overlay [id^="cbi-wireless-wifinet"] td[data-name="_badge"] {
+    #modal_overlay #cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] {
         background: none !important;
     }
 
-    #modal_overlay [id^="cbi-wireless-wifinet"] td[data-name="_badge"] .ifacebadge::after {
+    #modal_overlay #cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge::after {
         content: none !important;
     }
 
@@ -5296,7 +5463,7 @@ body.modal-overlay-active #modal_overlay {
 }
 
 #cbi-firewall-rule table.cbi-section-table tr.cbi-section-table-row:hover {
-    background: rgba(94, 158, 255, 0.05);
+    background: var(--proton-accent-glow);
 }
 
 #cbi-firewall-rule table.cbi-section-table tr.cbi-section-table-row:nth-child(even) {
@@ -5304,7 +5471,7 @@ body.modal-overlay-active #modal_overlay {
 }
 
 #cbi-firewall-rule table.cbi-section-table tr.cbi-section-table-row:nth-child(even):hover {
-    background: rgba(94, 158, 255, 0.05);
+    background: var(--proton-accent-glow);
 }
 
 /* Table Cells */
@@ -6473,7 +6640,7 @@ body[data-page=""] .cbi-section:first-of-type table.table tr {
 
 body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table tr:hover,
 body[data-page=""] .cbi-section:first-of-type table.table tr:hover {
-    background: rgba(94, 158, 255, 0.08);
+    background: var(--proton-accent-glow);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -6501,8 +6668,8 @@ body[data-page=""] .cbi-section:first-of-type table.table td:first-child::after 
     width: 2px;
     background: linear-gradient(to bottom,
             transparent,
-            rgba(94, 158, 255, 0.3) 30%,
-            rgba(94, 158, 255, 0.3) 70%,
+            var(--proton-accent-glow) 30%,
+            var(--proton-accent-glow) 70%,
             transparent);
     border-radius: 1px;
 }
@@ -6528,7 +6695,7 @@ body[data-page=""] .cbi-section:first-of-type table.table tr:nth-child(even) {
 
 body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table tr:nth-child(even):hover,
 body[data-page=""] .cbi-section:first-of-type table.table tr:nth-child(even):hover {
-    background: rgba(94, 158, 255, 0.08);
+    background: var(--proton-accent-glow);
 }
 
 /* Убираем нижние границы между строками */
@@ -6544,12 +6711,12 @@ body[data-page=""] .cbi-section:first-of-type table.table td {
 /* Контейнер для Load Average */
 body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table tr:has(td:first-child:is([data-title*="Load"], [data-title*="load"], td:contains("Load Average"), td:contains("Нагрузка"))),
 body[data-page=""] .cbi-section:first-of-type table.table tr:has(td:first-child:is([data-title*="Load"], [data-title*="load"])) {
-    background: rgba(94, 158, 255, 0.04);
+    background: var(--proton-accent-glow);
 }
 
 body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table tr:has(td:first-child:is([data-title*="Load"], [data-title*="load"])):hover,
 body[data-page=""] .cbi-section:first-of-type table.table tr:has(td:first-child:is([data-title*="Load"], [data-title*="load"])):hover {
-    background: rgba(94, 158, 255, 0.1);
+    background: var(--proton-accent-glow);
 }
 
 /* Load Average значения */
@@ -6569,7 +6736,7 @@ body[data-page=""] .cbi-section:first-of-type table.table tr:has(td:first-child:
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: rgba(94, 158, 255, 0.15);
+    background: var(--proton-accent-glow);
     color: var(--proton-accent);
     font-size: 12px;
     font-weight: 600;
@@ -6579,7 +6746,7 @@ body[data-page=""] .cbi-section:first-of-type table.table tr:has(td:first-child:
 }
 
 .proton-load-info:hover {
-    background: rgba(94, 158, 255, 0.3);
+    background: var(--proton-accent-glow);
     transform: scale(1.1);
 }
 
@@ -7122,8 +7289,8 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     border: 1px solid var(--proton-border);
     border-radius: var(--proton-radius);
     padding: 14px 16px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /*backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);*/
 }
 
 /* Если виджеты в контейнере - объединяем их в единый блок */
@@ -7145,6 +7312,17 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     border-bottom-right-radius: 0;
     border-bottom: none;
     margin-bottom: 0;
+}
+
+/* Widgets stacking: allow Services tooltip to overlay Temperature widget (backdrop-filter creates stacking contexts) */
+.proton-widgets-container .proton-services-widget {
+    position: relative;
+    z-index: 2;
+}
+
+.proton-widgets-container .proton-temp-widget {
+    position: relative;
+    z-index: 1;
 }
 
 .proton-temp-header {
@@ -7171,7 +7349,7 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: rgba(94, 158, 255, 0.15);
+    background: var(--proton-accent-glow);
     color: var(--proton-accent);
     font-size: 12px;
     font-weight: 600;
@@ -7225,7 +7403,7 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
 }
 
 :root[data-theme="light"] .proton-temp-widget {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    /*box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);*/
 }
 
 :root[data-theme="light"] .proton-temp-card {
@@ -7243,7 +7421,7 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
 
 /* Light theme for Services Widget */
 :root[data-theme="light"] .proton-services-widget {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    /*box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);*/
 }
 
 :root[data-theme="light"] .proton-service-card {
@@ -7303,6 +7481,120 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
 
 .proton-temp-tooltip-legend-dot.critical {
     background: var(--proton-danger);
+}
+
+/* =====================================================
+   Services Monitor Info Tooltip
+   ===================================================== */
+.proton-services-info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--proton-accent-glow);
+    color: var(--proton-accent);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: help;
+    transition: var(--proton-transition);
+    position: relative;
+}
+
+.proton-services-tooltip {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    background: rgba(26, 31, 46, 0.98);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    padding: 12px 16px;
+    min-width: 280px;
+    max-width: 340px;
+    box-shadow: var(--proton-shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 1000;
+    backdrop-filter: blur(12px);
+    text-align: left;
+}
+
+:root[data-theme="light"] .proton-services-tooltip {
+    background: rgba(255, 255, 255, 0.98);
+}
+
+.proton-services-info:hover .proton-services-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.proton-services-tooltip::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    right: 12px;
+    border: 6px solid transparent;
+    border-bottom-color: rgba(26, 31, 46, 0.98);
+}
+
+:root[data-theme="light"] .proton-services-tooltip::after {
+    border-bottom-color: rgba(255, 255, 255, 0.98);
+}
+
+.proton-services-tooltip-title {
+    font-weight: 600;
+    color: var(--proton-accent);
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.proton-services-tooltip-text {
+    color: var(--proton-fg-secondary);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.proton-services-tooltip-legend {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--proton-border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.8rem;
+}
+
+.proton-services-tooltip-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.proton-services-tooltip-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.proton-services-tooltip-legend-dot.running {
+    background: var(--proton-success);
+}
+
+.proton-services-tooltip-legend-dot.stopped {
+    background: var(--proton-danger);
+}
+
+.proton-services-tooltip-legend-dot.disabled {
+    background: var(--proton-muted);
+}
+
+.proton-services-tooltip-legend-dot.unknown {
+    background: #ffc107;
 }
 
 .proton-temp-grid {
@@ -7544,7 +7836,9 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
 @media only screen and (max-width: 600px) {
     .proton-widgets-container {
         margin: 16px 0;
-        overflow: hidden;
+        /* Keep layout from horizontal scrolling, but allow tooltips to extend vertically */
+        overflow-x: hidden;
+        overflow-y: visible;
         max-width: 100%;
     }
 
@@ -7552,8 +7846,20 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     .proton-services-widget {
         padding: 16px;
         border-radius: var(--proton-radius-sm);
-        overflow: hidden;
+        /* Allow info tooltips to extend outside the widget */
+        overflow: visible;
         max-width: 100%;
+    }
+
+    /* Widgets stacking on mobile: Services tooltip should overlay Temperature widget */
+    .proton-widgets-container .proton-services-widget {
+        position: relative;
+        z-index: 2;
+    }
+
+    .proton-widgets-container .proton-temp-widget {
+        position: relative;
+        z-index: 1;
     }
 
     .proton-temp-grid,
@@ -7564,16 +7870,11 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
 
     .proton-temp-card,
     .proton-service-card {
-        padding: 14px;
+        padding: 10px;
         overflow: hidden;
     }
 
     .proton-temp-value {
-        font-size: 20px;
-    }
-
-    .proton-temp-title,
-    .proton-services-title {
         font-size: 16px;
     }
 
@@ -7598,11 +7899,25 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
         right: -8px;
     }
 
+    .proton-services-tooltip {
+        min-width: 200px;
+        max-width: calc(100vw - 48px);
+        right: -8px;
+    }
+
     .proton-temp-info {
         position: static;
     }
 
+    .proton-services-info {
+        position: static;
+    }
+
     .proton-temp-header {
+        position: relative;
+    }
+
+    .proton-services-header {
         position: relative;
     }
 }
@@ -7644,8 +7959,9 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
 
 .proton-widgets-section-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
+    gap: 12px;
     margin-bottom: 16px;
 }
 
@@ -7671,9 +7987,10 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     justify-content: center;
     width: 24px;
     height: 24px;
-    border-radius: 50%;
-    background: rgba(94, 158, 255, 0.15);
+    border-radius: var(--proton-radius);
+    background: var(--proton-accent-glow);
     color: var(--proton-accent);
+    opacity: 0.6;
     font-size: 16px;
     font-weight: 500;
     border: none;
@@ -7683,8 +8000,14 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     padding: 0;
 }
 
+.proton-widgets-settings-btn .proton-widgets-settings-icon {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
 .proton-widgets-settings-btn:hover {
-    background: rgba(94, 158, 255, 0.3);
+    background: var(--proton-accent-glow);
     transform: scale(1.1);
 }
 
@@ -7697,8 +8020,8 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     border: 1px solid var(--proton-border);
     border-radius: var(--proton-radius);
     padding: 14px 16px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /*backdrop-filter: blur(10px);*/
+    /*box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);*/
 }
 
 .proton-services-header {
@@ -7725,7 +8048,7 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: rgba(94, 158, 255, 0.15);
+    background: var(--proton-accent-glow);
     color: var(--proton-accent);
     font-size: 14px;
     font-weight: 600;
@@ -7737,7 +8060,7 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
 }
 
 .proton-add-service-btn:hover {
-    background: rgba(94, 158, 255, 0.3);
+    background: var(--proton-accent-glow);
     transform: scale(1.1);
 }
 
@@ -8402,4 +8725,207 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     .proton-widget-toggle input[type="checkbox"]:checked+.proton-widget-toggle-slider::after {
         transform: translateX(18px);
     }
+}
+
+/* =====================================================
+   Login Page (sysauth) Styles
+   ===================================================== */
+body.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: var(--proton-bg-solid);
+    transition: background 0.3s ease;
+    scroll-padding-bottom: 40vh;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 420px;
+    animation: fadeInUp 0.6s ease-out;
+    margin: auto;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-card {
+    background: var(--proton-bg-secondary);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-lg);
+    padding: 40px 36px;
+    box-shadow: var(--proton-shadow-lg);
+    transition: all 0.3s ease;
+}
+
+:root[data-theme="light"] .login-card {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: var(--proton-shadow-lg);
+}
+
+.login-header {
+    text-align: center;
+}
+
+.login-header .login-logo {
+    height: 56px;
+    width: auto;
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+.login-header img {
+    height: 56px;
+    margin-bottom: 20px;
+    transition: filter 0.3s ease;
+}
+
+:root[data-theme="light"] .login-header img {
+    filter: brightness(0.25);
+}
+
+.login-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: var(--proton-fg);
+    letter-spacing: -0.02em;
+}
+
+.login-header .hostname {
+    color: var(--proton-accent);
+    font-weight: 600;
+}
+
+.login-header p {
+    color: var(--proton-muted);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.login-form .form-group {
+    margin-bottom: 24px;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--proton-fg-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+.login-form input {
+    width: 100%;
+    max-width: 100%;
+    padding: 13px 16px;
+    font-size: 0.95rem;
+    background: var(--proton-bg-tertiary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    color: var(--proton-fg);
+    transition: var(--proton-transition);
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: var(--proton-accent);
+    background: var(--proton-bg-secondary);
+    box-shadow: 0 0 0 3px var(--proton-accent-glow);
+}
+
+.login-form button {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    background: var(--proton-accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--proton-radius-sm);
+    cursor: pointer;
+    transition: var(--proton-transition);
+    margin-top: 8px;
+}
+
+.login-form button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(74, 143, 231, 0.4);
+}
+
+:root[data-theme="light"] .login-form button:hover {
+    box-shadow: 0 8px 20px rgba(74, 143, 231, 0.3);
+}
+
+.login-form button:active {
+    transform: translateY(0);
+}
+
+.login-error {
+    background: rgba(248, 113, 113, 0.12);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-left: 3px solid var(--proton-danger);
+    color: var(--proton-danger);
+    padding: 14px 16px;
+    border-radius: var(--proton-radius-sm);
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+:root[data-theme="light"] .login-error {
+    background: rgba(220, 38, 38, 0.08);
+    border-color: rgba(220, 38, 38, 0.25);
+    border-left-color: #dc2626;
+    color: #991b1b;
+}
+
+/* =====================================================
+   Realtime Graphs (Load, Bandwidth, etc) - SVG Chart Styling
+   ===================================================== */
+/* Override inline background color for dark theme */
+body[data-page="admin-status-realtime-load"] .cbi-section>div[style*="background:#fff"],
+body[data-page="admin-status-realtime-bandwidth"] .cbi-section>div[style*="background:#fff"],
+body[data-page="admin-status-realtime-wireless"] .cbi-section>div[style*="background:#fff"],
+body[data-page="admin-status-realtime-connections"] .cbi-section>div[style*="background:#fff"] {
+    background: var(--proton-bg-secondary) !important;
+}
+
+/* Light theme */
+:root[data-theme="light"] body[data-page="admin-status-realtime-load"] .cbi-section>div[style*="background:#fff"],
+:root[data-theme="light"] body[data-page="admin-status-realtime-bandwidth"] .cbi-section>div[style*="background:#fff"],
+:root[data-theme="light"] body[data-page="admin-status-realtime-wireless"] .cbi-section>div[style*="background:#fff"],
+:root[data-theme="light"] body[data-page="admin-status-realtime-connections"] .cbi-section>div[style*="background:#fff"] {
+    background: #ffffff !important;
+}
+
+/* SVG grid lines and labels color adaptation */
+body[data-page^="admin-status-realtime"] .cbi-section svg line {
+    stroke: var(--proton-border) !important;
+}
+
+body[data-page^="admin-status-realtime"] .cbi-section svg text {
+    fill: var(--proton-fg-secondary) !important;
+}
+
+:root[data-theme="light"] body[data-page^="admin-status-realtime"] .cbi-section svg line {
+    stroke: rgba(0, 0, 0, 0.15) !important;
+}
+
+:root[data-theme="light"] body[data-page^="admin-status-realtime"] .cbi-section svg text {
+    fill: #4a5568 !important;
 }

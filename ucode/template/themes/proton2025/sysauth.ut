@@ -14,10 +14,46 @@
 <head>
 <meta charset="utf-8" />
 <script>
-// Apply theme mode from localStorage
+// Apply all theme settings from localStorage (same as header.ut)
 (function() {
+	// Theme mode (dark/light)
 	var themeMode = localStorage.getItem('proton-theme-mode') || 'dark';
-	document.documentElement.setAttribute('data-theme', themeMode);
+	if (themeMode === 'light') {
+		document.documentElement.setAttribute('data-theme', 'light');
+	}
+	
+	// Zoom
+	var defaultZoom = '100';
+	var z = localStorage.getItem('proton-zoom') || defaultZoom;
+	document.documentElement.style.zoom = z / 100;
+	
+	// Transparency
+	var t = localStorage.getItem('proton-transparency');
+	if (t !== 'false') document.documentElement.classList.add('proton-transparency');
+	
+	// Border radius
+	var r = localStorage.getItem('proton-border-radius');
+	if (r === 'sharp') document.documentElement.classList.add('proton-radius-sharp');
+	else if (r === 'extra') document.documentElement.classList.add('proton-radius-extra');
+	
+	// Accent color
+	var a = localStorage.getItem('proton-accent-color') || 'blue';
+	var c = {
+		default: { accent: '#4b5563', hover: '#374151', glow: 'rgba(75, 85, 99, 0.22)' },
+		blue:    { accent: '#5e9eff', hover: '#7db2ff', glow: 'rgba(94, 158, 255, 0.18)' },
+		purple:  { accent: '#a78bfa', hover: '#c3b4ff', glow: 'rgba(167, 139, 250, 0.22)' },
+		green:   { accent: '#34d399', hover: '#2fb885', glow: 'rgba(52, 211, 153, 0.18)' },
+		orange:  { accent: '#fb923c', hover: '#f47c1f', glow: 'rgba(251, 146, 60, 0.20)' },
+		red:     { accent: '#f87171', hover: '#f04c4c', glow: 'rgba(248, 113, 113, 0.20)' }
+	};
+	if (c[a]) {
+		document.documentElement.style.setProperty('--proton-accent', c[a].accent);
+		document.documentElement.style.setProperty('--proton-accent-hover', c[a].hover);
+		document.documentElement.style.setProperty('--proton-accent-glow', c[a].glow);
+	}
+	
+	// Animations
+	if (localStorage.getItem('proton-animations') === 'false') document.documentElement.classList.add('proton-no-animations');
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -28,189 +64,19 @@
 <link rel="stylesheet" href="{{ media }}/cascade.css" />
 <link rel="icon" href="{{ media }}/logo.svg" sizes="any" />
 <title>{{ _('Authorization Required') }} - {{ boardinfo.hostname ?? '?' }} - LuCI</title>
-<style>
-body.login-page {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 100vh;
-	padding: 20px;
-	background: var(--proton-bg-primary);
-	transition: background 0.3s ease;
-	/* Reserve space for mobile keyboard */
-	scroll-padding-bottom: 40vh;
-}
-
-.login-container {
-	width: 100%;
-	max-width: 420px;
-	animation: fadeInUp 0.6s ease-out;
-	/* Allow scrolling on mobile when keyboard appears */
-	margin: auto;
-}
-
-@keyframes fadeInUp {
-	from {
-		opacity: 0;
-		transform: translateY(20px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
-.login-card {
-	background: var(--proton-bg-secondary);
-	backdrop-filter: blur(20px);
-	-webkit-backdrop-filter: blur(20px);
-	border: 1px solid var(--proton-border);
-	border-radius: 16px;
-	padding: 40px 36px;
-	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-	transition: all 0.3s ease;
-}
-
-:root[data-theme="light"] .login-card {
-	background: rgba(255, 255, 255, 0.95);
-	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
-}
-
-.login-header {
-	text-align: center;
-	margin-bottom: 36px;
-}
-
-.login-header img {
-	height: 56px;
-	margin-bottom: 20px;
-	transition: filter 0.3s ease;
-}
-
-:root[data-theme="light"] .login-header img {
-	filter: brightness(0.25);
-}
-
-.login-header h1 {
-	font-size: 1.5rem;
-	font-weight: 600;
-	margin: 0 0 8px;
-	color: var(--proton-fg);
-	letter-spacing: -0.02em;
-}
-
-.login-header .hostname {
-	color: var(--proton-accent);
-	font-weight: 600;
-}
-
-.login-header p {
-	color: var(--proton-muted);
-	font-size: 0.9rem;
-	margin: 0;
-}
-
-:root[data-theme="light"] .login-header p {
-	color: #6b7280;
-}
-
-.login-form .form-group {
-	margin-bottom: 24px;
-}
-
-.login-form label {
-	display: block;
-	margin-bottom: 10px;
-	color: var(--proton-fg-secondary);
-	font-size: 0.875rem;
-	font-weight: 500;
-	letter-spacing: 0.01em;
-}
-
-:root[data-theme="light"] .login-form label {
-	color: #374151;
-}
-
-.login-form input {
-	width: 100%;
-	max-width: 100%;
-	padding: 13px 16px;
-	font-size: 0.95rem;
-	background: var(--proton-bg-tertiary);
-	border: 1px solid var(--proton-border);
-	border-radius: 10px;
-	color: var(--proton-fg);
-	transition: all 0.2s ease;
-}
-
-.login-form input:focus {
-	outline: none;
-	border-color: var(--proton-accent);
-	background: var(--proton-bg-secondary);
-	box-shadow: 0 0 0 3px var(--proton-accent-glow);
-}
-
-:root[data-theme="light"] .login-form input {
-	background: rgba(0, 0, 0, 0.03);
-}
-
-:root[data-theme="light"] .login-form input:focus {
-	background: #fff;
-	border-color: var(--proton-accent);
-}
-
-.login-form button {
-	width: 100%;
-	padding: 14px 20px;
-	font-size: 1rem;
-	font-weight: 600;
-	background: var(--proton-accent);
-	color: #fff;
-	border: none;
-	border-radius: 10px;
-	cursor: pointer;
-	transition: all 0.2s ease;
-	margin-top: 8px;
-}
-
-.login-form button:hover {
-	transform: translateY(-1px);
-	box-shadow: 0 8px 20px rgba(74, 143, 231, 0.4);
-}
-
-:root[data-theme="light"] .login-form button:hover {
-	box-shadow: 0 8px 20px rgba(74, 143, 231, 0.3);
-}
-
-.login-form button:active {
-	transform: translateY(0);
-}
-
-.login-error {
-	background: rgba(248, 113, 113, 0.12);
-	border: 1px solid rgba(248, 113, 113, 0.3);
-	border-left: 3px solid var(--proton-danger);
-	color: var(--proton-danger);
-	padding: 14px 16px;
-	border-radius: 10px;
-	margin-bottom: 24px;
-	font-size: 0.9rem;
-	line-height: 1.5;
-}
-
-:root[data-theme="light"] .login-error {
-	background: rgba(220, 38, 38, 0.08);
-	border-color: rgba(220, 38, 38, 0.25);
-	border-left-color: #dc2626;
-	color: #991b1b;
-}
-</style>
 </head>
 <body class="login-page lang_{{ dispatcher.lang }}" data-lang="{{ dispatcher.lang }}">
 <div class="login-container">
 	<div class="login-card">
 		<div class="login-header">
-			<img src="{{ media }}/logo.svg" alt="Proton2025" />
+			<svg class="login-logo" viewBox="0 0 200 60" aria-label="Proton2025">
+				<circle cx="25" cy="30" r="18" fill="var(--proton-accent)" opacity="0.2"/>
+				<circle cx="25" cy="30" r="12" fill="var(--proton-accent)" opacity="0.4"/>
+				<circle cx="25" cy="30" r="6" fill="var(--proton-accent)"/>
+				<ellipse cx="25" cy="30" rx="22" ry="8" fill="none" stroke="var(--proton-accent)" stroke-width="1.5" opacity="0.6" transform="rotate(-20 25 30)"/>
+				<ellipse cx="25" cy="30" rx="22" ry="8" fill="none" stroke="var(--proton-accent)" stroke-width="1.5" opacity="0.4" transform="rotate(40 25 30)"/>
+				<text x="55" y="38" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="600" fill="var(--proton-fg)">Proton<tspan fill="var(--proton-accent)">2025</tspan></text>
+			</svg>
 		</div>
 
 		{% if (fuser): %}
