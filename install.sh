@@ -155,6 +155,10 @@ install_theme() {
             cp -f "$EXTRACT_DIR/root/usr/share/rpcd/ucode/luci.proton-temp" /usr/share/rpcd/ucode/
             ok "Installed temperature RPC module"
         fi
+        if [ -f "$EXTRACT_DIR/root/usr/share/rpcd/ucode/luci.proton-settings" ]; then
+            cp -f "$EXTRACT_DIR/root/usr/share/rpcd/ucode/luci.proton-settings" /usr/share/rpcd/ucode/
+            ok "Installed settings RPC module"
+        fi
         if [ -f "$EXTRACT_DIR/root/usr/share/rpcd/acl.d/luci-theme-proton2025.json" ]; then
             cp -f "$EXTRACT_DIR/root/usr/share/rpcd/acl.d/luci-theme-proton2025.json" /usr/share/rpcd/acl.d/
             ok "Installed ACL configuration"

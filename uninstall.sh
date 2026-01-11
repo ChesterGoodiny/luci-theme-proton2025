@@ -73,8 +73,14 @@ ok "Removed uci-defaults"
 
 # Remove RPC module and ACL
 rm -f "/usr/share/rpcd/ucode/luci.proton-temp"
+rm -f "/usr/share/rpcd/ucode/luci.proton-settings"
 rm -f "/usr/share/rpcd/acl.d/luci-theme-proton2025.json"
-ok "Removed RPC module"
+ok "Removed RPC modules"
+
+# Remove config (optional - keep user settings)
+# Uncomment to remove settings on uninstall:
+# rm -f "/etc/config/proton2025"
+# ok "Removed config"
 
 # Clear cache
 info "Clearing cache..."

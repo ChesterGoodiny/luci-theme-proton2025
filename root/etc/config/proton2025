@@ -1,0 +1,14 @@
+# Proton2025 Theme Configuration
+# This file stores theme settings that sync across browsers
+
+config theme 'settings'
+	option mode 'dark'
+	option accent 'blue'
+	option zoom '100'
+	option transparency '1'
+	option border_radius 'default'
+	option animations '1'
+	option services_widget '1'
+	option temp_widget '1'
+	option services_log '0'
+	option table_wrap '1'

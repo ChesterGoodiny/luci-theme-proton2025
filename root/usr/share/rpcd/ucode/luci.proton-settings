@@ -1,0 +1,181 @@
+// Proton2025 Theme - Settings RPC Module
+// Manages theme settings stored in UCI /etc/config/proton2025
+
+'use strict';
+
+import { cursor } from 'uci';
+
+const CONFIG_NAME = 'proton2025';
+const SECTION_NAME = 'settings';
+
+// Valid options and their defaults
+const VALID_OPTIONS = {
+	mode: { default: 'dark', values: ['dark', 'light'] },
+	accent: { default: 'blue', values: ['default', 'blue', 'purple', 'green', 'orange', 'red'] },
+	zoom: { default: '100', min: 50, max: 150 },
+	transparency: { default: '1', values: ['0', '1'] },
+	border_radius: { default: 'default', values: ['default', 'sharp', 'extra'] },
+	animations: { default: '1', values: ['0', '1'] },
+	services_widget: { default: '1', values: ['0', '1'] },
+	temp_widget: { default: '1', values: ['0', '1'] },
+	services_log: { default: '0', values: ['0', '1'] }
+};
+
+// Validate option value
+function validateOption(name, value) {
+	const opt = VALID_OPTIONS[name];
+	if (!opt) return false;
+	
+	if (opt.values) {
+		return index(opt.values, value) >= 0;
+	}
+	
+	if (opt.min !== null && opt.max !== null) {
+		const num = +value;
+		return num == num && num >= opt.min && num <= opt.max;
+	}
+	
+	return true;
+}
+
+// Get all settings
+function getSettings() {
+	const uci = cursor();
+	uci.load(CONFIG_NAME);
+	
+	let settings = {};
+	
+	for (let name in VALID_OPTIONS) {
+		let value = uci.get(CONFIG_NAME, SECTION_NAME, name);
+		settings[name] = value ?? VALID_OPTIONS[name].default;
+	}
+	
+	return { settings: settings };
+}
+
+// Set a single setting
+function setSetting(req) {
+	const name = req.args?.name;
+	const value = req.args?.value;
+	
+	if (!name || value == null) {
+		return { error: 'Missing name or value' };
+	}
+	
+	if (!VALID_OPTIONS[name]) {
+		return { error: 'Unknown option: ' + name };
+	}
+	
+	const strValue = '' + value;
+	
+	if (!validateOption(name, strValue)) {
+		return { error: 'Invalid value for ' + name + ': ' + strValue };
+	}
+	
+	const uci = cursor();
+	uci.load(CONFIG_NAME);
+	
+	// Ensure section exists
+	if (!uci.get(CONFIG_NAME, SECTION_NAME)) {
+		uci.set(CONFIG_NAME, SECTION_NAME, 'theme');
+	}
+	
+	uci.set(CONFIG_NAME, SECTION_NAME, name, strValue);
+	uci.commit(CONFIG_NAME);
+	
+	return { success: true, name: name, value: strValue };
+}
+
+// Set multiple settings at once
+function setSettings(req) {
+	const settings = req.args?.settings;
+	
+	if (!settings || type(settings) != 'object') {
+		return { error: 'Missing or invalid settings object' };
+	}
+	
+	const uci = cursor();
+	uci.load(CONFIG_NAME);
+	
+	// Ensure section exists
+	if (!uci.get(CONFIG_NAME, SECTION_NAME)) {
+		uci.set(CONFIG_NAME, SECTION_NAME, 'theme');
+	}
+	
+	let updated = [];
+	let errors = [];
+	
+	for (let name in settings) {
+		if (!VALID_OPTIONS[name]) {
+			push(errors, 'Unknown option: ' + name);
+			continue;
+		}
+		
+		const strValue = '' + settings[name];
+		
+		if (!validateOption(name, strValue)) {
+			push(errors, 'Invalid value for ' + name + ': ' + strValue);
+			continue;
+		}
+		
+		uci.set(CONFIG_NAME, SECTION_NAME, name, strValue);
+		push(updated, name);
+	}
+	
+	if (length(updated) > 0) {
+		uci.commit(CONFIG_NAME);
+	}
+	
+	return { 
+		success: length(errors) == 0,
+		updated: updated,
+		errors: errors
+	};
+}
+
+// Reset all settings to defaults
+function resetSettings() {
+	const uci = cursor();
+	uci.load(CONFIG_NAME);
+	
+	// Ensure section exists
+	if (!uci.get(CONFIG_NAME, SECTION_NAME)) {
+		uci.set(CONFIG_NAME, SECTION_NAME, 'theme');
+	}
+	
+	for (let name in VALID_OPTIONS) {
+		uci.set(CONFIG_NAME, SECTION_NAME, name, VALID_OPTIONS[name].default);
+	}
+	
+	uci.commit(CONFIG_NAME);
+	
+	return { success: true };
+}
+
+// RPC method definitions
+const methods = {
+	getSettings: {
+		call: function() {
+			return getSettings();
+		}
+	},
+	setSetting: {
+		args: { name: 'name', value: 'value' },
+		call: function(req) {
+			return setSetting(req);
+		}
+	},
+	setSettings: {
+		args: { settings: {} },
+		call: function(req) {
+			return setSettings(req);
+		}
+	},
+	resetSettings: {
+		call: function() {
+			return resetSettings();
+		}
+	}
+};
+
+return { 'luci.proton-settings': methods };

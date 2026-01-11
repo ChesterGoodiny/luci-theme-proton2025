@@ -1,6 +1,6 @@
 # luci-theme-proton2025
 
-An elegant dark theme for LuCI (OpenWrt 23.x+).
+An elegant LuCI theme (OpenWrt 23.x+) with a dark design and optional light mode.
 
 ![OpenWrt](https://img.shields.io/badge/OpenWrt-23.x%2B-blue)
 ![LuCI](https://img.shields.io/badge/LuCI-ucode-green)
@@ -12,6 +12,12 @@ An elegant dark theme for LuCI (OpenWrt 23.x+).
 
 <div align="center">
   <img src="docs/status.png" alt="LuCI Status" />
+</div>
+
+### Services monitoring widget
+
+<div align="center">
+  <img src="docs/widgets-dashboard.png" alt="Widgets and Monitoring Dashboard" />
 </div>
 
 ### Theme Settings
@@ -29,7 +35,8 @@ An elegant dark theme for LuCI (OpenWrt 23.x+).
 - 📊 Services monitoring widget on Status → Overview page
 - 🌡️ Temperature monitoring widget with thermal sensors
 - 📈 Elegant Load Average visualization with color-coded progress bars
-- 🌐 Localization support (i18n)
+- 🌐 Multi-language support (9 languages: EN, RU, ZH, DE, UK, ES, PT, PL, FR, IT)
+- 🔄 Settings sync across browsers/devices (localStorage + UCI)
 
 ## Widgets
 
@@ -55,25 +62,42 @@ Real-time temperature monitoring on Status → Overview:
 
 Available at **System → System → Language and Style**:
 
+- Theme mode (Dark/Light)
 - Accent color (Blue, Purple, Green, Orange, Red)
 - Border radius
 - Interface zoom
 - Animations and transparency
 - Services widget (enable/disable, grouping, log)
+- Temperature widget (enable/disable)
+- Table text wrap (for Wireless Associated Stations)
+
+### Settings Synchronization
+
+Theme settings are stored using a hybrid approach:
+
+- **localStorage** — instant application without flickering
+- **UCI** (`/etc/config/proton2025`) — persistent storage, syncs across browsers/devices
+
+Benefits:
+
+- Settings are included in router backup (`sysupgrade -b`)
+- Works across different browsers and devices
+- Instant UI updates without page reload
 
 ## Installation
 
 ### Recommended: Install from IPK Package
 
-Download the latest release for your architecture:
+Download the latest release (`*_all.ipk` is universal and works on any architecture):
 
 ```bash
-# For MediaTek Filogic (aarch64_cortex-a53)
 wget https://github.com/ChesterGoodiny/luci-theme-proton2025/releases/latest/download/luci-theme-proton2025_*_all.ipk
 opkg install luci-theme-proton2025_*_all.ipk
 ```
 
 Or download from [GitHub Releases](https://github.com/ChesterGoodiny/luci-theme-proton2025/releases) manually.
+
+If you updated and don’t see changes (e.g. icons), do a hard refresh (Ctrl+F5) or clear the browser cache.
 
 **Benefits:**
 
@@ -130,16 +154,21 @@ luci-theme-proton2025/
 │   ├── proton2025/
 │   │   ├── cascade.css
 │   │   ├── services-widget.js
+│   │   ├── settings-sync.js
 │   │   ├── translations.js
 │   │   ├── icons/
-│   │   └── logo.svg
+│   │   ├── logo.svg
+│   │   └── spinner.svg
 │   └── resources/menu-proton2025.js
 ├── root/
-│   ├── etc/uci-defaults/
-│   │   └── 30_luci-theme-proton2025
+│   ├── etc/
+│   │   ├── config/proton2025
+│   │   └── uci-defaults/30_luci-theme-proton2025
 │   └── usr/share/rpcd/
 │       ├── acl.d/luci-theme-proton2025.json
-│       └── ucode/luci.proton-temp
+│       └── ucode/
+│           ├── luci.proton-temp
+│           └── luci.proton-settings
 └── ucode/template/themes/proton2025/
     ├── header.ut
     ├── footer.ut
@@ -149,3 +178,7 @@ luci-theme-proton2025/
 ## License
 
 Apache-2.0
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/ChesterGoodiny/luci-theme-proton2025.svg?variant=adaptive)](https://starchart.cc/ChesterGoodiny/luci-theme-proton2025)

@@ -55,6 +55,72 @@
     --danger-color: #f87171;
     --warning-color: #fbbf24;
     --success-color: #34d399;
+
+    /* =====================================================
+       LuCI compatibility variables
+         Many LuCI modules rely on these.
+       ===================================================== */
+    color-scheme: dark;
+
+    --background-color-high: var(--proton-bg-solid);
+    --background-color-medium: #1a1f2e;
+    --background-color-low: #23293d;
+
+    --text-color-highest: #ffffff;
+    --text-color-high: var(--proton-fg);
+    --text-color-medium: var(--proton-fg-secondary);
+    --text-color-low: var(--proton-muted);
+
+    --border-color-high: rgba(255, 255, 255, 0.14);
+    --border-color-medium: rgba(255, 255, 255, 0.08);
+    --border-color-low: rgba(255, 255, 255, 0.05);
+
+    --primary-color-high: var(--proton-accent);
+    --primary-color-medium: var(--proton-accent-hover);
+    --primary-color-low: rgba(94, 158, 255, 0.35);
+    --on-primary-color: #ffffff;
+
+    --error-color-high-rgb: 255, 107, 107;
+    --error-color-high: rgb(var(--error-color-high-rgb));
+    --error-color-medium: #e53e3e;
+    --error-color-low: #c53030;
+    --on-error-color: #ffffff;
+
+    --success-color-high-rgb: 107, 207, 127;
+    --success-color-high: rgb(var(--success-color-high-rgb));
+    --success-color-medium: #38a169;
+    --success-color-low: #2f855a;
+    --on-success-color: #0f1419;
+
+    --warn-color-high: #ffd93d;
+    --warn-color-medium: #fbbf24;
+    --warn-color-low: #f59e0b;
+    --on-warn-color: #0f1419;
+
+    /* =====================================================
+       LuCI/Bootstrap extended compatibility variables
+       Some LuCI code uses the *-hsl variants (e.g. hsla(var(--text-color-low-hsl), ...)).
+       ===================================================== */
+
+    --background-color-delta-l-sign: 1;
+    --background-color-h: 210;
+    --background-color-s: 25%;
+    --background-color-l: 8%;
+    --background-color-high-hsl: 210, 25%, 8%;
+    --background-color-medium-hsl: 225, 28%, 14%;
+    --background-color-low-hsl: 226, 27%, 19%;
+
+    --text-color-highest-hsl: 0, 0%, 100%;
+    --text-color-high-hsl: 220, 30%, 97%;
+    --text-color-medium-hsl: 225, 18%, 78%;
+    --text-color-low-hsl: 225, 12%, 60%;
+
+    --border-color-high-hsl: 0, 0%, 100%;
+    --border-color-medium-hsl: 0, 0%, 100%;
+    --border-color-low-hsl: 0, 0%, 100%;
+
+    --disabled-opacity: .4;
+    --on-color: var(--text-color-high);
 }
 
 /* =====================================================
@@ -66,7 +132,7 @@
     --proton-bg-solid: #ffffff;
     --proton-bg-secondary: rgba(0, 0, 0, 0.03);
     --proton-bg-tertiary: rgba(0, 0, 0, 0.02);
-    --proton-bg-hover: rgba(0, 0, 0, 0.06);
+    --proton-bg-hover: rgba(75, 85, 99, 0.05);
 
     /* Text Colors */
     --proton-fg: #1a1d29;
@@ -94,10 +160,91 @@
     /* Legacy compatibility */
     --main-bright-color: #4b5563;
     --main-dark-color: #ffffff;
-    --secondary-bright-color: #1a1d29;
+    /* Used by some legacy LuCI modules as "text on main-bright-color" */
+    --secondary-bright-color: #ffffff;
     --secondary-dark-color: #f8f9fa;
 
     color-scheme: light;
+
+    /* LuCI compatibility variables (light) */
+    --background-color-high: #ffffff;
+    --background-color-medium: #f3f4f6;
+    --background-color-low: #e5e7eb;
+
+    --text-color-highest: #111827;
+    --text-color-high: #111827;
+    --text-color-medium: #374151;
+    --text-color-low: #6b7280;
+
+    --border-color-high: rgba(0, 0, 0, 0.16);
+    --border-color-medium: rgba(0, 0, 0, 0.10);
+    --border-color-low: rgba(0, 0, 0, 0.06);
+
+    --primary-color-high: var(--proton-accent);
+    --primary-color-medium: var(--proton-accent-hover);
+    --primary-color-low: rgba(75, 85, 99, 0.25);
+    --on-primary-color: #ffffff;
+
+    --error-color-high-rgb: 229, 62, 62;
+    --error-color-high: rgb(var(--error-color-high-rgb));
+    --error-color-medium: #dc2626;
+    --error-color-low: #b91c1c;
+    --on-error-color: #ffffff;
+
+    --success-color-high-rgb: 56, 161, 105;
+    --success-color-high: rgb(var(--success-color-high-rgb));
+    --success-color-medium: #2f855a;
+    --success-color-low: #276749;
+    --on-success-color: #ffffff;
+
+    --warn-color-high: #f59e0b;
+    --warn-color-medium: #d97706;
+    --warn-color-low: #b45309;
+    --on-warn-color: #111827;
+
+    /* LuCI/Bootstrap extended compatibility variables (light) */
+    --background-color-delta-l-sign: -1;
+    --background-color-h: 0;
+    --background-color-s: 0%;
+    --background-color-l: 100%;
+    --background-color-high-hsl: 0, 0%, 100%;
+    --background-color-medium-hsl: 210, 20%, 95%;
+    --background-color-low-hsl: 210, 16%, 90%;
+
+    --text-color-highest-hsl: 221, 39%, 11%;
+    --text-color-high-hsl: 221, 39%, 11%;
+    --text-color-medium-hsl: 215, 20%, 25%;
+    --text-color-low-hsl: 220, 10%, 45%;
+
+    --border-color-high-hsl: 0, 0%, 0%;
+    --border-color-medium-hsl: 0, 0%, 0%;
+    --border-color-low-hsl: 0, 0%, 0%;
+
+    --disabled-opacity: .7;
+    --on-color: var(--text-color-high);
+}
+
+/* =====================================================
+   Legacy/Module compatibility: .label
+   Some LuCI apps/modules output <span class="label"> without shipping a theme style.
+   ===================================================== */
+.label {
+    display: inline-block;
+    background: var(--primary-color-high);
+    color: var(--secondary-bright-color, var(--on-primary-color));
+    font-size: .8rem;
+    border-radius: .5rem;
+    padding: 0 .4rem;
+    white-space: nowrap;
+}
+
+/* Accept LuCI-style darkmode toggle too */
+:root[data-darkmode="false"] {
+    color-scheme: light;
+}
+
+:root[data-darkmode="true"] {
+    color-scheme: dark;
 }
 
 /* =====================================================
@@ -655,12 +802,12 @@ button+button, .btn+.btn, .cbi-button+.cbi-button {
     box-shadow: none;
     transform: none;
 }
-
+/*
 :root[data-theme="light"] .cbi-button {
-    background: rgba(0, 0, 0, 0.04);
-    color: #374151;
-    border-color: rgba(0, 0, 0, 0.15);
-}
+    background: var(--proton-success);
+    border-color: var(--proton-success);
+    color: #fff;
+}*/
 
 .cbi-button:hover {
     background: var(--proton-bg-hover);
@@ -682,22 +829,23 @@ button+button, .btn+.btn, .cbi-button+.cbi-button {
 
 :root[data-theme="light"] .cbi-button-apply,
 :root[data-theme="light"] .cbi-button-positive {
-    background: var(--proton-success);
-    border-color: var(--proton-success);
+    background: var(--proton-accent);
+    border-color: var(--proton-accent);
     color: #fff;
 }
 
 .cbi-button-apply:hover, .cbi-button-positive:hover {
-    background: var(--proton-success);
-    border-color: var(--proton-success);
-    opacity: 0.9;
+    background: var(--proton-accent);
+    border-color: var(--proton-accent);
+    opacity: 0.8;
+    color: #fff
 }
 
 :root[data-theme="light"] .cbi-button-apply:hover,
 :root[data-theme="light"] .cbi-button-positive:hover {
-    background: #2f855a;
-    border-color: #2f855a;
-    opacity: 1;
+    background: var(--proton-accent);
+    border-color: var(--proton-accent);
+    color: #fff
 }
 
 .cbi-button-remove, .cbi-button-negative {
@@ -762,6 +910,7 @@ button.important, .btn.important {
 :root[data-theme="light"] .btn.important {
     background: rgba(74, 143, 231, 0.08);
     border-color: var(--proton-accent);
+    color: var(--proton-accent);
 }
 
 /* Important overrides should not affect colored buttons */
@@ -888,8 +1037,8 @@ button.important, .btn.important {
 }
 
 :root[data-theme="light"] .cbi-button-add:hover {
-    background: #2f855a;
-    border-color: #2f855a;
+    background: rgba(107, 207, 127, 0.9);
+    border-color: rgba(107, 207, 127, 0.9);
 }
 
 .cbi-button-link, .cbi-button-link:hover {
@@ -1288,23 +1437,47 @@ table.assoclist td {
     white-space: nowrap;
 }
 
-/* Network badge (usually the culprit): truncate instead of wrapping */
+/* Network badge: allow text wrapping for AP names (default) */
 table.assoclist td.nowrap {
     /* Override global .nowrap { white-space: nowrap !important; } */
-    white-space: nowrap !important;
+    white-space: normal !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 table.assoclist td.nowrap .ifacebadge {
     max-width: 100%;
     min-width: 0;
-    overflow: hidden;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
 }
 
 table.assoclist td.nowrap .ifacebadge>span {
     min-width: 0;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Truncate mode: ellipsis instead of wrap (when .proton-table-truncate is set) */
+:root.proton-table-truncate table.assoclist td.nowrap {
+    white-space: nowrap !important;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+:root.proton-table-truncate table.assoclist td.nowrap .ifacebadge {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    overflow: hidden;
+}
+
+:root.proton-table-truncate table.assoclist td.nowrap .ifacebadge>span {
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Actions: keep button compact, never stretched */
@@ -1360,22 +1533,44 @@ table.assoclist td.cbi-section-actions button {
     overflow-wrap: break-word;
 }
 
-/* Network badge - не переносим, но обрезаем */
+/* Network badge: allow text wrapping for AP names (default) */
 #wifi_assoclist_table td.nowrap {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 #wifi_assoclist_table td.nowrap .ifacebadge {
     max-width: 100%;
-    overflow: hidden;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
 }
 
 #wifi_assoclist_table td.nowrap .ifacebadge>span {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Truncate mode for #wifi_assoclist_table */
+:root.proton-table-truncate #wifi_assoclist_table td.nowrap {
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+:root.proton-table-truncate #wifi_assoclist_table td.nowrap .ifacebadge {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    overflow: hidden;
+}
+
+:root.proton-table-truncate #wifi_assoclist_table td.nowrap .ifacebadge>span {
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Overview sometimes injects inline icon size (e.g. style="width:32px;height:32px");
@@ -2047,6 +2242,128 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     width: auto;
 }
 
+/* Network Interface - Hide original buttons and show dropdown menu */
+#cbi-network-interface .cbi-section-actions>.cbi-button,
+#cbi-network-interface .cbi-section-actions>button:not(.actions-toggle),
+#cbi-network-interface .cbi-section-actions>div:not(.actions-dropdown) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    pointer-events: none !important;
+}
+
+/* Three dots button */
+#cbi-network-interface td.cbi-section-actions .actions-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--proton-bg-hover);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    cursor: pointer;
+    transition: var(--proton-transition);
+    color: var(--proton-fg-secondary);
+    font-size: 1.3rem;
+    line-height: 1;
+    letter-spacing: 2px;
+    font-weight: bold;
+}
+
+#cbi-network-interface td.cbi-section-actions .actions-toggle:hover {
+    background: var(--proton-bg-hover);
+    color: var(--proton-fg);
+    border-color: var(--proton-border);
+}
+
+/* Dropdown container - hidden by default */
+#cbi-network-interface td.cbi-section-actions .actions-dropdown {
+    position: absolute;
+    top: 40%;
+    right: 0;
+    margin-top: 4px;
+    min-width: 160px;
+    padding: 6px;
+    background: #1a1f28 !important;
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: none !important;
+}
+
+
+
+:root[data-theme="light"] #cbi-network-interface td.cbi-section-actions .actions-dropdown {
+    background: #ffffff !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Open dropdown */
+#cbi-network-interface td.cbi-section-actions .actions-dropdown.open {
+    display: block !important;
+}
+
+/* Buttons inside dropdown */
+#cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button,
+#cbi-network-interface td.cbi-section-actions .actions-dropdown button {
+    display: flex !important;
+    width: 100%;
+    justify-content: flex-start;
+    padding: 10px 14px;
+    margin: 2px 0;
+    border-radius: var(--proton-radius-sm);
+    font-size: 0.875rem;
+    background: transparent !important;
+    border: none !important;
+    color: var(--proton-fg-secondary) !important;
+    cursor: pointer;
+    transition: var(--proton-transition);
+    text-align: left;
+    box-shadow: none !important;
+}
+
+/* Reset styles for button types inside dropdown */
+#cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button-action,
+#cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button-positive,
+#cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button-negative {
+    background: transparent !important;
+    border: none !important;
+    color: var(--proton-fg-secondary) !important;
+    box-shadow: none !important;
+}
+
+#cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button:hover,
+#cbi-network-interface td.cbi-section-actions .actions-dropdown button:hover {
+    background: var(--proton-bg-hover) !important;
+    color: var(--proton-fg) !important;
+}
+
+#cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button-negative:hover {
+    background: rgba(255, 107, 107, 0.15) !important;
+    color: var(--proton-danger) !important;
+}
+
+:root[data-theme="light"] #cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button-negative:hover {
+    background: rgba(245, 101, 101, 0.2) !important;
+    color: #c53030 !important;
+}
+
+#cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button-action:hover {
+    background: var(--proton-accent-glow) !important;
+    color: var(--proton-accent) !important;
+}
+
+:root[data-theme="light"] #cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button-action:hover {
+    background: rgba(74, 143, 231, 0.2) !important;
+    color: var(--proton-accent) !important;
+}
+
 /* Network -> Interfaces table: compact + elegant (ifacebox + stats + actions) */
 #cbi-network-interface table.cbi-section-table {
     font-size: 13px;
@@ -2086,13 +2403,29 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     width: 100%;
 }
 
+
 #cbi-network-interface .ifacebox-head {
-    /* Restore bright zone colors (lan/wan/etc) */
+    /* Elegant zone badges with gradients and shadows */
     background-color: rgb(var(--zone-color-rgb)) !important;
     border-bottom: 1px solid rgba(var(--zone-color-rgb), 0.45);
-    color: var(--proton-bg-solid) !important;
-    padding: 10px 12px;
+    color: #fff !important;
+    padding: 12px 14px;
     letter-spacing: 0.01em;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, rgb(var(--zone-color-rgb)) 0%, rgba(var(--zone-color-rgb), 0.85) 100%) !important;
+    border-radius: var(--proton-radius-sm) var(--proton-radius-sm) 0 0;
+    transition: var(--proton-transition);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+#cbi-network-interface .ifacebox-head:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 #cbi-network-interface .ifacebox-body {
@@ -2117,6 +2450,7 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 /* Actions: keep buttons compact and aligned */
 #cbi-network-interface table.cbi-section-table td.cbi-section-actions {
     white-space: nowrap;
+    position: relative;
 }
 
 #cbi-network-interface table.cbi-section-table td.cbi-section-actions>div {
@@ -2126,53 +2460,55 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     justify-content: flex-end;
 }
 
+/* =====================================================
+   Interfaces Zone Badges - Elegant styling (LAN/WAN)
+   ===================================================== */
+
+/* LAN zone - green gradient */
+#cbi-network-interface .ifacebox-head[style*="144, 240, 144"],
+#cbi-network-interface .ifacebox-head[style*="0, 200, 0"] {
+    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+}
+
+#cbi-network-interface .ifacebox-head[style*="144, 240, 144"]:hover,
+#cbi-network-interface .ifacebox-head[style*="0, 200, 0"]:hover {
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+}
+
+/* WAN zone - red/orange gradient */
+#cbi-network-interface .ifacebox-head[style*="240, 144, 144"],
+#cbi-network-interface .ifacebox-head[style*="200, 0, 0"] {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+}
+
+#cbi-network-interface .ifacebox-head[style*="240, 144, 144"]:hover,
+#cbi-network-interface .ifacebox-head[style*="200, 0, 0"]:hover {
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+/* Guest/Other zones - gray gradient */
+#cbi-network-interface .ifacebox-head[style*="192, 192, 192"],
+#cbi-network-interface .ifacebox-head[style*="128, 128, 128"] {
+    background: linear-gradient(135deg, #6c7a89 0%, #4b5562 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(108, 122, 137, 0.3);
+}
+
+#cbi-network-interface .ifacebox-head[style*="192, 192, 192"]:hover,
+#cbi-network-interface .ifacebox-head[style*="128, 128, 128"]:hover {
+    box-shadow: 0 4px 12px rgba(108, 122, 137, 0.4);
+}
+
+/*
 #cbi-network-interface table.cbi-section-table td.cbi-section-actions .cbi-button,
 #cbi-network-interface table.cbi-section-table td.cbi-section-actions .btn,
 #cbi-network-interface table.cbi-section-table td.cbi-section-actions button {
     width: auto;
-}
-
-/* Row hover overlay (JS-assisted): shows the full row values without clipping */
-.proton-assoclist-row-hover {
-    position: fixed;
-    z-index: 10050;
-    max-width: min(820px, 92vw);
-    padding: 10px 12px;
-    background: rgba(20, 25, 35, 0.98);
-    border: 1px solid var(--proton-border);
-    border-radius: var(--proton-radius);
-    box-shadow: var(--proton-shadow-md);
-    color: var(--proton-fg);
-    font-size: 13px;
-    line-height: 1.35;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    pointer-events: none;
-}
-
-.proton-assoclist-row-hover .row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 14px;
-}
-
-.proton-assoclist-row-hover .cell {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 6px;
-    min-width: 0;
-}
-
-.proton-assoclist-row-hover .k {
-    color: var(--proton-fg-secondary);
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.proton-assoclist-row-hover .v {
-    color: var(--proton-fg);
-    min-width: 0;
-}
+}*/
 
 /* =====================================================
    Dynamic List (cbi-dynlist)
@@ -2308,9 +2644,11 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     cursor: pointer;
 }
 
-.cbi-tabmenu>li>a:hover {
-    color: var(--proton-fg);
-    background: var(--proton-bg-hover);
+@media (min-width: 800px) {
+    .cbi-tabmenu>li>a:hover {
+        color: var(--proton-fg);
+        background: var(--proton-bg-hover);
+    }
 }
 
 .cbi-tabmenu>.cbi-tab>a {
@@ -2544,6 +2882,42 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 }
 
 /* =====================================================
+   Diagnostics Page - Compact Dropdowns
+   ===================================================== */
+.diag-action {
+    position: relative;
+}
+
+.diag-action .cbi-dropdown {
+    min-width: 0 !important;
+    width: auto !important;
+}
+
+.diag-action .cbi-dropdown>ul {
+    width: auto;
+}
+
+.diag-action .cbi-dropdown>ul>li {
+    padding: 8px 12px;
+}
+
+.diag-action .cbi-dropdown[open]>ul.dropdown {
+    position: absolute;
+    top: 100%;
+    left: auto;
+    right: 0;
+    min-width: 160px;
+    z-index: 10001;
+}
+
+/* Diagnostics page table - allow dropdown overflow */
+body[data-page="admin-network-diagnostics"] .table,
+body[data-page="admin-network-diagnostics"] .tr,
+body[data-page="admin-network-diagnostics"] .td {
+    overflow: visible !important;
+}
+
+/* =====================================================
    Alerts & Messages
    ===================================================== */
 .alert-message {
@@ -2707,12 +3081,12 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 }
 
 /* Port Status Grid (Status → Overview): центрируем иконку в ifacebox-body и убираем смещение baseline */
-body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox .ifacebox-body,
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox .ifacebox-body,
 body[data-page=""] .cbi-section>div>div[style*="display:grid"]>.ifacebox .ifacebox-body {
     text-align: center;
 }
 
-body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox .ifacebox-body img,
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox .ifacebox-body img,
 body[data-page=""] .cbi-section>div>div[style*="display:grid"]>.ifacebox .ifacebox-body img {
     display: block;
     margin: 0 auto 6px;
@@ -2927,6 +3301,76 @@ body.modal-overlay-active #modal_overlay {
 /* Дополнительно увеличиваем z-index для выпадающих меню в модальном окне */
 #modal_overlay .cbi-dropdown[open]>ul.dropdown {
     z-index: 10002 !important;
+}
+
+/* =====================================================
+   Modal Zone Badges - Elegant styling (Interface edit)
+   ===================================================== */
+
+/* Enhance zonebadge styling in modal windows */
+#modal_overlay .zonebadge {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 4px 12px !important;
+    border-radius: 8px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important;
+    transition: var(--proton-transition);
+}
+
+#modal_overlay .zonebadge:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* LAN zone - green gradient in modal */
+#modal_overlay .zonebadge[style*="144, 240, 144"],
+#modal_overlay .zonebadge[style*="0, 200, 0"],
+#modal_overlay .zonebadge[style*="rgb(144, 240, 144)"],
+#modal_overlay .zonebadge[style*="rgb(0, 200, 0"] {
+    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%) !important;
+    color: #fff !important;
+}
+
+/* WAN zone - red/orange gradient in modal */
+#modal_overlay .zonebadge[style*="240, 144, 144"],
+#modal_overlay .zonebadge[style*="200, 0, 0"],
+#modal_overlay .zonebadge[style*="rgb(240, 144, 144)"],
+#modal_overlay .zonebadge[style*="rgb(200, 0, 0"] {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+    color: #fff !important;
+}
+
+/* Guest/Other zones - gray gradient in modal */
+#modal_overlay .zonebadge[style*="192, 192, 192"],
+#modal_overlay .zonebadge[style*="128, 128, 128"],
+#modal_overlay .zonebadge[style*="rgb(192, 192, 192)"],
+#modal_overlay .zonebadge[style*="rgb(128, 128, 128"] {
+    background: linear-gradient(135deg, #6c7a89 0%, #4b5562 100%) !important;
+    color: #fff !important;
+}
+
+/* Custom zone - accent color gradient */
+#modal_overlay .zonebadge[style*="94, 158, 255"],
+#modal_overlay .zonebadge[style*="rgb(94, 158, 255"] {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+    color: #fff !important;
+}
+
+/* Unspecified zone - high contrast */
+#modal_overlay .zonebadge,
+#modal_overlay .zonebadge[style*="unspecified"],
+#modal_overlay .zonebadge[style*="Unspecified"],
+#modal_overlay .zonebadge[style*="rgb(255, 255, 255)"],
+#modal_overlay .zonebadge[style*="background-color: #fff"],
+#modal_overlay .zonebadge[style*="background: #fff"],
+#modal_overlay .zonebadge[style*="background: rgb(255,255,255)"],
+#modal_overlay .zonebadge[style*="background:rgba(255,255,255)"] {
+    background: linear-gradient(135deg, #e0e3e7 0%, #bfc3c9 100%) !important;
+    color: #222 !important;
+    text-shadow: none !important;
 }
 
 .modal>h4:first-child {
@@ -7041,7 +7485,7 @@ body[data-page=""] .cbi-section:first-of-type table.table tr:has(td:first-child:
     body[data-page="admin-status-overview"] .cbi-section table.table:not(.assoclist):not(#status_leases):not(#status_leases6) td:last-child,
     body[data-page=""] .cbi-section table.table:not(.assoclist):not(#status_leases):not(#status_leases6) td:last-child {
         font-weight: 500;
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         color: var(--proton-fg);
         padding: 12px 16px;
         padding-left: 16px;

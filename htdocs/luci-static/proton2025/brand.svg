@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
+  <style>
+    .accent { fill: var(--proton-accent, #5e9eff); }
+    .accent-stroke { stroke: var(--proton-accent, #5e9eff); fill: none; }
+    .accent-20 { fill: var(--proton-accent, #5e9eff); opacity: 0.2; }
+    .accent-40 { fill: var(--proton-accent, #5e9eff); opacity: 0.4; }
+    .text-main { fill: var(--proton-fg, #f5f7fa); }
+  </style>
+  
+  <!-- Icon -->
+  <circle cx="25" cy="30" r="18" class="accent-20"/>
+  <circle cx="25" cy="30" r="12" class="accent-40"/>
+  <circle cx="25" cy="30" r="6" class="accent"/>
+  
+  <!-- Orbit rings -->
+  <ellipse cx="25" cy="30" rx="22" ry="8" class="accent-stroke" stroke-width="1.5" opacity="0.6" transform="rotate(-20 25 30)"/>
+  <ellipse cx="25" cy="30" rx="22" ry="8" class="accent-stroke" stroke-width="1.5" opacity="0.4" transform="rotate(40 25 30)"/>
+  
+  <!-- Text -->
+  <text x="55" y="38" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="600" class="text-main">
+    Proton<tspan class="accent">2025</tspan>
+  </text>
+</svg>

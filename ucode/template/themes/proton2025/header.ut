@@ -21,6 +21,10 @@
 	var themeMode = localStorage.getItem('proton-theme-mode') || 'dark';
 	if (themeMode === 'light') {
 		document.documentElement.setAttribute('data-theme', 'light');
+		document.documentElement.setAttribute('data-darkmode', 'false');
+	} else {
+		document.documentElement.setAttribute('data-theme', 'dark');
+		document.documentElement.setAttribute('data-darkmode', 'true');
 	}
 	
 	var defaultZoom = '100';
@@ -111,6 +115,7 @@
 <script src="{{ resource }}/ui.js"></script>
 <script src="{{ resource }}/cbi.js"></script>
 <script src="{{ media }}/translations.js"></script>
+<script src="{{ media }}/settings-sync.js" defer></script>
 <script src="{{ media }}/services-widget.js" defer></script>
 
 <script>

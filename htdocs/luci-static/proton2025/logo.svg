@@ -1,23 +1,62 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
-  <style>
-    .accent { fill: var(--proton-accent, #5e9eff); }
-    .accent-stroke { stroke: var(--proton-accent, #5e9eff); fill: none; }
-    .accent-20 { fill: var(--proton-accent, #5e9eff); opacity: 0.2; }
-    .accent-40 { fill: var(--proton-accent, #5e9eff); opacity: 0.4; }
-    .text-main { fill: var(--proton-fg, #f5f7fa); }
-  </style>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="darkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f1419"/>
+      <stop offset="100%" stop-color="#1a1f2e"/>
+    </linearGradient>
+    
+    <linearGradient id="accentGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5e9eff"/>
+      <stop offset="100%" stop-color="#7db2ff"/>
+    </linearGradient>
+    
+    <clipPath id="rounded">
+      <rect width="100" height="100" rx="18"/>
+    </clipPath>
+    
+    <clipPath id="topSlice">
+      <polygon points="0,0 100,0 100,46 0,62"/>
+    </clipPath>
+    
+    <clipPath id="bottomSlice">
+      <polygon points="0,62 100,46 100,100 0,100"/>
+    </clipPath>
+  </defs>
   
-  <!-- Icon -->
-  <circle cx="25" cy="30" r="18" class="accent-20"/>
-  <circle cx="25" cy="30" r="12" class="accent-40"/>
-  <circle cx="25" cy="30" r="6" class="accent"/>
+  <g clip-path="url(#rounded)">
+    <!-- Тёмная часть -->
+    <g clip-path="url(#topSlice)">
+      <rect width="100" height="100" fill="url(#darkGrad)"/>
+      
+      <!-- WiFi дуги -->
+      <path d="M14,24 L20,30 A40,40 0 0 1 80,30 L86,24 A50,50 0 0 0 14,24" fill="#fff"/>
+      <path d="M24,36 L30,42 A28,28 0 0 1 70,42 L76,36 A38,38 0 0 0 24,36" fill="#fff"/>
+      
+      <!-- Proton ядро (центральная точка) -->
+      <circle cx="50" cy="68" r="8" fill="#5e9eff"/>
+      
+      <!-- Орбиты атома -->
+      <ellipse cx="50" cy="68" rx="22" ry="7" fill="none" stroke="#fff" stroke-width="1.5" transform="rotate(-25 50 68)"/>
+      <ellipse cx="50" cy="68" rx="22" ry="7" fill="none" stroke="#fff" stroke-width="1.5" transform="rotate(35 50 68)"/>
+    </g>
+    
+    <!-- Акцентная часть -->
+    <g clip-path="url(#bottomSlice)">
+      <rect width="100" height="100" fill="url(#accentGrad)"/>
+      
+      <!-- WiFi дуги -->
+      <path d="M14,24 L20,30 A40,40 0 0 1 80,30 L86,24 A50,50 0 0 0 14,24" fill="#0f1419"/>
+      <path d="M24,36 L30,42 A28,28 0 0 1 70,42 L76,36 A38,38 0 0 0 24,36" fill="#0f1419"/>
+      
+      <!-- Proton ядро -->
+      <circle cx="50" cy="68" r="8" fill="#0f1419"/>
+      
+      <!-- Орбиты атома -->
+      <ellipse cx="50" cy="68" rx="22" ry="7" fill="none" stroke="#0f1419" stroke-width="1.5" transform="rotate(-25 50 68)"/>
+      <ellipse cx="50" cy="68" rx="22" ry="7" fill="none" stroke="#0f1419" stroke-width="1.5" transform="rotate(35 50 68)"/>
+    </g>
+  </g>
   
-  <!-- Orbit rings -->
-  <ellipse cx="25" cy="30" rx="22" ry="8" class="accent-stroke" stroke-width="1.5" opacity="0.6" transform="rotate(-20 25 30)"/>
-  <ellipse cx="25" cy="30" rx="22" ry="8" class="accent-stroke" stroke-width="1.5" opacity="0.4" transform="rotate(40 25 30)"/>
-  
-  <!-- Text -->
-  <text x="55" y="38" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="600" class="text-main">
-    Proton<tspan class="accent">2025</tspan>
-  </text>
+  <!-- Обводка -->
+  <rect width="100" height="100" rx="18" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
 </svg>

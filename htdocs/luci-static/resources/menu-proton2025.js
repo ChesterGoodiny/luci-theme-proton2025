@@ -62,6 +62,14 @@ return baseclass.extend({
 
     // Also try after a delay in case DOMContentLoaded already fired
     setTimeout(() => this.initThemeSettings(), 100);
+
+    // Listen for settings sync from UCI
+    window.addEventListener("proton-settings-synced", () => {
+      this.loadAndApplyThemeSettings();
+      // Re-init settings UI if on settings page
+      this._themeSettingsInit = false;
+      this.initThemeSettings();
+    });
   },
 
   loadAndApplyThemeSettings() {
@@ -80,192 +88,13 @@ return baseclass.extend({
       servicesGrouped:
         localStorage.getItem("proton-services-grouped") === "true",
       servicesLog: localStorage.getItem("proton-services-log") === "true",
+      tableWrap: localStorage.getItem("proton-table-wrap") !== "false",
     };
 
     // Apply theme mode
     document.documentElement.setAttribute("data-theme", settings.themeMode);
 
     this.applyThemeSettings(settings);
-  },
-
-  installAssoclistRowHoverExpand() {
-    if (this._assoclistRowHoverExpandInstalled) return;
-    this._assoclistRowHoverExpandInstalled = true;
-
-    const isHoverDesktop = () =>
-      window.matchMedia &&
-      window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-
-    const overlay = document.createElement("div");
-    overlay.className = "proton-assoclist-row-hover";
-    overlay.style.display = "none";
-    document.body.appendChild(overlay);
-    this._assoclistRowHoverOverlay = overlay;
-
-    const hide = () => {
-      overlay.style.display = "none";
-      overlay.innerHTML = "";
-      this._assoclistRowHoverAnchor = null;
-    };
-
-    const getHeaders = (table) => {
-      let ths = Array.from(table.querySelectorAll("thead th"));
-      if (!ths.length)
-        ths = Array.from(
-          table.querySelectorAll("tr.cbi-section-table-titles th")
-        );
-      if (!ths.length) ths = Array.from(table.querySelectorAll("tr th"));
-      if (!ths.length) return null;
-
-      return ths
-        .map((th) => (th.innerText || th.textContent || "").trim())
-        .map((s) => s.replace(/\s+/g, " "));
-    };
-
-    const getCellText = (td) => {
-      const badge = td.querySelector(".ifacebadge");
-      if (badge) {
-        // Avoid pulling text from the tooltip container (it's always in DOM)
-        const children = Array.from(badge.children || []);
-        const label = children
-          .filter(
-            (el) =>
-              el &&
-              el.tagName === "SPAN" &&
-              !el.classList.contains("cbi-tooltip-container")
-          )
-          .pop();
-
-        const text = (label ? label.textContent : badge.textContent) || "";
-        return text.trim().replace(/\s+/g, " ");
-      }
-
-      return ((td.innerText || td.textContent || "") + "")
-        .trim()
-        .replace(/\s+/g, " ");
-    };
-
-    const escapeHtml = (value) => {
-      return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    };
-
-    const buildRowHtml = (tr) => {
-      const table = tr.closest("table");
-      if (!table) return "";
-
-      const headers = getHeaders(table);
-      const tds = Array.from(tr.querySelectorAll("td"));
-      if (!tds.length) return "";
-
-      const parts = [];
-      for (let i = 0; i < tds.length; i++) {
-        const td = tds[i];
-        if (td.classList.contains("cbi-section-actions")) continue;
-
-        const key =
-          headers && headers[i]
-            ? headers[i]
-            : (td.getAttribute("data-title") || "").trim();
-
-        const val = getCellText(td);
-
-        if (!val) continue;
-
-        const k = key ? `<span class="k">${escapeHtml(key)}:</span>` : "";
-        parts.push(
-          `<span class="cell">${k}<span class="v">${escapeHtml(
-            val
-          )}</span></span>`
-        );
-      }
-
-      if (!parts.length) return "";
-      return `<div class="row">${parts.join("")}</div>`;
-    };
-
-    const position = (anchor) => {
-      if (!anchor || overlay.style.display === "none") return;
-
-      const rect = anchor.getBoundingClientRect();
-      const margin = 10;
-
-      // Measure after content set
-      overlay.style.left = "-9999px";
-      overlay.style.top = "-9999px";
-      const ow = overlay.offsetWidth;
-      const oh = overlay.offsetHeight;
-
-      let left = rect.left;
-      let top = rect.top - oh - 8;
-
-      // If not enough space above, show below
-      if (top < margin) top = rect.bottom + 8;
-
-      // Clamp to viewport
-      left = Math.max(margin, Math.min(left, window.innerWidth - ow - margin));
-      top = Math.max(margin, Math.min(top, window.innerHeight - oh - margin));
-
-      overlay.style.left = `${left}px`;
-      overlay.style.top = `${top}px`;
-    };
-
-    document.addEventListener(
-      "mouseover",
-      (ev) => {
-        if (!isHoverDesktop()) return;
-
-        const tr =
-          ev.target && ev.target.closest
-            ? ev.target.closest(
-                "table.assoclist tbody tr, #cbi-network-device table.cbi-section-table tr.cbi-section-table-row, #cbi-network-interface table.cbi-section-table tr.cbi-section-table-row"
-              )
-            : null;
-        if (!tr) return;
-
-        const html = buildRowHtml(tr);
-        if (!html) return;
-
-        overlay.innerHTML = html;
-        overlay.style.display = "block";
-        this._assoclistRowHoverAnchor = tr;
-        position(tr);
-      },
-      true
-    );
-
-    document.addEventListener(
-      "mouseout",
-      (ev) => {
-        const tr =
-          ev.target && ev.target.closest
-            ? ev.target.closest(
-                "table.assoclist tbody tr, #cbi-network-device table.cbi-section-table tr.cbi-section-table-row, #cbi-network-interface table.cbi-section-table tr.cbi-section-table-row"
-              )
-            : null;
-        if (!tr) return;
-
-        // If moving within the row, ignore
-        if (ev.relatedTarget && tr.contains(ev.relatedTarget)) return;
-        hide();
-      },
-      true
-    );
-
-    window.addEventListener(
-      "scroll",
-      () => position(this._assoclistRowHoverAnchor),
-      true
-    );
-    window.addEventListener(
-      "resize",
-      () => position(this._assoclistRowHoverAnchor),
-      true
-    );
   },
 
   updateAssoclistTitles() {
@@ -462,13 +291,15 @@ return baseclass.extend({
     // LuCI is SPA-like: views update the DOM after initial load.
     // Add hover-to-reveal titles for assoclist (Associated Stations).
     this.installAssoclistTitleObserver();
-    this.installAssoclistRowHoverExpand();
 
     // Setup mobile table data-title attributes
     this.setupMobileTableTitles();
 
     // Setup wireless actions dropdown menu (⋮) for desktop
     this.setupWirelessActionsDropdown();
+
+    // Setup network interface actions dropdown menu (⋮) for desktop
+    this.setupNetworkInterfaceActionsDropdown();
   },
 
   handleMenuExpand(ev) {
@@ -550,12 +381,23 @@ return baseclass.extend({
         isActive ? " selected" : ""
       );
 
+      // Для родительских пунктов (l == 1) ссылка ведёт на первый дочерний элемент
+      const childChildren = ui.menu.getChildren(child);
+      let menuHref;
+      if (l == 1 && childChildren.length > 0) {
+        // Ссылка на первый дочерний элемент
+        menuHref = L.url(url, child.name, childChildren[0].name);
+      } else {
+        // Обычная ссылка на сам пункт
+        menuHref = L.url(url, child.name);
+      }
+
       ul.appendChild(
         E("li", { class: activeClass }, [
           E(
             "a",
             {
-              href: L.url(url, child.name),
+              href: menuHref,
               click: l == 1 ? ui.createHandlerFn(this, "handleMenuExpand") : "",
             },
             [_(child.title)]
@@ -955,6 +797,124 @@ return baseclass.extend({
     setTimeout(() => this.markWifiFrequencies(), 350);
   },
 
+  /**
+   * Network interface actions dropdown menu (⋮)
+   * Converts action buttons in #cbi-network-interface into a compact dropdown
+   */
+  setupNetworkInterfaceActionsDropdown() {
+    const installDropdowns = () => {
+      const networkSection = document.querySelector("#cbi-network-interface");
+      if (!networkSection) return;
+
+      // Find all action cells in network interface table
+      const actionCells = networkSection.querySelectorAll(
+        "table.cbi-section-table td.cbi-section-actions"
+      );
+
+      actionCells.forEach((cell) => {
+        // Skip if already processed
+        if (cell.classList.contains("actions-dropdown-ready")) return;
+
+        // Buttons are inside a div wrapper
+        const wrapper = cell.querySelector("div");
+        if (!wrapper) return;
+
+        const buttons = Array.from(
+          wrapper.querySelectorAll("button, input[type='button'], .cbi-button")
+        );
+        if (buttons.length === 0) return;
+
+        // Create toggle button (⋮)
+        const toggle = document.createElement("button");
+        toggle.className = "actions-toggle";
+        toggle.innerHTML = "⋮";
+        toggle.setAttribute("aria-label", "Actions menu");
+        toggle.setAttribute("type", "button");
+
+        // Create dropdown container
+        const dropdown = document.createElement("div");
+        dropdown.className = "actions-dropdown";
+
+        // MOVE original buttons into dropdown (not clone!) to preserve event handlers
+        buttons.forEach((btn) => {
+          dropdown.appendChild(btn);
+        });
+
+        // Hide original empty wrapper
+        wrapper.style.display = "none";
+
+        // Toggle dropdown on click
+        toggle.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          ev.preventDefault();
+
+          // Close other open dropdowns
+          document.querySelectorAll(".actions-dropdown.open").forEach((d) => {
+            if (d !== dropdown) d.classList.remove("open");
+          });
+
+          dropdown.classList.toggle("open");
+        });
+
+        // Close dropdown after button click
+        dropdown.addEventListener("click", (ev) => {
+          if (ev.target.matches("button, input[type='button'], .cbi-button")) {
+            setTimeout(() => {
+              dropdown.classList.remove("open");
+            }, 100);
+          }
+        });
+
+        cell.appendChild(toggle);
+        cell.appendChild(dropdown);
+        cell.classList.add("actions-dropdown-ready");
+      });
+    };
+
+    // Close dropdowns on outside click or when menu is not in focus
+    const closeAllNetworkDropdowns = () => {
+      document
+        .querySelectorAll("#cbi-network-interface .actions-dropdown.open")
+        .forEach((d) => {
+          d.classList.remove("open");
+        });
+    };
+
+    document.addEventListener("click", (ev) => {
+      if (
+        !ev.target.closest(".actions-dropdown") &&
+        !ev.target.closest(".actions-toggle")
+      ) {
+        closeAllNetworkDropdowns();
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape") {
+        closeAllNetworkDropdowns();
+      }
+    });
+
+    // Run initially with delay for LuCI to render
+    setTimeout(installDropdowns, 300);
+
+    // Run on window resize
+    window.addEventListener("resize", installDropdowns);
+
+    // Run on DOM changes (for dynamic content like LuCI updates)
+    const observer = new MutationObserver(() => {
+      setTimeout(installDropdowns, 150);
+    });
+
+    const networkContainer =
+      document.querySelector("#cbi-network-interface") || document.body;
+    observer.observe(networkContainer, {
+      childList: true,
+      subtree: true,
+    });
+  },
+
   initThemeSettings() {
     // Only run on System settings page
     if (!document.body.dataset.page?.includes("admin-system-system")) return;
@@ -988,6 +948,7 @@ return baseclass.extend({
         servicesGrouped:
           localStorage.getItem("proton-services-grouped") === "true",
         servicesLog: localStorage.getItem("proton-services-log") === "true",
+        tableWrap: localStorage.getItem("proton-table-wrap") !== "false",
       };
 
       // Helper function for translations
@@ -1162,23 +1123,6 @@ return baseclass.extend({
           </div>
 
           <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-services-grouped-check">${t(
-              "Group Services"
-            )}</label>
-            <div class="cbi-value-field">
-              <div class="cbi-checkbox">
-                <input id="proton-services-grouped-check" type="checkbox" ${
-                  settings.servicesGrouped ? "checked" : ""
-                }>
-                <label for="proton-services-grouped-check"></label>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Group services by category in widget"
-              )}</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
             <label class="cbi-value-title" for="proton-services-log-check">${t(
               "Widget Log"
             )}</label>
@@ -1191,6 +1135,23 @@ return baseclass.extend({
               </div>
               <div class="cbi-value-description">${t(
                 "Show activity log under the widget"
+              )}</div>
+            </div>
+          </div>
+
+          <div class="cbi-value">
+            <label class="cbi-value-title" for="proton-table-wrap-check">${t(
+              "Table Text Wrap"
+            )}</label>
+            <div class="cbi-value-field">
+              <div class="cbi-checkbox">
+                <input id="proton-table-wrap-check" type="checkbox" ${
+                  settings.tableWrap ? "checked" : ""
+                }>
+                <label for="proton-table-wrap-check"></label>
+              </div>
+              <div class="cbi-value-description">${t(
+                "Wrap long AP names in Associated Stations table. Disable to truncate with ellipsis."
               )}</div>
             </div>
           </div>
@@ -1322,23 +1283,6 @@ return baseclass.extend({
         }
       });
 
-      const servicesGroupedCheck = document.getElementById(
-        "proton-services-grouped-check"
-      );
-      servicesGroupedCheck?.addEventListener("change", (e) => {
-        const enabled = e.target.checked;
-        localStorage.setItem("proton-services-grouped", enabled);
-        // Показываем уведомление о применении
-        const msg = enabled
-          ? _("Services grouping enabled.")
-          : _("Services grouping disabled.");
-        if (typeof L !== "undefined" && L.ui && L.ui.addNotification) {
-          L.ui.addNotification(null, E("p", msg), "info");
-        } else {
-          alert(msg);
-        }
-      });
-
       const servicesLogCheck = document.getElementById(
         "proton-services-log-check"
       );
@@ -1350,6 +1294,13 @@ return baseclass.extend({
         if (logEl) {
           logEl.style.display = enabled ? "" : "none";
         }
+      });
+
+      const tableWrapCheck = document.getElementById("proton-table-wrap-check");
+      tableWrapCheck?.addEventListener("change", (e) => {
+        const enabled = e.target.checked;
+        localStorage.setItem("proton-table-wrap", enabled);
+        this.applyTableWrap(enabled);
       });
 
       return true;
@@ -1374,6 +1325,7 @@ return baseclass.extend({
     this.applyZoom(settings.zoom);
     this.applyAnimations(settings.animations);
     this.applyTransparency(settings.transparency);
+    this.applyTableWrap(settings.tableWrap);
     this.applyServicesWidget(settings.servicesWidget);
   },
 
@@ -1457,6 +1409,15 @@ return baseclass.extend({
     const widget = document.getElementById("proton-services-widget");
     if (widget) {
       widget.style.display = enabled ? "" : "none";
+    }
+  },
+
+  applyTableWrap(enabled) {
+    const root = document.documentElement;
+    if (enabled) {
+      root.classList.remove("proton-table-truncate");
+    } else {
+      root.classList.add("proton-table-truncate");
     }
   },
 });

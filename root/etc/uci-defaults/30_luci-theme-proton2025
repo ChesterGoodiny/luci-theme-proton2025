@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# Register theme in LuCI
 if [ ! -f /etc/config/luci ]; then
 	touch /etc/config/luci
 fi
@@ -12,6 +13,22 @@ fi
 if ! uci -q get luci.themes.Proton2025 >/dev/null; then
 	uci set luci.themes.Proton2025="/luci-static/proton2025"
 	uci commit luci
+fi
+
+# Create Proton2025 theme settings config if not exists
+if [ ! -f /etc/config/proton2025 ]; then
+	touch /etc/config/proton2025
+	uci set proton2025.settings=theme
+	uci set proton2025.settings.mode='dark'
+	uci set proton2025.settings.accent='blue'
+	uci set proton2025.settings.zoom='100'
+	uci set proton2025.settings.transparency='1'
+	uci set proton2025.settings.border_radius='default'
+	uci set proton2025.settings.animations='1'
+	uci set proton2025.settings.services_widget='1'
+	uci set proton2025.settings.temp_widget='1'
+	uci set proton2025.settings.services_log='0'
+	uci commit proton2025
 fi
 
 exit 0
