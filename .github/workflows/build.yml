@@ -35,7 +35,7 @@ jobs:
         id: prepare
         run: |
           PKG_NAME="luci-theme-proton2025"
-          
+
           # Создаём общую структуру данных
           mkdir -p pkg-data/www/luci-static/proton2025
           mkdir -p pkg-data/www/luci-static/resources
@@ -84,43 +84,45 @@ jobs:
           mkdir -p ipk-build/control
           cp -r pkg-data ipk-build/data
 
-          # Создаём control файл (без лишних пробелов)
-          cat > ipk-build/control/control << EOF
-Package: ${PKG_NAME}
-Version: ${VERSION}
-Depends: libc, luci-base
-Source: https://github.com/${{ github.repository }}
-SourceName: ${PKG_NAME}
-License: Apache-2.0
-Section: luci
-Architecture: all
-Installed-Size: ${INSTALLED_SIZE}
-Description: Proton2025 - Elegant Dark Theme for LuCI
-EOF
+          # Создаём control файл
+          cat > ipk-build/control/control << 'CONTROL_END'
+          Package: luci-theme-proton2025
+          Depends: libc, luci-base
+          License: Apache-2.0
+          Section: luci
+          Architecture: all
+          Description: Proton2025 - Elegant Dark Theme for LuCI
+          CONTROL_END
+          sed -i 's/^[[:space:]]*//' ipk-build/control/control
+          sed -i "1s/.*/Package: ${PKG_NAME}/" ipk-build/control/control
+          sed -i "2i Version: ${VERSION}" ipk-build/control/control
+          sed -i "4i Source: https://github.com/${{ github.repository }}" ipk-build/control/control
+          sed -i "5i SourceName: ${PKG_NAME}" ipk-build/control/control
+          sed -i "/Architecture/a Installed-Size: ${INSTALLED_SIZE}" ipk-build/control/control
 
           # Создаём postinst скрипт
-          cat > ipk-build/control/postinst << 'EOF'
-#!/bin/sh
-[ -n "${IPKG_INSTROOT}" ] || {
-  uci -q batch <<-EOI
-    set luci.themes.Proton2025=/luci-static/proton2025
-    commit luci
-EOI
-  /etc/init.d/rpcd restart 2>/dev/null || true
-}
-exit 0
-EOF
+          cat > ipk-build/control/postinst << 'POSTINST_END'
+          #!/bin/sh
+          [ -n "${IPKG_INSTROOT}" ] || {
+            uci -q set luci.themes.Proton2025=/luci-static/proton2025
+            uci -q commit luci
+            /etc/init.d/rpcd restart 2>/dev/null || true
+          }
+          exit 0
+          POSTINST_END
+          sed -i 's/^[[:space:]]*//' ipk-build/control/postinst
           chmod 755 ipk-build/control/postinst
 
           # Создаём prerm скрипт
-          cat > ipk-build/control/prerm << 'EOF'
-#!/bin/sh
-[ -n "${IPKG_INSTROOT}" ] || {
-  uci -q delete luci.themes.Proton2025
-  uci commit luci
-}
-exit 0
-EOF
+          cat > ipk-build/control/prerm << 'PRERM_END'
+          #!/bin/sh
+          [ -n "${IPKG_INSTROOT}" ] || {
+            uci -q delete luci.themes.Proton2025
+            uci -q commit luci
+          }
+          exit 0
+          PRERM_END
+          sed -i 's/^[[:space:]]*//' ipk-build/control/prerm
           chmod 755 ipk-build/control/prerm
 
           # Собираем IPK
@@ -142,51 +144,43 @@ EOF
           cp -r pkg-data/* apk-build/
 
           # Создаём .PKGINFO (метаданные APK пакета)
-          # Убираем пробелы в начале строк сразу
-          cat > apk-build/.PKGINFO << EOF
-pkgname = ${PKG_NAME}
-pkgver = ${VERSION}-r1
-pkgdesc = Proton2025 - Elegant Dark Theme for LuCI
-url = https://github.com/${{ github.repository }}
-size = ${INSTALLED_SIZE}
-arch = noarch
-license = Apache-2.0
-origin = ${PKG_NAME}
-depend = luci-base
-EOF
+          cat > apk-build/.PKGINFO << PKGINFO_END
+          pkgname = ${PKG_NAME}
+          pkgver = ${VERSION}-r1
+          pkgdesc = Proton2025 - Elegant Dark Theme for LuCI
+          url = https://github.com/${{ github.repository }}
+          size = ${INSTALLED_SIZE}
+          arch = noarch
+          license = Apache-2.0
+          origin = ${PKG_NAME}
+          depend = luci-base
+          PKGINFO_END
+          sed -i 's/^[[:space:]]*//' apk-build/.PKGINFO
 
           # Создаём .post-install скрипт
-          cat > apk-build/.post-install << 'EOF'
-#!/bin/sh
-uci -q batch <<-EOI
-  set luci.themes.Proton2025=/luci-static/proton2025
-  commit luci
-EOI
-/etc/init.d/rpcd restart 2>/dev/null || true
-exit 0
-EOF
+          cat > apk-build/.post-install << 'POSTINSTALL_END'
+          #!/bin/sh
+          uci -q set luci.themes.Proton2025=/luci-static/proton2025
+          uci -q commit luci
+          /etc/init.d/rpcd restart 2>/dev/null || true
+          exit 0
+          POSTINSTALL_END
+          sed -i 's/^[[:space:]]*//' apk-build/.post-install
           chmod 755 apk-build/.post-install
 
           # Создаём .pre-deinstall скрипт
-          cat > apk-build/.pre-deinstall << 'EOF'
-#!/bin/sh
-uci -q delete luci.themes.Proton2025
-uci commit luci
-exit 0
-EOF
+          cat > apk-build/.pre-deinstall << 'PREDEINSTALL_END'
+          #!/bin/sh
+          uci -q delete luci.themes.Proton2025
+          uci -q commit luci
+          exit 0
+          PREDEINSTALL_END
+          sed -i 's/^[[:space:]]*//' apk-build/.pre-deinstall
           chmod 755 apk-build/.pre-deinstall
 
-          # Собираем APK (tar.gz с определённой структурой)
-          # Сначала создаём список файлов, затем архивируем
+          # Собираем APK
           cd apk-build
-          # Архивируем: сначала метаданные, потом данные
-          tar czvf "../${PKG_NAME}_${VERSION}_all.apk" \
-            .PKGINFO \
-            .post-install \
-            .pre-deinstall \
-            www \
-            usr \
-            etc
+          tar czvf "../${PKG_NAME}_${VERSION}_all.apk" .PKGINFO .post-install .pre-deinstall www usr etc
           cd ..
 
           echo "Built APK: ${PKG_NAME}_${VERSION}_all.apk"
@@ -213,18 +207,18 @@ EOF
             *.apk
           body: |
             ## Proton2025 Theme v${{ steps.version.outputs.version }}
-            
+
             ### 📦 Packages
             - **`.ipk`** — для OpenWrt с opkg (версии до 24.x)
             - **`.apk`** — для OpenWrt с apk (версии 24.10+)
-            
+
             ### 🔧 Установка
-            
+
             **opkg (IPK):**
             ```bash
             opkg install luci-theme-proton2025_*.ipk
             ```
-            
+
             **apk (APK):**
             ```bash
             apk add --allow-untrusted luci-theme-proton2025_*.apk
