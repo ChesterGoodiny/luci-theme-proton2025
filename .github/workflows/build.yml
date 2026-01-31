@@ -29,6 +29,7 @@ jobs:
 
     container:
       image: ${{ matrix.container }}
+      options: --user 0:0
 
     steps:
       - name: Checkout
