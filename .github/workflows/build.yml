@@ -23,8 +23,8 @@ jobs:
           - name: OpenWrt 23.05 (ipk)
             container: openwrt/sdk:x86-64-23.05.5
             pkg_ext: ipk
-          - name: OpenWrt 24.10 (apk)
-            container: openwrt/sdk:x86-64-24.10.0
+          - name: OpenWrt SNAPSHOT (apk)
+            container: openwrt/sdk:x86-64-snapshot
             pkg_ext: apk
 
     container:
