@@ -43,7 +43,8 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF#refs/tags/v}"
           else
-            VERSION="1.0.0-$(date +%Y%m%d)-${GITHUB_SHA::7}"
+            # APK has stricter version validation - use tilde (~) instead of multiple dashes
+            VERSION="1.0.0~$(date +%Y%m%d).${GITHUB_SHA::7}"
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
