@@ -47,29 +47,46 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Build package
+        shell: bash
         run: |
           set -euo pipefail
           VERSION="${{ steps.version.outputs.version }}"
           PKG_NAME="luci-theme-proton2025"
 
-          mkdir -p /builder
+          # SDK container has /builder as workdir with setup.sh
           cd /builder
 
-          [ -d ./scripts ] || ./setup.sh
+          # Run setup.sh if SDK not yet extracted (newer container approach)
+          if [ -f ./setup.sh ] && [ ! -d ./scripts ]; then
+            ./setup.sh
+          fi
 
-          ./scripts/feeds update luci
-          ./scripts/feeds install luci-base || true
+          # Update and install luci feed
+          ./scripts/feeds update -a
+          ./scripts/feeds install luci-base
 
+          # Copy theme package (exclude .git and .github)
           rm -rf "package/${PKG_NAME}"
-          mkdir -p package
-          cp -a "${GITHUB_WORKSPACE}" "package/${PKG_NAME}"
+          mkdir -p "package/${PKG_NAME}"
+          cp -r "${GITHUB_WORKSPACE}/htdocs" "package/${PKG_NAME}/"
+          cp -r "${GITHUB_WORKSPACE}/root" "package/${PKG_NAME}/"
+          cp -r "${GITHUB_WORKSPACE}/ucode" "package/${PKG_NAME}/"
+          cp "${GITHUB_WORKSPACE}/Makefile" "package/${PKG_NAME}/"
 
+          # Build
           make defconfig
-          make "package/${PKG_NAME}/clean"
-          make "package/${PKG_NAME}/compile" -j"$(nproc)" V=s PKG_VERSION="${VERSION}"
+          make "package/${PKG_NAME}/compile" -j"$(nproc)" V=s PKG_VERSION="${VERSION}" || \
+            make "package/${PKG_NAME}/compile" -j1 V=s PKG_VERSION="${VERSION}"
 
+          # Copy result
           mkdir -p "${GITHUB_WORKSPACE}/out/${{ matrix.pkg_ext }}"
-          find bin/packages -type f -name "${PKG_NAME}_*.${{ matrix.pkg_ext }}" -exec cp -v {} "${GITHUB_WORKSPACE}/out/${{ matrix.pkg_ext }}/" \;
+          find bin/packages -type f \( -name "${PKG_NAME}*.ipk" -o -name "${PKG_NAME}*.apk" \) \
+            -exec cp -v {} "${GITHUB_WORKSPACE}/out/${{ matrix.pkg_ext }}/" \;
+
+          # Debug: show what was built
+          echo "=== Built packages ==="
+          find bin/packages -type f \( -name "*.ipk" -o -name "*.apk" \) -ls || true
+          ls -la "${GITHUB_WORKSPACE}/out/${{ matrix.pkg_ext }}/" || true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
