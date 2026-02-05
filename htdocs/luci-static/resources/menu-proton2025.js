@@ -137,7 +137,7 @@ return baseclass.extend({
   updateSignalIndicators() {
     // Ищем все ifacebadge которые содержат dBm значения
     const badges = document.querySelectorAll(
-      "table.assoclist .ifacebadge, #wifi_assoclist_table .ifacebadge"
+      "table.assoclist .ifacebadge, #wifi_assoclist_table .ifacebadge",
     );
 
     badges.forEach((badge) => {
@@ -248,7 +248,7 @@ return baseclass.extend({
     this.ensureMenuPlacement(mq.matches);
     if (typeof mq.addEventListener === "function")
       mq.addEventListener("change", (ev) =>
-        this.ensureMenuPlacement(ev.matches)
+        this.ensureMenuPlacement(ev.matches),
       );
     else if (typeof mq.addListener === "function")
       mq.addListener((ev) => this.ensureMenuPlacement(ev.matches));
@@ -273,7 +273,7 @@ return baseclass.extend({
     if (navToggle)
       navToggle.addEventListener(
         "click",
-        ui.createHandlerFn(this, "handleSidebarToggle")
+        ui.createHandlerFn(this, "handleSidebarToggle"),
       );
 
     document.addEventListener("click", (ev) => {
@@ -300,6 +300,43 @@ return baseclass.extend({
 
     // Setup network interface actions dropdown menu (⋮) for desktop
     this.setupNetworkInterfaceActionsDropdown();
+
+    // Setup network devices actions dropdown menu (⋮) for desktop
+    this.setupDevicesActionsDropdown();
+
+    // Global handler for all dropdowns - close on outside click
+    this.setupGlobalDropdownHandlers();
+  },
+
+  /**
+   * Global dropdown handlers (click outside & Escape)
+   * Shared by WiFi, Interfaces, and Devices dropdowns
+   */
+  setupGlobalDropdownHandlers() {
+    // Prevent duplicate initialization
+    if (this._globalDropdownHandlersInit) return;
+    this._globalDropdownHandlersInit = true;
+
+    // Close all dropdowns on outside click
+    document.addEventListener("click", (ev) => {
+      if (
+        !ev.target.closest(".actions-dropdown") &&
+        !ev.target.closest(".actions-toggle")
+      ) {
+        document.querySelectorAll(".actions-dropdown.open").forEach((d) => {
+          d.classList.remove("open");
+        });
+      }
+    });
+
+    // Close all dropdowns on Escape key
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape") {
+        document.querySelectorAll(".actions-dropdown.open").forEach((d) => {
+          d.classList.remove("open");
+        });
+      }
+    });
   },
 
   handleMenuExpand(ev) {
@@ -309,7 +346,7 @@ return baseclass.extend({
     const ul2 = a.nextElementSibling;
     const isMobile = window.matchMedia("(max-width: 800px)").matches;
     const isTouchLike = window.matchMedia(
-      "(hover: none), (pointer: coarse)"
+      "(hover: none), (pointer: coarse)",
     ).matches;
 
     // On desktop with mouse/hover, do not toggle persistent dropdown state.
@@ -378,7 +415,7 @@ return baseclass.extend({
       const isActive = L.env.dispatchpath[l] == child.name;
       const activeClass = "mainmenu-item-%s%s".format(
         child.name,
-        isActive ? " selected" : ""
+        isActive ? " selected" : "",
       );
 
       // Для родительских пунктов (l == 1) ссылка ведёт на первый дочерний элемент
@@ -400,10 +437,10 @@ return baseclass.extend({
               href: menuHref,
               click: l == 1 ? ui.createHandlerFn(this, "handleMenuExpand") : "",
             },
-            [_(child.title)]
+            [_(child.title)],
           ),
           this.renderMainMenu(child, url + "/" + child.name, l),
-        ])
+        ]),
       );
     });
 
@@ -417,8 +454,14 @@ return baseclass.extend({
     const children = ui.menu.getChildren(tree);
 
     children.forEach((child, index) => {
-      const isActive = L.env.requestpath.length
-        ? child.name === L.env.requestpath[0]
+      const firstPathItem = L.env.requestpath?.length
+        ? L.env.requestpath[0]
+        : L.env.dispatchpath?.length
+          ? L.env.dispatchpath[0]
+          : null;
+
+      const isActive = firstPathItem
+        ? child.name === firstPathItem
         : index === 0;
 
       if (index > 0) menu.appendChild(E([], ["\u00a0|\u00a0"]));
@@ -426,7 +469,7 @@ return baseclass.extend({
       menu.appendChild(
         E("div", { class: isActive ? "active" : "" }, [
           E("a", { href: L.url(child.name) }, [_(child.title)]),
-        ])
+        ]),
       );
 
       if (isActive) this.renderMainMenu(child, child.name);
@@ -452,7 +495,7 @@ return baseclass.extend({
       ul.appendChild(
         E("li", { class: className }, [
           E("a", { href: L.url(url, child.name) }, [_(child.title)]),
-        ])
+        ]),
       );
 
       if (isActive) activeNode = child;
@@ -463,7 +506,7 @@ return baseclass.extend({
 
     if (activeNode)
       container.appendChild(
-        this.renderTabMenu(activeNode, url + "/" + activeNode.name, l)
+        this.renderTabMenu(activeNode, url + "/" + activeNode.name, l),
       );
 
     return ul;
@@ -539,7 +582,7 @@ return baseclass.extend({
 
         const headers = [];
         const headerRow = table.querySelector(
-          "thead tr, tr.cbi-section-table-titles"
+          "thead tr, tr.cbi-section-table-titles",
         );
 
         if (headerRow) {
@@ -595,7 +638,7 @@ return baseclass.extend({
 
     // Step 1: Parse radio rows to get their frequencies
     const radioRows = wirelessTable.querySelectorAll(
-      'tr[data-section-id^="radio"]'
+      'tr[data-section-id^="radio"]',
     );
     radioRows.forEach((row) => {
       const radioId = row.getAttribute("data-section-id"); // e.g., "radio0"
@@ -632,7 +675,7 @@ return baseclass.extend({
 
     // Step 2: Assign frequencies to wifinet rows based on their parent radio
     const wifinetRows = wirelessTable.querySelectorAll(
-      'tr[data-section-id^="wifinet"]'
+      'tr[data-section-id^="wifinet"]',
     );
     wifinetRows.forEach((row) => {
       // Skip if already processed
@@ -683,13 +726,17 @@ return baseclass.extend({
    * Converts action buttons in #cbi-wireless into a compact dropdown
    */
   setupWirelessActionsDropdown() {
+    // Prevent duplicate initialization
+    if (this._wirelessDropdownInit) return;
+    this._wirelessDropdownInit = true;
+
     const installDropdowns = () => {
       const wirelessSection = document.querySelector("#cbi-wireless");
       if (!wirelessSection) return;
 
       // Find all action cells in wireless table
       const actionCells = wirelessSection.querySelectorAll(
-        "td.cbi-section-actions"
+        "td.cbi-section-actions",
       );
 
       actionCells.forEach((cell) => {
@@ -701,7 +748,7 @@ return baseclass.extend({
         if (!wrapper) return;
 
         const buttons = Array.from(
-          wrapper.querySelectorAll("button, input[type='button'], .cbi-button")
+          wrapper.querySelectorAll("button, input[type='button'], .cbi-button"),
         );
         if (buttons.length === 0) return;
 
@@ -751,27 +798,6 @@ return baseclass.extend({
         cell.classList.add("actions-dropdown-ready");
       });
     };
-
-    // Close dropdowns on outside click
-    document.addEventListener("click", (ev) => {
-      if (
-        !ev.target.closest(".actions-dropdown") &&
-        !ev.target.closest(".actions-toggle")
-      ) {
-        document.querySelectorAll(".actions-dropdown.open").forEach((d) => {
-          d.classList.remove("open");
-        });
-      }
-    });
-
-    // Close on Escape key
-    document.addEventListener("keydown", (ev) => {
-      if (ev.key === "Escape") {
-        document.querySelectorAll(".actions-dropdown.open").forEach((d) => {
-          d.classList.remove("open");
-        });
-      }
-    });
 
     // Run initially with delay for LuCI to render
     setTimeout(installDropdowns, 300);
@@ -802,13 +828,17 @@ return baseclass.extend({
    * Converts action buttons in #cbi-network-interface into a compact dropdown
    */
   setupNetworkInterfaceActionsDropdown() {
+    // Prevent duplicate initialization
+    if (this._interfaceDropdownInit) return;
+    this._interfaceDropdownInit = true;
+
     const installDropdowns = () => {
       const networkSection = document.querySelector("#cbi-network-interface");
       if (!networkSection) return;
 
       // Find all action cells in network interface table
       const actionCells = networkSection.querySelectorAll(
-        "table.cbi-section-table td.cbi-section-actions"
+        "table.cbi-section-table td.cbi-section-actions",
       );
 
       actionCells.forEach((cell) => {
@@ -820,7 +850,7 @@ return baseclass.extend({
         if (!wrapper) return;
 
         const buttons = Array.from(
-          wrapper.querySelectorAll("button, input[type='button'], .cbi-button")
+          wrapper.querySelectorAll("button, input[type='button'], .cbi-button"),
         );
         if (buttons.length === 0) return;
 
@@ -871,31 +901,6 @@ return baseclass.extend({
       });
     };
 
-    // Close dropdowns on outside click or when menu is not in focus
-    const closeAllNetworkDropdowns = () => {
-      document
-        .querySelectorAll("#cbi-network-interface .actions-dropdown.open")
-        .forEach((d) => {
-          d.classList.remove("open");
-        });
-    };
-
-    document.addEventListener("click", (ev) => {
-      if (
-        !ev.target.closest(".actions-dropdown") &&
-        !ev.target.closest(".actions-toggle")
-      ) {
-        closeAllNetworkDropdowns();
-      }
-    });
-
-    // Close on Escape key
-    document.addEventListener("keydown", (ev) => {
-      if (ev.key === "Escape") {
-        closeAllNetworkDropdowns();
-      }
-    });
-
     // Run initially with delay for LuCI to render
     setTimeout(installDropdowns, 300);
 
@@ -913,6 +918,137 @@ return baseclass.extend({
       childList: true,
       subtree: true,
     });
+  },
+
+  /**
+   * Network devices actions dropdown menu (⋮)
+   * Converts action buttons in #cbi-network-device into a compact dropdown
+   * Only for desktop (width >= 800px)
+   */
+  setupDevicesActionsDropdown() {
+    // Prevent duplicate initialization
+    if (this._devicesDropdownInit) return;
+    this._devicesDropdownInit = true;
+
+    const installDropdowns = () => {
+      // Only for desktop
+      if (window.innerWidth < 800) return;
+
+      const devicesSection = document.querySelector("#cbi-network-device");
+      if (!devicesSection) return;
+
+      // Find all action cells in network devices table
+      const actionCells = devicesSection.querySelectorAll(
+        "td.cbi-section-actions",
+      );
+
+      actionCells.forEach((cell) => {
+        // Skip if already processed
+        if (cell.classList.contains("actions-dropdown-ready")) return;
+
+        // Try to find buttons directly or inside a div wrapper
+        let buttons = Array.from(
+          cell.querySelectorAll("button, input[type='button'], .cbi-button"),
+        );
+
+        // Filter out already created toggle buttons
+        buttons = buttons.filter(
+          (btn) => !btn.classList.contains("actions-toggle"),
+        );
+
+        if (buttons.length === 0) return;
+
+        // Find or create wrapper
+        let wrapper = cell.querySelector("div");
+        if (!wrapper) {
+          wrapper = document.createElement("div");
+          buttons.forEach((btn) => wrapper.appendChild(btn));
+          cell.insertBefore(wrapper, cell.firstChild);
+        }
+
+        // Create toggle button (⋮)
+        const toggle = document.createElement("button");
+        toggle.className = "actions-toggle";
+        toggle.innerHTML = "⋮";
+        toggle.setAttribute("aria-label", "Actions menu");
+        toggle.setAttribute("type", "button");
+
+        // Create dropdown container
+        const dropdown = document.createElement("div");
+        dropdown.className = "actions-dropdown";
+
+        // MOVE original buttons into dropdown (not clone!) to preserve event handlers
+        buttons.forEach((btn) => {
+          dropdown.appendChild(btn);
+        });
+
+        // Hide original empty wrapper
+        wrapper.style.display = "none";
+
+        // Toggle dropdown on click
+        toggle.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          ev.preventDefault();
+
+          // Close other open dropdowns
+          document.querySelectorAll(".actions-dropdown.open").forEach((d) => {
+            if (d !== dropdown) d.classList.remove("open");
+          });
+
+          dropdown.classList.toggle("open");
+        });
+
+        // Close dropdown after button click
+        dropdown.addEventListener("click", (ev) => {
+          if (ev.target.matches("button, input[type='button'], .cbi-button")) {
+            setTimeout(() => {
+              dropdown.classList.remove("open");
+            }, 100);
+          }
+        });
+
+        cell.appendChild(toggle);
+        cell.appendChild(dropdown);
+        cell.classList.add("actions-dropdown-ready");
+      });
+    };
+
+    // Run initially with delay for LuCI to render
+    setTimeout(installDropdowns, 300);
+    setTimeout(installDropdowns, 600); // Additional attempt after longer delay
+    setTimeout(installDropdowns, 1000); // Final attempt for slow-loading content
+
+    // Run on window resize
+    window.addEventListener("resize", installDropdowns);
+
+    // Run on DOM changes (for dynamic content like LuCI updates)
+    const observer = new MutationObserver(() => {
+      setTimeout(installDropdowns, 150);
+    });
+
+    const devicesContainer =
+      document.querySelector("#cbi-network-device") || document.body;
+    observer.observe(devicesContainer, {
+      childList: true,
+      subtree: true,
+    });
+
+    // Watch for tab activation
+    const tabObserver = new MutationObserver(() => {
+      const devicesSection = document.querySelector("#cbi-network-device");
+      if (devicesSection && devicesSection.dataset.tabActive === "true") {
+        setTimeout(installDropdowns, 200);
+      }
+    });
+
+    const cbiNetwork = document.querySelector("#cbi-network");
+    if (cbiNetwork) {
+      tabObserver.observe(cbiNetwork, {
+        attributes: true,
+        attributeFilter: ["data-tab-active"],
+        subtree: true,
+      });
+    }
   },
 
   initThemeSettings() {
@@ -958,12 +1094,12 @@ return baseclass.extend({
       const settingsHTML = `
         <div id="proton-theme-settings" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
           <h4 style="margin: 0 0 1rem 0; font-size: 0.95rem; font-weight: 600; color: var(--proton-accent); opacity: 0.9;">${t(
-            "Proton2025 Theme Settings"
+            "Proton2025 Theme Settings",
           )}</h4>
           
           <div class="cbi-value">
             <label class="cbi-value-title" for="proton-mode-select">${t(
-              "Theme Mode"
+              "Theme Mode",
             )}</label>
             <div class="cbi-value-field">
               <select id="proton-mode-select" class="cbi-input-select">
@@ -975,14 +1111,14 @@ return baseclass.extend({
                 }>${t("Light")}</option>
               </select>
               <div class="cbi-value-description">${t(
-                "Choose light or dark theme"
+                "Choose light or dark theme",
               )}</div>
             </div>
           </div>
 
           <div class="cbi-value">
             <label class="cbi-value-title" for="proton-accent-select">${t(
-              "Accent Color"
+              "Accent Color",
             )}</label>
             <div class="cbi-value-field">
               <select id="proton-accent-select" class="cbi-input-select">
@@ -1006,14 +1142,14 @@ return baseclass.extend({
                 }>${t("Red")}</option>
               </select>
               <div class="cbi-value-description">${t(
-                "Choose theme accent color"
+                "Choose theme accent color",
               )}</div>
             </div>
           </div>
 
           <div class="cbi-value">
             <label class="cbi-value-title" for="proton-radius-select">${t(
-              "Border Radius"
+              "Border Radius",
             )}</label>
             <div class="cbi-value-field">
               <select id="proton-radius-select" class="cbi-input-select">
@@ -1028,14 +1164,14 @@ return baseclass.extend({
                 }>${t("Extra Rounded")}</option>
               </select>
               <div class="cbi-value-description">${t(
-                "Corner rounding style"
+                "Corner rounding style",
               )}</div>
             </div>
           </div>
 
           <div class="cbi-value">
             <label class="cbi-value-title" for="proton-zoom-range">${t(
-              "Zoom"
+              "Zoom",
             )} <span id="proton-zoom-value">${settings.zoom}%</span></label>
             <div class="cbi-value-field">
               <div style="display: flex; align-items: center; gap: 12px;">
@@ -1045,18 +1181,18 @@ return baseclass.extend({
                 }" style="flex: 1; accent-color: var(--proton-accent);">
                 <button type="button" id="proton-zoom-plus" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">+</button>
                 <button type="button" id="proton-zoom-reset" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">${t(
-                  "Reset"
+                  "Reset",
                 )}</button>
               </div>
               <div class="cbi-value-description">${t(
-                "Interface scale"
+                "Interface scale",
               )} (75% - 150%)</div>
             </div>
           </div>
 
           <div class="cbi-value">
             <label class="cbi-value-title" for="proton-animations-check">${t(
-              "Animations"
+              "Animations",
             )}</label>
             <div class="cbi-value-field">
               <div class="cbi-checkbox">
@@ -1066,14 +1202,14 @@ return baseclass.extend({
                 <label for="proton-animations-check"></label>
               </div>
               <div class="cbi-value-description">${t(
-                "Enable smooth transitions and effects"
+                "Enable smooth transitions and effects",
               )}</div>
             </div>
           </div>
 
           <div class="cbi-value">
             <label class="cbi-value-title" for="proton-transparency-check">${t(
-              "Transparency"
+              "Transparency",
             )}</label>
             <div class="cbi-value-field">
               <div class="cbi-checkbox">
@@ -1083,14 +1219,14 @@ return baseclass.extend({
                 <label for="proton-transparency-check"></label>
               </div>
               <div class="cbi-value-description">${t(
-                "Enable blur and transparency effects"
+                "Enable blur and transparency effects",
               )}</div>
             </div>
           </div>
 
           <div class="cbi-value">
             <label class="cbi-value-title" for="proton-services-widget-check">${t(
-              "Services Widget"
+              "Services Widget",
             )}</label>
             <div class="cbi-value-field">
               <div class="cbi-checkbox">
@@ -1100,14 +1236,14 @@ return baseclass.extend({
                 <label for="proton-services-widget-check"></label>
               </div>
               <div class="cbi-value-description">${t(
-                "Show services monitor on Overview page"
+                "Show services monitor on Overview page",
               )}</div>
             </div>
           </div>
 
           <div class="cbi-value">
             <label class="cbi-value-title" for="proton-temp-widget-check">${t(
-              "Temperature Widget"
+              "Temperature Widget",
             )}</label>
             <div class="cbi-value-field">
               <div class="cbi-checkbox">
@@ -1117,14 +1253,14 @@ return baseclass.extend({
                 <label for="proton-temp-widget-check"></label>
               </div>
               <div class="cbi-value-description">${t(
-                "Show temperature monitor on Overview page"
+                "Show temperature monitor on Overview page",
               )}</div>
             </div>
           </div>
 
           <div class="cbi-value">
             <label class="cbi-value-title" for="proton-services-log-check">${t(
-              "Widget Log"
+              "Widget Log",
             )}</label>
             <div class="cbi-value-field">
               <div class="cbi-checkbox">
@@ -1134,14 +1270,14 @@ return baseclass.extend({
                 <label for="proton-services-log-check"></label>
               </div>
               <div class="cbi-value-description">${t(
-                "Show activity log under the widget"
+                "Show activity log under the widget",
               )}</div>
             </div>
           </div>
 
           <div class="cbi-value">
             <label class="cbi-value-title" for="proton-table-wrap-check">${t(
-              "Table Text Wrap"
+              "Table Text Wrap",
             )}</label>
             <div class="cbi-value-field">
               <div class="cbi-checkbox">
@@ -1151,7 +1287,7 @@ return baseclass.extend({
                 <label for="proton-table-wrap-check"></label>
               </div>
               <div class="cbi-value-description">${t(
-                "Wrap long AP names in Associated Stations table. Disable to truncate with ellipsis."
+                "Wrap long AP names in Associated Stations table. Disable to truncate with ellipsis.",
               )}</div>
             </div>
           </div>
@@ -1170,10 +1306,10 @@ return baseclass.extend({
       const radiusSelect = document.getElementById("proton-radius-select");
       const fontsizeSelect = document.getElementById("proton-fontsize-select");
       const animationsCheck = document.getElementById(
-        "proton-animations-check"
+        "proton-animations-check",
       );
       const transparencyCheck = document.getElementById(
-        "proton-transparency-check"
+        "proton-transparency-check",
       );
 
       modeSelect?.addEventListener("change", (e) => {
@@ -1226,14 +1362,21 @@ return baseclass.extend({
         localStorage.setItem("proton-zoom", displayValue);
         this.applyZoom(displayValue);
         updateSliderFill(zoomRange);
+
+        // Trigger sync to UCI
+        window.dispatchEvent(
+          new CustomEvent("proton-setting-changed", {
+            detail: { key: "proton-zoom", value: displayValue },
+          }),
+        );
       };
 
       zoomRange?.addEventListener("input", (e) => updateZoom(e.target.value));
       zoomMinus?.addEventListener("click", () =>
-        updateZoom(parseInt(zoomRange.value) - 5)
+        updateZoom(parseInt(zoomRange.value) - 5),
       );
       zoomPlus?.addEventListener("click", () =>
-        updateZoom(parseInt(zoomRange.value) + 5)
+        updateZoom(parseInt(zoomRange.value) + 5),
       );
       zoomReset?.addEventListener("click", () => updateZoom(100));
 
@@ -1250,7 +1393,7 @@ return baseclass.extend({
       });
 
       const servicesWidgetCheck = document.getElementById(
-        "proton-services-widget-check"
+        "proton-services-widget-check",
       );
       servicesWidgetCheck?.addEventListener("change", (e) => {
         const enabled = e.target.checked;
@@ -1267,7 +1410,7 @@ return baseclass.extend({
       });
 
       const tempWidgetCheck = document.getElementById(
-        "proton-temp-widget-check"
+        "proton-temp-widget-check",
       );
       tempWidgetCheck?.addEventListener("change", (e) => {
         const enabled = e.target.checked;
@@ -1284,7 +1427,7 @@ return baseclass.extend({
       });
 
       const servicesLogCheck = document.getElementById(
-        "proton-services-log-check"
+        "proton-services-log-check",
       );
       servicesLogCheck?.addEventListener("change", (e) => {
         const enabled = e.target.checked;
@@ -1367,7 +1510,7 @@ return baseclass.extend({
     document.documentElement.style.setProperty("--proton-accent", c.accent);
     document.documentElement.style.setProperty(
       "--proton-accent-hover",
-      c.hover
+      c.hover,
     );
     document.documentElement.style.setProperty("--proton-accent-glow", c.glow);
   },

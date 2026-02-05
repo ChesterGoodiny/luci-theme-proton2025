@@ -28,14 +28,15 @@ An elegant LuCI theme (OpenWrt 23.x+) with a dark design and optional light mode
 
 ## Features
 
-- 🌙 Dark glass/blur design
+- 🌙 Dark glass/blur design with optional light mode
 - 🎨 Customizable accent color, border radius, zoom
 - 📱 Responsive layout for mobile devices
 - ⚡ Compatible with LuCI ucode (OpenWrt 23.x+)
 - 📊 Services monitoring widget on Status → Overview page
 - 🌡️ Temperature monitoring widget with thermal sensors
 - 📈 Elegant Load Average visualization with color-coded progress bars
-- 🌐 Multi-language support (9 languages: EN, RU, ZH, DE, UK, ES, PT, PL, FR, IT)
+- 🔌 Automatic styling for third-party packages and custom pages
+- 🌐 Multi-language support (10 languages: EN, RU, ZH, DE, UK, ES, PT, PL, FR, IT)
 - 🔄 Settings sync across browsers/devices (localStorage + UCI)
 
 ## Widgets
@@ -69,7 +70,7 @@ Available at **System → System → Language and Style**:
 - Animations and transparency
 - Services widget (enable/disable, grouping, log)
 - Temperature widget (enable/disable)
-- Table text wrap (for Wireless Associated Stations)
+- Table text wrap (wraps long AP names in Wireless Associated Stations table)
 
 ### Settings Synchronization
 
@@ -88,38 +89,38 @@ Benefits:
 
 ### Recommended: Install from IPK Package
 
-Download the latest release (`*_all.ipk` is universal and works on any architecture):
+**On your OpenWrt router** (via SSH), download and install the latest release:
+
+> 📦 The `*_all.ipk` package is universal and works on any architecture
 
 ```bash
 wget https://github.com/ChesterGoodiny/luci-theme-proton2025/releases/latest/download/luci-theme-proton2025_*_all.ipk
 opkg install luci-theme-proton2025_*_all.ipk
 ```
 
-Or download from [GitHub Releases](https://github.com/ChesterGoodiny/luci-theme-proton2025/releases) manually.
+Or download manually from [GitHub Releases](https://github.com/ChesterGoodiny/luci-theme-proton2025/releases) and upload to your router.
 
-If you updated and don’t see changes (e.g. icons), do a hard refresh (Ctrl+F5) or clear the browser cache.
+> 💡 **Tip:** If you updated and don't see changes (e.g. icons), do a hard refresh (Ctrl+F5) or clear the browser cache.
 
 **Benefits:**
 
-- ✅ Includes compiled translations
+- ✅ Includes all translations
 - ✅ Proper package management (easy updates/removal)
 - ✅ Dependency tracking
 
 ### Quick Install (Testing Only)
 
-> ⚠️ **Note:** This method is intended for testing purposes. Translations may not work if the release has not yet been created on GitHub.
+**On your OpenWrt router** (via SSH):
+
+> ⚠️ **Note:** This method is intended for testing purposes only.
 
 ```bash
 wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/install.sh | sh
 ```
 
-Or:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/install.sh | sh
-```
-
 ### Building Packages from Source
+
+**On your build machine** (where you have OpenWrt SDK/buildroot):
 
 ```bash
 cd ~/openwrt
@@ -129,12 +130,22 @@ make menuconfig  # LuCI -> Themes -> luci-theme-proton2025
 make package/luci-theme-proton2025/compile V=s
 ```
 
+The compiled `.ipk` file will be in `bin/packages/*/luci/`
+
 ## Removal
+
+**On your OpenWrt router** (via SSH):
 
 ```bash
 wget -O uninstall.sh https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/uninstall.sh
 chmod +x uninstall.sh
 ./uninstall.sh
+```
+
+Or simply remove the package:
+
+```bash
+opkg remove luci-theme-proton2025
 ```
 
 ### Revert to Default Theme
@@ -153,10 +164,12 @@ luci-theme-proton2025/
 ├── htdocs/luci-static/
 │   ├── proton2025/
 │   │   ├── cascade.css
+│   │   ├── custom-pages.js
 │   │   ├── services-widget.js
 │   │   ├── settings-sync.js
 │   │   ├── translations.js
 │   │   ├── icons/
+│   │   ├── brand.svg
 │   │   ├── logo.svg
 │   │   └── spinner.svg
 │   └── resources/menu-proton2025.js

@@ -7,6 +7,40 @@
 (function () {
   "use strict";
 
+  // Some LuCI entrypoints (e.g. /cgi-bin/luci/) may render a view while keeping
+  // ctx.request_path empty, resulting in an empty body[data-page].
+  // Populate it from LuCI dispatchpath to keep page-specific CSS/JS consistent.
+  try {
+    if (typeof L !== "undefined" && L.env) {
+      let canonical = null;
+
+      // LuCI aliases: /admin/ and /admin/status/ often resolve to the Overview view
+      // but may have requestpath like ["admin"] or ["admin", "status"].
+      // Nodespec action is a stable way to identify the Overview template.
+      if (L.env.nodespec && L.env.nodespec.action) {
+        const action = L.env.nodespec.action;
+        if (
+          action.type === "template" &&
+          action.path === "admin_status/index"
+        ) {
+          canonical = "admin-status-overview";
+        }
+      }
+
+      if (
+        !canonical &&
+        Array.isArray(L.env.dispatchpath) &&
+        L.env.dispatchpath.length
+      ) {
+        canonical = L.env.dispatchpath.join("-");
+      }
+
+      if (canonical && document.body.dataset.page !== canonical) {
+        document.body.dataset.page = canonical;
+      }
+    }
+  } catch (e) {}
+
   // Список стандартных LuCI страниц (используют Proton стили)
   const standardPagePrefixes = [
     "admin-status",

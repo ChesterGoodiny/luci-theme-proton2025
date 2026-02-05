@@ -2443,11 +2443,64 @@
   // Позиция строки Load Average в таблице System (9-я строка, индекс 8)
   const LOAD_AVERAGE_ROW_INDEX = 8;
 
-  function enhanceLoadAverage() {
-    // Находим таблицу System на странице Overview
-    const table = document.querySelector(
+  function isOverviewPage() {
+    if (document.body.dataset.page === "admin-status-overview") return true;
+    if (window.location.pathname.includes("/admin/status/overview"))
+      return true;
+    if (window.location.pathname.match(/\/admin\/?$/)) return true;
+    if (window.location.pathname.match(/\/admin\/status\/?$/)) return true;
+
+    try {
+      if (
+        window.L &&
+        L.env &&
+        Array.isArray(L.env.dispatchpath) &&
+        L.env.dispatchpath.join("/") === "admin/status/overview"
+      ) {
+        return true;
+      }
+
+      if (
+        window.L &&
+        L.env &&
+        Array.isArray(L.env.dispatchpath) &&
+        L.env.dispatchpath.join("/") === "admin/status"
+      ) {
+        return true;
+      }
+
+      if (window.L && L.env && L.env.nodespec && L.env.nodespec.action) {
+        const action = L.env.nodespec.action;
+        if (
+          action.type === "template" &&
+          action.path === "admin_status/index"
+        ) {
+          return true;
+        }
+      }
+    } catch (e) {}
+
+    return false;
+  }
+
+  function getOverviewSystemTable() {
+    // Preferred selector when body[data-page] is present
+    const byDataPage = document.querySelector(
       'body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table',
     );
+    if (byDataPage) return byDataPage;
+
+    // Fallback: when entering via /cgi-bin/luci/ request_path may be empty,
+    // so body[data-page] may be missing or set later.
+    if (!isOverviewPage()) return null;
+    return document.querySelector(
+      "#view .cbi-section:first-of-type table.table, #maincontent #view .cbi-section:first-of-type table.table",
+    );
+  }
+
+  function enhanceLoadAverage() {
+    // Находим таблицу System на странице Overview
+    const table = getOverviewSystemTable();
 
     if (!table) return;
 
@@ -2484,6 +2537,8 @@
 
     // Уже обработано?
     if (secondCell.querySelector(".proton-load-average")) return;
+
+    row.classList.add("proton-load-row");
 
     // Парсим значения
     const loadValues = loadText.split(/[,\s]+/).filter((v) => v);
@@ -2602,10 +2657,7 @@
 
   // Запускаем enhancement после загрузки страницы
   function initLoadAverageEnhancement() {
-    if (
-      document.body.dataset.page === "admin-status-overview" ||
-      window.location.pathname.includes("/admin/status/overview")
-    ) {
+    if (isOverviewPage()) {
       let observer = null;
       let lastEnhanceTime = 0;
       const enhanceThrottle = 200; // Минимальный интервал между обновлениями
@@ -2619,9 +2671,7 @@
         lastEnhanceTime = now;
 
         // Проверяем, не был ли уже применен enhancement
-        const table = document.querySelector(
-          'body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table',
-        );
+        const table = getOverviewSystemTable();
         if (!table) return;
 
         const rows = table.querySelectorAll("tr");
@@ -2672,9 +2722,7 @@
 
       // Первоначальная инициализация
       const initCheck = setInterval(() => {
-        const table = document.querySelector(
-          'body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table',
-        );
+        const table = getOverviewSystemTable();
         if (table && table.querySelectorAll("tr").length > 0) {
           enhanceLoadAverage();
           clearInterval(initCheck);

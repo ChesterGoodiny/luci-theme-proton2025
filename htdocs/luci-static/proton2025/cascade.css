@@ -1921,11 +1921,6 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     flex: 0 0 auto;
 }
 
-#cbi-wireless tr[data-section-id^="radio"] .cbi-section-actions .cbi-button {
-    /* font-size: 0.8rem; */
-    /* padding: 6px 12px; */
-}
-
 /* WiFi сети - вложенные карточки (любой section-id кроме radio*) */
 #cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) {
     display: flex;
@@ -2390,7 +2385,7 @@ table.assoclist td[data-title="Скорость приёма / отправки"
    Network Devices Actions - Dropdown (⋮) - Desktop only
    ===================================================== */
 
-/* Hide original buttons on desktop (≥800px) */
+/* Hide original buttons on desktop (≥800px) ONLY if dropdown is ready */
 @media (min-width: 800px) {
 
     /* Position for actions cell */
@@ -2399,6 +2394,7 @@ table.assoclist td[data-title="Скорость приёма / отправки"
         overflow: visible !important;
     }
 
+    /* Hide original button wrapper on desktop */
     #cbi-network-device td.cbi-section-actions>div {
         display: none !important;
     }
@@ -3609,6 +3605,11 @@ body.modal-overlay-active #modal_overlay {
     }
 }
 
+.modal.spinning {
+    /* Отключаем transition, чтобы не было анимации при изменении */
+    transition: none !important;
+}
+
 /* =====================================================
    Page Actions
    ===================================================== */
@@ -3893,10 +3894,6 @@ body.modal-overlay-active #modal_overlay {
 
     #mainmenu>div {
         position: static;
-    }
-
-    #mainmenu ul>li {
-        /*padding: 2px 0;*/
     }
 
     #mainmenu .mainmenu.l1>li>a {
@@ -7355,6 +7352,11 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
     background: var(--proton-accent-glow);
 }
 
+/* Fallback: если data-page отсутствует, но enhancement применён */
+.proton-load-row:hover {
+    background: var(--proton-accent-glow);
+}
+
 /* Load Average значения */
 .proton-load-average {
     display: flex;
@@ -8025,10 +8027,6 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     border-bottom-color: rgba(255, 255, 255, 0.98);
 }
 
-:root[data-theme="light"] .proton-temp-widget {
-    /*box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);*/
-}
-
 :root[data-theme="light"] .proton-temp-card {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
@@ -8043,10 +8041,6 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
 }
 
 /* Light theme for Services Widget */
-:root[data-theme="light"] .proton-services-widget {
-    /*box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);*/
-}
-
 :root[data-theme="light"] .proton-service-card {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
@@ -9168,9 +9162,8 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     font-size: 12px;
     color: var(--proton-fg-secondary);
     margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .proton-service-item-add {

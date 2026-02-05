@@ -242,7 +242,9 @@
 <style title="text/css">{{ css }}</style>
 {% endif %}
 </head>
-<body class="lang_{{ dispatcher.lang }}" data-page="{{ entityencode(join('-', ctx.request_path), true) }}">
+{% let __page = join('-', ctx.request_path); %}
+{% if (!__page && ctx.dispatch_path): __page = join('-', ctx.dispatch_path); endif %}
+<body class="lang_{{ dispatcher.lang }}" data-page="{{ entityencode(__page, true) }}">
 
 <p class="skiplink">
 <span id="skiplink1"><a href="#navigation">{{ _('Skip to navigation') }}</a></span>
