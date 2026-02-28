@@ -142,9 +142,11 @@ jobs:
           INSTALLED_SIZE="${{ steps.prepare.outputs.size }}"
 
           mkdir -p apk-build
+
+          # Копируем файлы с правильной структурой (без префикса /)
           cp -r pkg-data/* apk-build/
 
-          # Создаём .PKGINFO (метаданные APK пакета)
+          # Создаём .PKGINFO (метаданные APK пакета) с правильным форматом
           cat > apk-build/.PKGINFO << PKGINFO_END
           pkgname = ${PKG_NAME}
           pkgver = ${VERSION}-r1
@@ -156,7 +158,6 @@ jobs:
           origin = ${PKG_NAME}
           depend = luci-base
           PKGINFO_END
-          sed -i 's/^[[:space:]]*//' apk-build/.PKGINFO
 
           # Создаём .post-install скрипт
           cat > apk-build/.post-install << 'POSTINSTALL_END'
@@ -166,7 +167,6 @@ jobs:
           /etc/init.d/rpcd restart 2>/dev/null || true
           exit 0
           POSTINSTALL_END
-          sed -i 's/^[[:space:]]*//' apk-build/.post-install
           chmod 755 apk-build/.post-install
 
           # Создаём .pre-deinstall скрипт
@@ -176,17 +176,26 @@ jobs:
           uci -q commit luci
           exit 0
           PREDEINSTALL_END
-          sed -i 's/^[[:space:]]*//' apk-build/.pre-deinstall
           chmod 755 apk-build/.pre-deinstall
 
           # Собираем APK (Alpine Package format)
+          # APK требует gzip сжатие и определенный порядок файлов
           cd apk-build
-          # APK требует определенный порядок и формат: используем gzip без verbose
-          tar --sort=name --owner=0 --group=0 --mtime='1970-01-01' -czf "../${PKG_NAME}_${VERSION}_all.apk" .PKGINFO .post-install .pre-deinstall www usr etc
+
+          # Создаем список файлов для архива (метаданные идут первыми)
+          find . -type f -o -type l | grep -v '^\./\.' | sort > .file-list
+
+          # Упаковываем: сначала метаданные, потом файлы
+          tar -czf "../${PKG_NAME}_${VERSION}_all.apk" \
+            --owner=0 --group=0 \
+            --numeric-owner \
+            .PKGINFO .post-install .pre-deinstall \
+            $(cat .file-list)
+
           cd ..
 
           echo "Built APK: ${PKG_NAME}_${VERSION}_all.apk"
-          ls -la *.apk
+          ls -lh *.apk
 
       - name: Upload IPK artifact
         uses: actions/upload-artifact@v4
