@@ -27,7 +27,7 @@ if [ ! -f /etc/config/proton2025 ]; then
 	uci set proton2025.settings.animations='1'
 	uci set proton2025.settings.services_widget='1'
 	uci set proton2025.settings.temp_widget='1'
-	uci set proton2025.settings.services_log='0'
+	uci set proton2025.settings.widgets_log='0'
 	uci commit proton2025
 fi
 

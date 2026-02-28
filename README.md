@@ -192,6 +192,15 @@ luci-theme-proton2025/
 
 Apache-2.0
 
+### Third-Party Assets
+
+This theme includes the following third-party assets:
+
+- **Inter Font** - Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
+  - Licensed under SIL Open Font License 1.1
+  - License file: `htdocs/luci-static/proton2025/fonts/LICENSE.txt`
+  - Used for consistent typography across all platforms
+
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/ChesterGoodiny/luci-theme-proton2025.svg?variant=adaptive)](https://starchart.cc/ChesterGoodiny/luci-theme-proton2025)

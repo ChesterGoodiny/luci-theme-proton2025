@@ -1,6 +1,6 @@
 {
     "luci-theme-proton2025": {
-        "description": "Proton2025 theme - temperature sensor and settings access",
+        "description": "Proton2025 theme - temperature sensor, setting access, and services monitoring",
         "read": {
             "ubus": {
                 "luci.proton-temp": [
@@ -13,7 +13,15 @@
             },
             "uci": [
                 "proton2025"
-            ]
+            ],
+            "file": {
+                "/etc/init.d/*": [
+                    "exec"
+                ],
+                "/bin/pidof": [
+                    "exec"
+                ]
+            }
         },
         "write": {
             "ubus": {

@@ -67,6 +67,14 @@ window.ProtonTranslations = {
     Close: "Закрыть",
     Reset: "Сброс",
 
+    // Reboot confirmation
+    "Confirm Reboot": "Подтвердите перезагрузку",
+    "Are you sure you want to reboot the system?":
+      "Вы уверены, что хотите перезагрузить систему?",
+    "This action will restart your router and temporarily interrupt network connectivity.":
+      "Это действие перезапустит ваш роутер и временно прервет сетевое соединение.",
+    "Reboot Now": "Перезагрузить",
+
     // Modal - service list
     "Available services": "Доступные сервисы",
     "Selected services": "Выбранные сервисы",
@@ -144,6 +152,9 @@ window.ProtonTranslations = {
     "Extra Rounded": "Сильно скруглённые",
     Zoom: "Масштаб",
     "Interface scale": "Масштаб интерфейса",
+    "Page Width": "Ширина страницы",
+    "Content area width": "Ширина области контента",
+    "Full width": "Во всю ширину",
     Animations: "Анимации",
     "Enable smooth transitions and effects":
       "Включить плавные переходы и эффекты",
@@ -156,6 +167,9 @@ window.ProtonTranslations = {
     "Temperature Widget": "Виджет температуры",
     "Show temperature monitor on Overview page":
       "Показывать монитор температуры на странице обзора",
+    "Deep Service Check": "Глубокая проверка сервисов",
+    "Accurate status for adblock, banip, etc.":
+      "Точный статус для adblock, banip и подобных",
     "Temperature widget enabled. Visit Status → Overview to see it.":
       "Виджет температуры включён. Перейдите в Статус → Обзор, чтобы увидеть его.",
     "Temperature widget disabled.": "Виджет температуры отключён.",
@@ -165,6 +179,36 @@ window.ProtonTranslations = {
     "Table Text Wrap": "Перенос текста (Wireless)",
     "Wrap long AP names in Associated Stations table. Disable to truncate with ellipsis.":
       "Переносить длинные имена AP в таблице Associated Stations. Отключите для обрезки с многоточием.",
+    "Log Highlighting": "Подсветка логов",
+    "Custom log viewer with syntax highlighting, line numbers, and toolbar on System Log and Kernel Log pages.":
+      "Кастомный просмотрщик логов с подсветкой синтаксиса, нумерацией строк и панелью инструментов на страницах Системного журнала и Журнала ядра.",
+    "Custom Font (Inter)": "Шрифт Inter",
+    "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
+      "Использовать встроенный шрифт Inter для единообразного отображения текста на всех устройствах. Отключите, чтобы использовать системный шрифт.",
+
+    // Log Viewer UI
+    lines: "строк",
+    "crit.": "крит.",
+    "err.": "ош.",
+    "warn.": "пред.",
+    "den.": "откл.",
+    "disc.": "дисконн.",
+    ok: "усп.",
+    Critical: "Критические",
+    Errors: "Ошибки",
+    Warnings: "Предупреждения",
+    Denied: "Отклонения",
+    Disconnects: "Отключения",
+    Successful: "Успешные",
+    "Word Wrap": "Перенос строк",
+    "Hide Timestamps": "Скрыть таймстампы",
+    "Copy Log": "Копировать лог",
+    "Download Log": "Скачать лог",
+    "Scroll to Top": "В начало",
+    "Scroll to Bottom": "В конец",
+    "Fullscreen Mode": "Полноэкранный режим",
+    "Exit Fullscreen": "Выйти из полноэкранного режима",
+
     "Services widget enabled. Visit Status → Overview to see it.":
       "Виджет сервисов включён. Перейдите в Статус → Обзор, чтобы увидеть его.",
     "Services widget disabled.": "Виджет сервисов отключён.",
@@ -210,6 +254,22 @@ window.ProtonTranslations = {
     Peak: "Пик",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Мониторинг термодатчиков. Цвета означают: зелёный — норма, жёлтый — тепло, оранжевый — горячо, красный — критично.",
+
+    // Backup & Restore
+    "Backup & Restore": "Резервное копирование",
+    "Export your theme settings to a file or import from a previously saved backup.":
+      "Экспортируйте настройки темы в файл или импортируйте из ранее сохранённой копии.",
+    "Export Settings": "Экспорт настроек",
+    "Import Settings": "Импорт настроек",
+    "Reset to Defaults": "Сбросить по умолчанию",
+    "Are you sure you want to reset all theme settings to defaults? This action cannot be undone.":
+      "Вы уверены, что хотите сбросить все настройки темы? Это действие нельзя отменить.",
+    "Import Settings": "Импорт настроек",
+    "Settings exported successfully": "Настройки успешно экспортированы",
+    "Settings imported successfully": "Настройки успешно импортированы",
+    "Invalid backup file": "Неверный файл резервной копии",
+    "No settings found in file": "В файле не найдено настроек",
+    "Failed to read backup file": "Ошибка чтения файла резервной копии",
   },
 
   zh: {
@@ -274,6 +334,13 @@ window.ProtonTranslations = {
     Add: "添加",
     Close: "关闭",
     Reset: "重置",
+
+    // Reboot confirmation
+    "Confirm Reboot": "确认重启",
+    "Are you sure you want to reboot the system?": "您确定要重启系统吗？",
+    "This action will restart your router and temporarily interrupt network connectivity.":
+      "此操作将重启您的路由器并暂时中断网络连接。",
+    "Reboot Now": "立即重启",
 
     // Modal - service list
     "Available services": "可用服务",
@@ -350,6 +417,9 @@ window.ProtonTranslations = {
     "Extra Rounded": "超圆角",
     Zoom: "缩放",
     "Interface scale": "界面缩放",
+    "Page Width": "页面宽度",
+    "Content area width": "内容区域宽度",
+    "Full width": "全宽",
     Animations: "动画",
     "Enable smooth transitions and effects": "启用平滑过渡和效果",
     Transparency: "透明度",
@@ -358,6 +428,8 @@ window.ProtonTranslations = {
     "Show services monitor on Overview page": "在概览页面显示服务监控",
     "Temperature Widget": "温度小部件",
     "Show temperature monitor on Overview page": "在概览页面显示温度监控",
+    "Deep Service Check": "深度服务检查",
+    "Accurate status for adblock, banip, etc.": "adblock、banip 等的准确状态",
     "Temperature widget enabled. Visit Status → Overview to see it.":
       "温度小部件已启用。前往 状态 → 概览 查看。",
     "Temperature widget disabled.": "温度小部件已禁用。",
@@ -366,6 +438,36 @@ window.ProtonTranslations = {
     "Table Text Wrap": "文本换行（无线）",
     "Wrap long AP names in Associated Stations table. Disable to truncate with ellipsis.":
       "在关联站点表中换行显示长 AP 名称。禁用则用省略号截断。",
+    "Log Highlighting": "日志高亮",
+    "Custom log viewer with syntax highlighting, line numbers, and toolbar on System Log and Kernel Log pages.":
+      "系统日志和内核日志页面的自定义日志查看器，具有语法高亮、行号和工具栏功能。",
+    "Custom Font (Inter)": "自定义字体 (Inter)",
+    "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
+      "使用内置 Inter 字体在所有设备上保持一致的排版。禁用则使用默认系统字体。",
+
+    // Log Viewer UI
+    lines: "行",
+    "crit.": "严重",
+    "err.": "错误",
+    "warn.": "警告",
+    "den.": "拒绝",
+    "disc.": "断开",
+    ok: "成功",
+    Critical: "严重",
+    Errors: "错误",
+    Warnings: "警告",
+    Denied: "拒绝",
+    Disconnects: "断开",
+    Successful: "成功",
+    "Word Wrap": "自动换行",
+    "Hide Timestamps": "隐藏时间戳",
+    "Copy Log": "复制日志",
+    "Download Log": "下载日志",
+    "Scroll to Top": "到顶部",
+    "Scroll to Bottom": "到底部",
+    "Fullscreen Mode": "全屏模式",
+    "Exit Fullscreen": "退出全屏",
+
     "Services widget enabled. Visit Status → Overview to see it.":
       "服务小部件已启用。前往 状态 → 概览 查看。",
     "Services widget disabled.": "服务小部件已禁用。",
@@ -411,6 +513,21 @@ window.ProtonTranslations = {
     Peak: "峰值",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "热传感器监控。颜色表示：绿色 - 正常，黄色 - 温暖，橙色 - 过热，红色 - 危险。",
+
+    // Backup & Restore
+    "Backup & Restore": "备份与恢复",
+    "Export your theme settings to a file or import from a previously saved backup.":
+      "将主题设置导出为文件，或从之前保存的备份中导入。",
+    "Export Settings": "导出设置",
+    "Import Settings": "导入设置",
+    "Reset to Defaults": "恢复默认",
+    "Are you sure you want to reset all theme settings to defaults? This action cannot be undone.":
+      "确定要将所有主题设置恢复为默认值吗？此操作无法撤销。",
+    "Settings exported successfully": "设置导出成功",
+    "Settings imported successfully": "设置导入成功",
+    "Invalid backup file": "无效的备份文件",
+    "No settings found in file": "文件中未找到设置",
+    "Failed to read backup file": "读取备份文件失败",
   },
 
   de: {
@@ -475,6 +592,14 @@ window.ProtonTranslations = {
     Add: "Hinzufügen",
     Close: "Schließen",
     Reset: "Zurücksetzen",
+
+    // Reboot confirmation
+    "Confirm Reboot": "Neustart bestätigen",
+    "Are you sure you want to reboot the system?":
+      "Sind Sie sicher, dass Sie das System neu starten möchten?",
+    "This action will restart your router and temporarily interrupt network connectivity.":
+      "Diese Aktion startet Ihren Router neu und unterbricht vorübergehend die Netzwerkverbindung.",
+    "Reboot Now": "Jetzt neu starten",
 
     // Modal - service list
     "Available services": "Verfügbare Dienste",
@@ -554,6 +679,9 @@ window.ProtonTranslations = {
     "Extra Rounded": "Stark abgerundet",
     Zoom: "Zoom",
     "Interface scale": "Oberflächenskalierung",
+    "Page Width": "Seitenbreite",
+    "Content area width": "Breite des Inhaltsbereichs",
+    "Full width": "Volle Breite",
     Animations: "Animationen",
     "Enable smooth transitions and effects":
       "Sanfte Übergänge und Effekte aktivieren",
@@ -566,6 +694,9 @@ window.ProtonTranslations = {
     "Temperature Widget": "Temperatur-Widget",
     "Show temperature monitor on Overview page":
       "Temperatur-Monitor auf der Übersichtsseite anzeigen",
+    "Deep Service Check": "Tiefgehende Dienst-Prüfung",
+    "Accurate status for adblock, banip, etc.":
+      "Genauer Status für adblock, banip usw.",
     "Temperature widget enabled. Visit Status → Overview to see it.":
       "Temperatur-Widget aktiviert. Besuchen Sie Status → Übersicht, um es zu sehen.",
     "Temperature widget disabled.": "Temperatur-Widget deaktiviert.",
@@ -575,6 +706,36 @@ window.ProtonTranslations = {
     "Table Text Wrap": "Textumbruch (WLAN)",
     "Wrap long AP names in Associated Stations table. Disable to truncate with ellipsis.":
       "Lange AP-Namen in der Tabelle Zugeordnete Stationen umbrechen. Deaktivieren, um mit Auslassungspunkten abzuschneiden.",
+    "Log Highlighting": "Log-Hervorhebung",
+    "Custom log viewer with syntax highlighting, line numbers, and toolbar on System Log and Kernel Log pages.":
+      "Benutzerdefinierter Log-Viewer mit Syntaxhervorhebung, Zeilennummern und Symbolleiste auf den Seiten Systemprotokoll und Kernelprotokoll.",
+    "Custom Font (Inter)": "Schriftart Inter",
+    "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
+      "Verwenden Sie die integrierte Inter-Schriftart für einheitliche Typografie auf allen Geräten. Deaktivieren, um die Standard-Systemschrift zu verwenden.",
+
+    // Log Viewer UI
+    lines: "Zeilen",
+    "crit.": "krit.",
+    "err.": "Fehl.",
+    "warn.": "Warn.",
+    "den.": "abgel.",
+    "disc.": "getr.",
+    ok: "ok",
+    Critical: "Kritisch",
+    Errors: "Fehler",
+    Warnings: "Warnungen",
+    Denied: "Abgelehnt",
+    Disconnects: "Getrennt",
+    Successful: "Erfolgreich",
+    "Word Wrap": "Zeilenumbruch",
+    "Hide Timestamps": "Zeitstempel ausblenden",
+    "Copy Log": "Log kopieren",
+    "Download Log": "Log herunterladen",
+    "Scroll to Top": "Nach oben",
+    "Scroll to Bottom": "Nach unten",
+    "Fullscreen Mode": "Vollbildmodus",
+    "Exit Fullscreen": "Vollbild beenden",
+
     "Services widget enabled. Visit Status → Overview to see it.":
       "Dienste-Widget aktiviert. Besuchen Sie Status → Übersicht, um es zu sehen.",
     "Services widget disabled.": "Dienste-Widget deaktiviert.",
@@ -620,6 +781,18 @@ window.ProtonTranslations = {
     Peak: "Spitze",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Thermosensor-Überwachung. Farben bedeuten: grün - normal, gelb - warm, orange - heiß, rot - kritisch.",
+
+    // Backup & Restore
+    "Backup & Restore": "Sichern & Wiederherstellen",
+    "Export your theme settings to a file or import from a previously saved backup.":
+      "Exportieren Sie Ihre Theme-Einstellungen in eine Datei oder importieren Sie aus einer zuvor gespeicherten Sicherung.",
+    "Export Settings": "Einstellungen exportieren",
+    "Import Settings": "Einstellungen importieren",
+    "Settings exported successfully": "Einstellungen erfolgreich exportiert",
+    "Settings imported successfully": "Einstellungen erfolgreich importiert",
+    "Invalid backup file": "Ungültige Sicherungsdatei",
+    "No settings found in file": "Keine Einstellungen in der Datei gefunden",
+    "Failed to read backup file": "Sicherungsdatei konnte nicht gelesen werden",
   },
 
   uk: {
@@ -684,6 +857,14 @@ window.ProtonTranslations = {
     Add: "Додати",
     Close: "Закрити",
     Reset: "Скинути",
+
+    // Reboot confirmation
+    "Confirm Reboot": "Підтвердіть перезавантаження",
+    "Are you sure you want to reboot the system?":
+      "Ви впевнені, що хочете перезавантажити систему?",
+    "This action will restart your router and temporarily interrupt network connectivity.":
+      "Ця дія перезапустить ваш роутер і тимчасово перерве мережеве з'єднання.",
+    "Reboot Now": "Перезавантажити",
 
     // Modal - service list
     "Available services": "Доступні сервіси",
@@ -762,6 +943,9 @@ window.ProtonTranslations = {
     "Extra Rounded": "Сильно заокруглені",
     Zoom: "Масштаб",
     "Interface scale": "Масштаб інтерфейсу",
+    "Page Width": "Ширина сторінки",
+    "Content area width": "Ширина області вмісту",
+    "Full width": "На всю ширину",
     Animations: "Анімації",
     "Enable smooth transitions and effects":
       "Увімкнути плавні переходи та ефекти",
@@ -774,6 +958,9 @@ window.ProtonTranslations = {
     "Temperature Widget": "Віджет температури",
     "Show temperature monitor on Overview page":
       "Показувати монітор температури на сторінці огляду",
+    "Deep Service Check": "Глибока перевірка сервісів",
+    "Accurate status for adblock, banip, etc.":
+      "Точний статус для adblock, banip та подібних",
     "Temperature widget enabled. Visit Status → Overview to see it.":
       "Віджет температури увімкнено. Перейдіть до Статус → Огляд, щоб побачити його.",
     "Temperature widget disabled.": "Віджет температури вимкнено.",
@@ -783,6 +970,36 @@ window.ProtonTranslations = {
     "Table Text Wrap": "Перенесення тексту (Wireless)",
     "Wrap long AP names in Associated Stations table. Disable to truncate with ellipsis.":
       "Переносити довгі імена AP у таблиці Associated Stations. Вимкніть для обрізання з трикрапкою.",
+    "Log Highlighting": "Підсвічування логів",
+    "Custom log viewer with syntax highlighting, line numbers, and toolbar on System Log and Kernel Log pages.":
+      "Кастомний переглядач логів із підсвічуванням синтаксису, нумерацією рядків та панеллю інструментів на сторінках Системного журналу та Журналу ядра.",
+    "Custom Font (Inter)": "Шрифт Inter",
+    "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
+      "Використовувати вбудований шрифт Inter для однакового відображення тексту на всіх пристроях. Вимкніть, щоб використовувати системний шрифт.",
+
+    // Log Viewer UI
+    lines: "рядків",
+    "crit.": "крит.",
+    "err.": "пом.",
+    "warn.": "попер.",
+    "den.": "відхил.",
+    "disc.": "від'єдн.",
+    ok: "усп.",
+    Critical: "Критичні",
+    Errors: "Помилки",
+    Warnings: "Попередження",
+    Denied: "Відхилення",
+    Disconnects: "Від'єднання",
+    Successful: "Успішні",
+    "Word Wrap": "Перенос рядків",
+    "Hide Timestamps": "Приховати мітки часу",
+    "Copy Log": "Копіювати лог",
+    "Download Log": "Завантажити лог",
+    "Scroll to Top": "На початок",
+    "Scroll to Bottom": "В кінець",
+    "Fullscreen Mode": "Повноекранний режим",
+    "Exit Fullscreen": "Вийти з повноекранного режиму",
+
     "Services widget enabled. Visit Status → Overview to see it.":
       "Віджет сервісів увімкнено. Перейдіть до Статус → Огляд, щоб побачити його.",
     "Services widget disabled.": "Віджет сервісів вимкнено.",
@@ -828,6 +1045,18 @@ window.ProtonTranslations = {
     Peak: "Пік",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Моніторинг термодатчиків. Кольори означають: зелений — норма, жовтий — тепло, помаранчевий — гаряче, червоний — критично.",
+
+    // Backup & Restore
+    "Backup & Restore": "Резервне копіювання",
+    "Export your theme settings to a file or import from a previously saved backup.":
+      "Експортуйте налаштування теми у файл або імпортуйте з раніше збереженої копії.",
+    "Export Settings": "Експорт налаштувань",
+    "Import Settings": "Імпорт налаштувань",
+    "Settings exported successfully": "Налаштування успішно експортовано",
+    "Settings imported successfully": "Налаштування успішно імпортовано",
+    "Invalid backup file": "Невірний файл резервної копії",
+    "No settings found in file": "У файлі не знайдено налаштувань",
+    "Failed to read backup file": "Помилка читання файлу резервної копії",
   },
 
   es: {
@@ -892,6 +1121,14 @@ window.ProtonTranslations = {
     Add: "Añadir",
     Close: "Cerrar",
     Reset: "Restablecer",
+
+    // Reboot confirmation
+    "Confirm Reboot": "Confirmar reinicio",
+    "Are you sure you want to reboot the system?":
+      "¿Está seguro de que desea reiniciar el sistema?",
+    "This action will restart your router and temporarily interrupt network connectivity.":
+      "Esta acción reiniciará su router e interrumpirá temporalmente la conectividad de red.",
+    "Reboot Now": "Reiniciar ahora",
 
     // Modal - service list
     "Available services": "Servicios disponibles",
@@ -972,6 +1209,9 @@ window.ProtonTranslations = {
     "Extra Rounded": "Muy Redondeado",
     Zoom: "Zoom",
     "Interface scale": "Escala de interfaz",
+    "Page Width": "Ancho de página",
+    "Content area width": "Ancho del área de contenido",
+    "Full width": "Ancho completo",
     Animations: "Animaciones",
     "Enable smooth transitions and effects":
       "Habilitar transiciones y efectos suaves",
@@ -984,6 +1224,9 @@ window.ProtonTranslations = {
     "Temperature Widget": "Widget de Temperatura",
     "Show temperature monitor on Overview page":
       "Mostrar monitor de temperatura en la página de resumen",
+    "Deep Service Check": "Verificación profunda de servicios",
+    "Accurate status for adblock, banip, etc.":
+      "Estado preciso para adblock, banip, etc.",
     "Temperature widget enabled. Visit Status → Overview to see it.":
       "Widget de temperatura habilitado. Visite Estado → Resumen para verlo.",
     "Temperature widget disabled.": "Widget de temperatura deshabilitado.",
@@ -993,6 +1236,36 @@ window.ProtonTranslations = {
     "Table Text Wrap": "Ajuste de Texto (Wireless)",
     "Wrap long AP names in Associated Stations table. Disable to truncate with ellipsis.":
       "Ajustar nombres largos de AP en la tabla de Estaciones Asociadas. Desactivar para truncar con puntos suspensivos.",
+    "Log Highlighting": "Resaltado de Registros",
+    "Custom log viewer with syntax highlighting, line numbers, and toolbar on System Log and Kernel Log pages.":
+      "Visor de registros personalizado con resaltado de sintaxis, números de línea y barra de herramientas en las páginas de Registro del Sistema y Registro del Kernel.",
+    "Custom Font (Inter)": "Fuente Inter",
+    "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
+      "Usar la fuente Inter integrada para una tipografía consistente en todos los dispositivos. Desactivar para usar la fuente del sistema.",
+
+    // Log Viewer UI
+    lines: "líneas",
+    "crit.": "crít.",
+    "err.": "err.",
+    "warn.": "adv.",
+    "den.": "den.",
+    "disc.": "desc.",
+    ok: "ok",
+    Critical: "Críticos",
+    Errors: "Errores",
+    Warnings: "Advertencias",
+    Denied: "Denegados",
+    Disconnects: "Desconexiones",
+    Successful: "Exitosos",
+    "Word Wrap": "Ajuste de línea",
+    "Hide Timestamps": "Ocultar marcas de tiempo",
+    "Copy Log": "Copiar registro",
+    "Download Log": "Descargar registro",
+    "Scroll to Top": "Ir al inicio",
+    "Scroll to Bottom": "Ir al final",
+    "Fullscreen Mode": "Modo pantalla completa",
+    "Exit Fullscreen": "Salir de pantalla completa",
+
     "Services widget enabled. Visit Status → Overview to see it.":
       "Widget de servicios habilitado. Visite Estado → Resumen para verlo.",
     "Services widget disabled.": "Widget de servicios deshabilitado.",
@@ -1038,6 +1311,19 @@ window.ProtonTranslations = {
     Peak: "Pico",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Monitoreo de sensores térmicos. Los colores indican: verde - normal, amarillo - cálido, naranja - caliente, rojo - crítico.",
+
+    // Backup & Restore
+    "Backup & Restore": "Copia de seguridad",
+    "Export your theme settings to a file or import from a previously saved backup.":
+      "Exporte la configuración del tema a un archivo o importe desde una copia de seguridad guardada anteriormente.",
+    "Export Settings": "Exportar configuración",
+    "Import Settings": "Importar configuración",
+    "Settings exported successfully": "Configuración exportada con éxito",
+    "Settings imported successfully": "Configuración importada con éxito",
+    "Invalid backup file": "Archivo de copia de seguridad no válido",
+    "No settings found in file": "No se encontró configuración en el archivo",
+    "Failed to read backup file":
+      "Error al leer el archivo de copia de seguridad",
   },
 
   pt: {
@@ -1102,6 +1388,14 @@ window.ProtonTranslations = {
     Add: "Adicionar",
     Close: "Fechar",
     Reset: "Redefinir",
+
+    // Reboot confirmation
+    "Confirm Reboot": "Confirmar reinicialização",
+    "Are you sure you want to reboot the system?":
+      "Tem certeza de que deseja reiniciar o sistema?",
+    "This action will restart your router and temporarily interrupt network connectivity.":
+      "Esta ação reiniciará seu roteador e interromperá temporariamente a conectividade de rede.",
+    "Reboot Now": "Reiniciar agora",
 
     // Modal - service list
     "Available services": "Serviços disponíveis",
@@ -1181,6 +1475,9 @@ window.ProtonTranslations = {
     "Extra Rounded": "Muito Arredondado",
     Zoom: "Zoom",
     "Interface scale": "Escala da interface",
+    "Page Width": "Largura da página",
+    "Content area width": "Largura da área de conteúdo",
+    "Full width": "Largura total",
     Animations: "Animações",
     "Enable smooth transitions and effects":
       "Habilitar transições e efeitos suaves",
@@ -1193,6 +1490,9 @@ window.ProtonTranslations = {
     "Temperature Widget": "Widget de Temperatura",
     "Show temperature monitor on Overview page":
       "Mostrar monitor de temperatura na página de visão geral",
+    "Deep Service Check": "Verificação profunda de serviços",
+    "Accurate status for adblock, banip, etc.":
+      "Status preciso para adblock, banip, etc.",
     "Temperature widget enabled. Visit Status → Overview to see it.":
       "Widget de temperatura habilitado. Visite Status → Visão Geral para vê-lo.",
     "Temperature widget disabled.": "Widget de temperatura desabilitado.",
@@ -1202,6 +1502,36 @@ window.ProtonTranslations = {
     "Table Text Wrap": "Quebra de Texto (Wireless)",
     "Wrap long AP names in Associated Stations table. Disable to truncate with ellipsis.":
       "Quebrar nomes longos de AP na tabela de Estações Associadas. Desativar para truncar com reticências.",
+    "Log Highlighting": "Destaque de Logs",
+    "Custom log viewer with syntax highlighting, line numbers, and toolbar on System Log and Kernel Log pages.":
+      "Visualizador de logs personalizado com destaque de sintaxe, números de linha e barra de ferramentas nas páginas de Log do Sistema e Log do Kernel.",
+    "Custom Font (Inter)": "Fonte Inter",
+    "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
+      "Usar a fonte Inter integrada para tipografia consistente em todos os dispositivos. Desativar para usar a fonte padrão do sistema.",
+
+    // Log Viewer UI
+    lines: "linhas",
+    "crit.": "crít.",
+    "err.": "err.",
+    "warn.": "alerta",
+    "den.": "neg.",
+    "disc.": "desc.",
+    ok: "ok",
+    Critical: "Críticos",
+    Errors: "Erros",
+    Warnings: "Alertas",
+    Denied: "Negados",
+    Disconnects: "Desconexões",
+    Successful: "Sucesso",
+    "Word Wrap": "Quebra de linha",
+    "Hide Timestamps": "Ocultar carimbos de hora",
+    "Copy Log": "Copiar log",
+    "Download Log": "Baixar log",
+    "Scroll to Top": "Ir ao topo",
+    "Scroll to Bottom": "Ir ao final",
+    "Fullscreen Mode": "Modo tela cheia",
+    "Exit Fullscreen": "Sair da tela cheia",
+
     "Services widget enabled. Visit Status → Overview to see it.":
       "Widget de serviços habilitado. Visite Status → Visão Geral para vê-lo.",
     "Services widget disabled.": "Widget de serviços desabilitado.",
@@ -1247,6 +1577,18 @@ window.ProtonTranslations = {
     Peak: "Pico",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Monitoramento de sensores térmicos. As cores indicam: verde - normal, amarelo - morno, laranja - quente, vermelho - crítico.",
+
+    // Backup & Restore
+    "Backup & Restore": "Backup e restauração",
+    "Export your theme settings to a file or import from a previously saved backup.":
+      "Exporte as configurações do tema para um arquivo ou importe de um backup salvo anteriormente.",
+    "Export Settings": "Exportar configurações",
+    "Import Settings": "Importar configurações",
+    "Settings exported successfully": "Configurações exportadas com sucesso",
+    "Settings imported successfully": "Configurações importadas com sucesso",
+    "Invalid backup file": "Arquivo de backup inválido",
+    "No settings found in file": "Nenhuma configuração encontrada no arquivo",
+    "Failed to read backup file": "Falha ao ler o arquivo de backup",
   },
 
   pl: {
@@ -1311,6 +1653,14 @@ window.ProtonTranslations = {
     Add: "Dodaj",
     Close: "Zamknij",
     Reset: "Resetuj",
+
+    // Reboot confirmation
+    "Confirm Reboot": "Potwierdź restart",
+    "Are you sure you want to reboot the system?":
+      "Czy na pewno chcesz zrestartować system?",
+    "This action will restart your router and temporarily interrupt network connectivity.":
+      "Ta akcja zrestartuje router i tymczasowo przerwie połączenie sieciowe.",
+    "Reboot Now": "Restartuj teraz",
 
     // Modal - service list
     "Available services": "Dostępne usługi",
@@ -1389,6 +1739,9 @@ window.ProtonTranslations = {
     "Extra Rounded": "Bardzo Zaokrąglone",
     Zoom: "Powiększenie",
     "Interface scale": "Skala interfejsu",
+    "Page Width": "Szerokość strony",
+    "Content area width": "Szerokość obszaru treści",
+    "Full width": "Pełna szerokość",
     Animations: "Animacje",
     "Enable smooth transitions and effects": "Włącz płynne przejścia i efekty",
     Transparency: "Przezroczystość",
@@ -1400,6 +1753,9 @@ window.ProtonTranslations = {
     "Temperature Widget": "Widżet Temperatury",
     "Show temperature monitor on Overview page":
       "Pokaż monitor temperatury na stronie przeglądu",
+    "Deep Service Check": "Głęboka kontrola usług",
+    "Accurate status for adblock, banip, etc.":
+      "Dokładny status dla adblock, banip itp.",
     "Temperature widget enabled. Visit Status → Overview to see it.":
       "Widżet temperatury włączony. Odwiedź Status → Przegląd, aby go zobaczyć.",
     "Temperature widget disabled.": "Widżet temperatury wyłączony.",
@@ -1409,6 +1765,36 @@ window.ProtonTranslations = {
     "Table Text Wrap": "Zawijanie Tekstu (Wireless)",
     "Wrap long AP names in Associated Stations table. Disable to truncate with ellipsis.":
       "Zawijaj długie nazwy AP w tabeli Powiązanych Stacji. Wyłącz, aby obciąć wielokropkiem.",
+    "Log Highlighting": "Podświetlanie Logów",
+    "Custom log viewer with syntax highlighting, line numbers, and toolbar on System Log and Kernel Log pages.":
+      "Niestandardowa przeglądarka logów z podświetlaniem składni, numerami wierszy i paskiem narzędzi na stronach Dziennika Systemowego i Dziennika Jądra.",
+    "Custom Font (Inter)": "Czcionka Inter",
+    "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
+      "Użyj wbudowanej czcionki Inter dla spójnej typografii na wszystkich urządzeniach. Wyłącz, aby użyć domyślnej czcionki systemowej.",
+
+    // Log Viewer UI
+    lines: "wierszy",
+    "crit.": "kryt.",
+    "err.": "bł.",
+    "warn.": "ostrz.",
+    "den.": "odrz.",
+    "disc.": "rozł.",
+    ok: "ok",
+    Critical: "Krytyczne",
+    Errors: "Błędy",
+    Warnings: "Ostrzeżenia",
+    Denied: "Odrzucone",
+    Disconnects: "Rozłączenia",
+    Successful: "Udane",
+    "Word Wrap": "Zawijanie wierszy",
+    "Hide Timestamps": "Ukryj znaczniki czasu",
+    "Copy Log": "Kopiuj log",
+    "Download Log": "Pobierz log",
+    "Scroll to Top": "Na początek",
+    "Scroll to Bottom": "Na koniec",
+    "Fullscreen Mode": "Tryb pełnoekranowy",
+    "Exit Fullscreen": "Opuść pełny ekran",
+
     "Services widget enabled. Visit Status → Overview to see it.":
       "Widżet usług włączony. Odwiedź Status → Przegląd, aby go zobaczyć.",
     "Services widget disabled.": "Widżet usług wyłączony.",
@@ -1454,6 +1840,19 @@ window.ProtonTranslations = {
     Peak: "Szczyt",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Monitorowanie czujników termicznych. Kolory oznaczają: zielony - normalna, żółty - ciepła, pomarańczowy - gorąca, czerwony - krytyczna.",
+
+    // Backup & Restore
+    "Backup & Restore": "Kopia zapasowa",
+    "Export your theme settings to a file or import from a previously saved backup.":
+      "Wyeksportuj ustawienia motywu do pliku lub zaimportuj z wcześniej zapisanej kopii zapasowej.",
+    "Export Settings": "Eksportuj ustawienia",
+    "Import Settings": "Importuj ustawienia",
+    "Settings exported successfully": "Ustawienia wyeksportowane pomyślnie",
+    "Settings imported successfully": "Ustawienia zaimportowane pomyślnie",
+    "Invalid backup file": "Nieprawidłowy plik kopii zapasowej",
+    "No settings found in file": "Nie znaleziono ustawień w pliku",
+    "Failed to read backup file":
+      "Nie udało się odczytać pliku kopii zapasowej",
   },
 
   fr: {
@@ -1518,6 +1917,14 @@ window.ProtonTranslations = {
     Add: "Ajouter",
     Close: "Fermer",
     Reset: "Réinitialiser",
+
+    // Reboot confirmation
+    "Confirm Reboot": "Confirmer le redémarrage",
+    "Are you sure you want to reboot the system?":
+      "Êtes-vous sûr de vouloir redémarrer le système ?",
+    "This action will restart your router and temporarily interrupt network connectivity.":
+      "Cette action redémarrera votre routeur et interrompra temporairement la connectivité réseau.",
+    "Reboot Now": "Redémarrer maintenant",
 
     // Modal - service list
     "Available services": "Services disponibles",
@@ -1597,6 +2004,9 @@ window.ProtonTranslations = {
     "Extra Rounded": "Très Arrondi",
     Zoom: "Zoom",
     "Interface scale": "Échelle de l'interface",
+    "Page Width": "Largeur de page",
+    "Content area width": "Largeur de la zone de contenu",
+    "Full width": "Pleine largeur",
     Animations: "Animations",
     "Enable smooth transitions and effects":
       "Activer les transitions et effets fluides",
@@ -1609,6 +2019,9 @@ window.ProtonTranslations = {
     "Temperature Widget": "Widget de Température",
     "Show temperature monitor on Overview page":
       "Afficher le moniteur de température sur la page d'aperçu",
+    "Deep Service Check": "Vérification approfondie des services",
+    "Accurate status for adblock, banip, etc.":
+      "Statut précis pour adblock, banip, etc.",
     "Temperature widget enabled. Visit Status → Overview to see it.":
       "Widget de température activé. Visitez Statut → Aperçu pour le voir.",
     "Temperature widget disabled.": "Widget de température désactivé.",
@@ -1618,6 +2031,36 @@ window.ProtonTranslations = {
     "Table Text Wrap": "Retour à la Ligne (Sans-fil)",
     "Wrap long AP names in Associated Stations table. Disable to truncate with ellipsis.":
       "Retourner à la ligne les noms d'AP longs dans le tableau des Stations Associées. Désactiver pour tronquer avec des points de suspension.",
+    "Log Highlighting": "Coloration des Journaux",
+    "Custom log viewer with syntax highlighting, line numbers, and toolbar on System Log and Kernel Log pages.":
+      "Visionneuse de journaux personnalisée avec coloration syntaxique, numéros de ligne et barre d'outils sur les pages Journal Système et Journal du Noyau.",
+    "Custom Font (Inter)": "Police Inter",
+    "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
+      "Utiliser la police Inter intégrée pour une typographie cohérente sur tous les appareils. Désactiver pour utiliser la police système par défaut.",
+
+    // Log Viewer UI
+    lines: "lignes",
+    "crit.": "crit.",
+    "err.": "err.",
+    "warn.": "avert.",
+    "den.": "refusé",
+    "disc.": "déconn.",
+    ok: "ok",
+    Critical: "Critiques",
+    Errors: "Erreurs",
+    Warnings: "Avertissements",
+    Denied: "Refusés",
+    Disconnects: "Déconnexions",
+    Successful: "Réussis",
+    "Word Wrap": "Retour à la ligne",
+    "Hide Timestamps": "Masquer horodatages",
+    "Copy Log": "Copier le journal",
+    "Download Log": "Télécharger le journal",
+    "Scroll to Top": "Aller en haut",
+    "Scroll to Bottom": "Aller en bas",
+    "Fullscreen Mode": "Mode plein écran",
+    "Exit Fullscreen": "Quitter le plein écran",
+
     "Services widget enabled. Visit Status → Overview to see it.":
       "Widget de services activé. Visitez Statut → Aperçu pour le voir.",
     "Services widget disabled.": "Widget de services désactivé.",
@@ -1663,6 +2106,19 @@ window.ProtonTranslations = {
     Peak: "Pic",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Surveillance des capteurs thermiques. Les couleurs indiquent : vert - normal, jaune - chaud, orange - très chaud, rouge - critique.",
+
+    // Backup & Restore
+    "Backup & Restore": "Sauvegarde et restauration",
+    "Export your theme settings to a file or import from a previously saved backup.":
+      "Exportez les paramètres du thème dans un fichier ou importez depuis une sauvegarde précédemment enregistrée.",
+    "Export Settings": "Exporter les paramètres",
+    "Import Settings": "Importer les paramètres",
+    "Settings exported successfully": "Paramètres exportés avec succès",
+    "Settings imported successfully": "Paramètres importés avec succès",
+    "Invalid backup file": "Fichier de sauvegarde invalide",
+    "No settings found in file": "Aucun paramètre trouvé dans le fichier",
+    "Failed to read backup file":
+      "Échec de la lecture du fichier de sauvegarde",
   },
 
   it: {
@@ -1727,6 +2183,14 @@ window.ProtonTranslations = {
     Add: "Aggiungi",
     Close: "Chiudi",
     Reset: "Ripristina",
+
+    // Reboot confirmation
+    "Confirm Reboot": "Conferma riavvio",
+    "Are you sure you want to reboot the system?":
+      "Sei sicuro di voler riavviare il sistema?",
+    "This action will restart your router and temporarily interrupt network connectivity.":
+      "Questa azione riavvierà il router e interromperà temporaneamente la connettività di rete.",
+    "Reboot Now": "Riavvia ora",
 
     // Modal - service list
     "Available services": "Servizi disponibili",
@@ -1806,6 +2270,9 @@ window.ProtonTranslations = {
     "Extra Rounded": "Molto Arrotondato",
     Zoom: "Zoom",
     "Interface scale": "Scala interfaccia",
+    "Page Width": "Larghezza pagina",
+    "Content area width": "Larghezza dell'area contenuto",
+    "Full width": "Larghezza piena",
     Animations: "Animazioni",
     "Enable smooth transitions and effects":
       "Abilita transizioni ed effetti fluidi",
@@ -1818,6 +2285,9 @@ window.ProtonTranslations = {
     "Temperature Widget": "Widget Temperatura",
     "Show temperature monitor on Overview page":
       "Mostra monitor temperatura nella pagina panoramica",
+    "Deep Service Check": "Controllo approfondito dei servizi",
+    "Accurate status for adblock, banip, etc.":
+      "Stato accurato per adblock, banip, ecc.",
     "Temperature widget enabled. Visit Status → Overview to see it.":
       "Widget temperatura abilitato. Visita Stato → Panoramica per vederlo.",
     "Temperature widget disabled.": "Widget temperatura disabilitato.",
@@ -1827,6 +2297,36 @@ window.ProtonTranslations = {
     "Table Text Wrap": "A Capo Testo (Wireless)",
     "Wrap long AP names in Associated Stations table. Disable to truncate with ellipsis.":
       "Mandare a capo i nomi AP lunghi nella tabella Stazioni Associate. Disabilitare per troncare con puntini di sospensione.",
+    "Log Highlighting": "Evidenziazione dei Log",
+    "Custom log viewer with syntax highlighting, line numbers, and toolbar on System Log and Kernel Log pages.":
+      "Visualizzatore di log personalizzato con evidenziazione della sintassi, numeri di riga e barra degli strumenti nelle pagine Registro di Sistema e Registro del Kernel.",
+    "Custom Font (Inter)": "Font Inter",
+    "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
+      "Usa il font Inter integrato per una tipografia uniforme su tutti i dispositivi. Disattiva per usare il font di sistema predefinito.",
+
+    // Log Viewer UI
+    lines: "righe",
+    "crit.": "crit.",
+    "err.": "err.",
+    "warn.": "avv.",
+    "den.": "neg.",
+    "disc.": "disc.",
+    ok: "ok",
+    Critical: "Critici",
+    Errors: "Errori",
+    Warnings: "Avvisi",
+    Denied: "Negati",
+    Disconnects: "Disconnessioni",
+    Successful: "Riusciti",
+    "Word Wrap": "A capo automatico",
+    "Hide Timestamps": "Nascondi timestamp",
+    "Copy Log": "Copia log",
+    "Download Log": "Scarica log",
+    "Scroll to Top": "Vai in cima",
+    "Scroll to Bottom": "Vai in fondo",
+    "Fullscreen Mode": "Modalità schermo intero",
+    "Exit Fullscreen": "Esci dallo schermo intero",
+
     "Services widget enabled. Visit Status → Overview to see it.":
       "Widget servizi abilitato. Visita Stato → Panoramica per vederlo.",
     "Services widget disabled.": "Widget servizi disabilitato.",
@@ -1872,6 +2372,18 @@ window.ProtonTranslations = {
     Peak: "Picco",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Monitoraggio sensori termici. I colori indicano: verde - normale, giallo - caldo, arancione - molto caldo, rosso - critico.",
+
+    // Backup & Restore
+    "Backup & Restore": "Backup e ripristino",
+    "Export your theme settings to a file or import from a previously saved backup.":
+      "Esporta le impostazioni del tema in un file o importa da un backup salvato in precedenza.",
+    "Export Settings": "Esporta impostazioni",
+    "Import Settings": "Importa impostazioni",
+    "Settings exported successfully": "Impostazioni esportate con successo",
+    "Settings imported successfully": "Impostazioni importate con successo",
+    "Invalid backup file": "File di backup non valido",
+    "No settings found in file": "Nessuna impostazione trovata nel file",
+    "Failed to read backup file": "Impossibile leggere il file di backup",
   },
 };
 
@@ -1909,7 +2421,7 @@ window.protonT = function (key) {
     // LuCI загружает /cgi-bin/luci/admin/translations/ru
     if (lang === "en") {
       const scripts = document.querySelectorAll(
-        'script[src*="/translations/"]'
+        'script[src*="/translations/"]',
       );
       for (const script of scripts) {
         const match = script.src.match(/\/translations\/([a-z]{2})(?:\?|$)/i);

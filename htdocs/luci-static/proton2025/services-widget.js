@@ -16,10 +16,20 @@
     const servicesWidget = section.querySelector(".proton-services-widget");
     const tempWidget = section.querySelector(".proton-temp-widget");
 
-    // Проверяем видимость виджетов (display !== 'none' и элемент существует)
-    const servicesVisible =
-      servicesWidget && servicesWidget.style.display !== "none";
-    const tempVisible = tempWidget && tempWidget.style.display !== "none";
+    const isVisible = (el) => {
+      if (!el) return false;
+      // Быстрый путь для inline скрытия
+      if (el.style && el.style.display === "none") return false;
+      // Корректно обрабатываем скрытие через CSS-классы/стили темы
+      if (typeof window.getComputedStyle === "function") {
+        return window.getComputedStyle(el).display !== "none";
+      }
+      return true;
+    };
+
+    // Проверяем видимость виджетов
+    const servicesVisible = isVisible(servicesWidget);
+    const tempVisible = isVisible(tempWidget);
 
     // Скрываем секцию если все виджеты скрыты
     section.style.display = servicesVisible || tempVisible ? "" : "none";
@@ -113,7 +123,23 @@
       this._statusCache = new Map();
       this._serviceElements = new Map(); // Кэш DOM-элементов
       this._rcListAll = null;
+
+      // Маппинг имён init-скриптов на имена процессов (для pidof fallback)
+      this._processNameMap = {
+        ubus: "ubusd",
+        rpcd: "rpcd",
+        dnsmasq: "dnsmasq",
+        dropbear: "dropbear",
+        uhttpd: "uhttpd",
+        nginx: "nginx",
+        odhcpd: "odhcpd",
+        cron: "crond",
+        sysntpd: "ntpd",
+      };
       this._rcListOne = null;
+      this._serviceListOne = null; // ubus service list (deep check)
+      this._deepCheck =
+        this._safeGetItem("proton-services-deep-check") === "true";
       this._initdCache = null;
       this._initdCacheAt = 0;
       this._initdCacheTtlMs = 5 * 60 * 1000; // 5 минут
@@ -245,8 +271,8 @@
 
       const time = this._formatTime(new Date());
       this._uiLogLines.push({ time, text: String(text) });
-      if (this._uiLogLines.length > 6)
-        this._uiLogLines.splice(0, this._uiLogLines.length - 6);
+      if (this._uiLogLines.length > 12)
+        this._uiLogLines.splice(0, this._uiLogLines.length - 12);
 
       el.innerHTML = this._uiLogLines
         .map(
@@ -278,7 +304,7 @@
         this._backendRetryDelaysMs[this._backendRetryAttempts++] || 1000;
       this._logDebug("Scheduling backend retry", { reason, delay });
       this._appendUiLogLine(
-        `${this._t("Waiting for LuCI API...")} ${this._formatElapsedMs(delay)}`,
+        `Waiting for LuCI API... (${this._formatElapsedMs(delay)})`,
       );
 
       this._backendRetryTimer = setTimeout(() => {
@@ -521,7 +547,7 @@
 
       this.renderServices();
 
-      this._appendUiLogLine(this._t("Ready"));
+      this._appendUiLogLine("Ready");
 
       return true;
     }
@@ -570,60 +596,11 @@
         return;
       }
 
-      // Проверяем настройку группировки (по умолчанию выключена)
-      const isGrouped = this._safeGetItem("proton-services-grouped") === "true";
-
-      if (!isGrouped) {
-        // Без группировки - просто показываем все сервисы
-        this.services.forEach((serviceName) => {
-          const info = this.getServiceInfo(serviceName);
-          const card = this.createServiceCard({ ...info, serviceName });
-          grid.appendChild(card);
-        });
-        this.updateAllStatuses();
-        return;
-      }
-
-      // Группируем сервисы по категориям
-      const grouped = new Map();
-
       this.services.forEach((serviceName) => {
         const info = this.getServiceInfo(serviceName);
-        if (!grouped.has(info.category)) {
-          grouped.set(info.category, []);
-        }
-        grouped.get(info.category).push({ ...info, serviceName });
+        const card = this.createServiceCard({ ...info, serviceName });
+        grid.appendChild(card);
       });
-
-      // Сортируем категории по приоритету
-      const sortedCategories = Array.from(grouped.keys()).sort((a, b) => {
-        return (
-          (this.categories[a]?.priority || 99) -
-          (this.categories[b]?.priority || 99)
-        );
-      });
-
-      // Рендерим по категориям
-      sortedCategories.forEach((category) => {
-        const services = grouped.get(category);
-        const catInfo = this.categories[category] || {};
-
-        // Заголовок категории (если больше одной категории)
-        if (sortedCategories.length > 1 && services.length > 0) {
-          const header = document.createElement("div");
-          header.className = "proton-services-category-header";
-          header.innerHTML = `<span>${
-            catInfo.icon || ""
-          } ${this.getCategoryName(category)}</span>`;
-          grid.appendChild(header);
-        }
-
-        services.forEach((info) => {
-          const card = this.createServiceCard(info);
-          grid.appendChild(card);
-        });
-      });
-
       this.updateAllStatuses();
     }
 
@@ -681,11 +658,13 @@
     // ==================== Модальное окно ====================
 
     async showAddServiceModal() {
-      this._appendUiLogLine(this._t("Opening service list..."));
+      this._appendUiLogLine("Opening configuration...");
 
-      // Проверяем текущее состояние виджета температуры
+      // Проверяем текущее состояние виджетов и настроек
       const tempWidgetEnabled =
-        localStorage.getItem("proton-temp-widget-enabled") !== "false";
+        this._safeGetItem("proton-temp-widget-enabled") !== "false";
+      const deepCheckEnabled =
+        this._safeGetItem("proton-services-deep-check") === "true";
 
       const modal = document.createElement("div");
       modal.className = "proton-service-modal";
@@ -708,6 +687,21 @@
                             </span>
                             <input type="checkbox" id="proton-temp-widget-toggle" ${
                               tempWidgetEnabled ? "checked" : ""
+                            }>
+                            <span class="proton-widget-toggle-slider"></span>
+                        </label>
+                        <label class="proton-widget-toggle">
+                            <span class="proton-widget-toggle-info">
+                                <span class="proton-widget-toggle-icon">🔬</span>
+                                <span class="proton-widget-toggle-name">${this._t(
+                                  "Deep Service Check",
+                                )}</span>
+                                <span class="proton-widget-toggle-desc">${this._t(
+                                  "Accurate status for adblock, banip, etc.",
+                                )}</span>
+                            </span>
+                            <input type="checkbox" id="proton-deep-check-toggle" ${
+                              deepCheckEnabled ? "checked" : ""
                             }>
                             <span class="proton-widget-toggle-slider"></span>
                         </label>
@@ -738,7 +732,10 @@
       const tempToggle = modal.querySelector("#proton-temp-widget-toggle");
       tempToggle.addEventListener("change", () => {
         const enabled = tempToggle.checked;
-        localStorage.setItem("proton-temp-widget-enabled", enabled);
+        this._safeSetItem(
+          "proton-temp-widget-enabled",
+          enabled ? "true" : "false",
+        );
 
         // Находим виджет температуры и показываем/скрываем
         const tempWidget = document.querySelector(".proton-temp-widget");
@@ -748,6 +745,17 @@
 
         // Обновляем видимость секции виджетов
         updateWidgetsSectionVisibility();
+      });
+
+      // Обработчик переключателя Deep Check
+      const deepToggle = modal.querySelector("#proton-deep-check-toggle");
+      deepToggle.addEventListener("change", () => {
+        const enabled = deepToggle.checked;
+        this._safeSetItem("proton-services-deep-check", String(enabled));
+        this._deepCheck = enabled;
+        // Сбрасываем кэш статусов для переопроса
+        this._statusCache.clear();
+        this.updateAllStatuses();
       });
 
       let onEscape;
@@ -798,9 +806,7 @@
         this,
         addCustomFromSearch,
       );
-      this._appendUiLogLine(
-        `${this._t("Available services")}: ${initialCount}`,
-      );
+      this._appendUiLogLine(`Available targets: ${initialCount}`);
 
       // Поиск с debounce
       let searchTimeout;
@@ -815,9 +821,9 @@
             addCustomFromSearch,
           );
           if (q) {
-            this._appendUiLogLine(`${this._t("Search")}: "${q}" - ${count}`);
+            this._appendUiLogLine(`Search: "${q}" - ${count}`);
           } else {
-            this._appendUiLogLine(`${this._t("Available services")}: ${count}`);
+            this._appendUiLogLine(`Available: ${count}`);
           }
         }, 150);
       });
@@ -1038,18 +1044,34 @@
                         </button>
                     `;
 
-          if (isCustom || isInstalled) {
+          // Сервис добавлен в виджет, но не установлен на роутере — показать кнопку удаления
+          const isAddedButMissing = isAdded && !isInstalled && !isCustom;
+
+          if (isCustom || isInstalled || isAddedButMissing) {
             const btn = item.querySelector(".proton-service-item-add");
+
+            // Для не-установленных, но добавленных: переключаем стиль кнопки на "Remove"
+            if (isAddedButMissing) {
+              btn.classList.remove("not-installed");
+              btn.classList.add("added", "not-installed-remove");
+              btn.textContent = "✕ " + this._t("Remove");
+            }
+
             btn.addEventListener("click", () => {
-              if (btn.classList.contains("added")) {
+              if (btn.classList.contains("added") || isAddedButMissing) {
                 // Удаляем сервис
                 this.removeService(service.name);
                 if (isCustom) {
                   // Для custom сервисов — убираем из списка
                   item.remove();
                 } else {
-                  btn.classList.remove("added");
-                  btn.textContent = "+ " + this._t("Add");
+                  btn.classList.remove("added", "not-installed-remove");
+                  if (!isInstalled) {
+                    btn.classList.add("not-installed");
+                    btn.textContent = this._t("Not installed");
+                  } else {
+                    btn.textContent = "+ " + this._t("Add");
+                  }
                 }
               } else {
                 // Добавляем сервис
@@ -1076,7 +1098,7 @@
         this.saveServices();
         this._statusCache.delete(serviceName);
         this._initActionCache.delete(serviceName);
-        this._appendUiLogLine(`${this._t("Added")}: ${serviceName}`);
+        this._appendUiLogLine(`Added: ${serviceName}`);
         this.renderServices();
       }
     }
@@ -1088,7 +1110,7 @@
         this.saveServices();
         this._statusCache.delete(serviceName);
         this._initActionCache.delete(serviceName);
-        this._appendUiLogLine(`${this._t("Removed")}: ${serviceName}`);
+        this._appendUiLogLine(`Removed: ${serviceName}`);
 
         // Инкрементальное удаление без полной перерисовки
         const cached = this._serviceElements.get(serviceName);
@@ -1098,6 +1120,11 @@
 
           // Проверяем, нужно ли удалить пустые заголовки категорий
           this._cleanupEmptyCategoryHeaders();
+
+          // Если это был последний сервис — показываем placeholder
+          if (this.services.length === 0) {
+            this.renderServices();
+          }
         } else {
           // Fallback на полную перерисовку
           this.renderServices();
@@ -1228,7 +1255,7 @@
     }
 
     async refreshAvailableServices() {
-      this._appendUiLogLine(this._t("Loading services..."));
+      this._appendUiLogLine("Loading available services...");
       const merged = new Map();
 
       // Сначала читаем init.d - это даёт нам список реально установленных сервисов
@@ -1238,9 +1265,9 @@
       // Логируем для отладки
       const initdCount = initdSet.size;
       if (initdCount === 0) {
-        this._appendUiLogLine(this._t("Warning: init.d list empty"));
+        this._appendUiLogLine("Warning: init.d list empty");
       } else {
-        this._appendUiLogLine(`${this._t("init.d services")}: ${initdCount}`);
+        this._appendUiLogLine(`Init.d config size: ${initdCount}`);
       }
 
       // Известные сервисы (добавляем fromInitd если найден в init.d)
@@ -1264,7 +1291,7 @@
 
       this.availableServices = Array.from(merged.values());
       this._appendUiLogLine(
-        `${this._t("Services loaded")}: ${this.availableServices.length}`,
+        `Services loaded: ${this.availableServices.length}`,
       );
     }
 
@@ -1281,7 +1308,7 @@
       const startedAt = Date.now();
       let mode = "unknown";
       this._logInfo("Checking services...");
-      this._appendUiLogLine(this._t("Checking services..."));
+      this._appendUiLogLine("Checking services...");
 
       const hasRpc = !!(window.L && L.resolveDefault && L.rpc);
       const hasExec = !!(window.L && L.fs && L.fs.exec);
@@ -1326,21 +1353,92 @@
               this._useExecMode = false; // RPC работает, используем быстрый режим
               mode = "rpc";
 
+              // Сервисы, которых нет в rc.list — проверим через init-скрипт
+              const missingServices = [];
+
+              // Сервисы, требующие глубокой проверки (enabled но не running)
+              const needDeepCheck = [];
+
               for (const serviceName of this.services) {
                 if (!this._isValidServiceName(serviceName)) continue;
 
                 let status = "stopped";
 
                 if (allServices[serviceName]) {
-                  status =
-                    allServices[serviceName].running === true
-                      ? "running"
-                      : "stopped";
+                  const svc = allServices[serviceName];
+                  if (svc.running === true) {
+                    status = "running";
+                  } else if (svc.enabled === true) {
+                    // Сервис включен, но не запущен как демон (возможно daemonless)
+                    if (this._deepCheck) {
+                      needDeepCheck.push(serviceName);
+                    } else {
+                      // Простой режим: принудительно проверяем через init.d
+                      const initCheck =
+                        await this.checkViaInitScript(serviceName);
+                      if (initCheck === "running") {
+                        status = "running";
+                        this._appendUiLogLine(
+                          `[Fallback] ${serviceName} is running`,
+                        );
+                      } else if (initCheck === null) {
+                        status = "unknown";
+                        this._appendUiLogLine(
+                          `[Fallback] ${serviceName} init.d check unavailable`,
+                        );
+                      }
+                    }
+                  }
+                } else {
+                  // Сервис не найден в rc.list — нужна отдельная проверка
+                  missingServices.push(serviceName);
+                  continue;
                 }
 
                 if (this._statusCache.get(serviceName) !== status) {
                   this._statusCache.set(serviceName, status);
                   this.updateServiceCard(serviceName, status);
+                }
+              }
+
+              // Deep check: запрашиваем service list для «спящих» сервисов
+              for (const serviceName of needDeepCheck) {
+                try {
+                  const status = await this._deepCheckService(serviceName);
+                  if (status === "running") {
+                    this._appendUiLogLine(`[Deep] ${serviceName} is running`);
+                  }
+                  if (this._statusCache.get(serviceName) !== status) {
+                    this._statusCache.set(serviceName, status);
+                    this.updateServiceCard(serviceName, status);
+                  }
+                } catch (e) {
+                  if (this._statusCache.get(serviceName) !== "stopped") {
+                    this._statusCache.set(serviceName, "stopped");
+                    this.updateServiceCard(serviceName, "stopped");
+                  }
+                }
+              }
+
+              // Fallback: для сервисов, не найденных в rc.list,
+              // проверяем через init-скрипт или индивидуальный RPC-запрос
+              if (missingServices.length > 0) {
+                this._appendUiLogLine(
+                  `Checking ${missingServices.length} missing services...`,
+                );
+              }
+              for (const serviceName of missingServices) {
+                try {
+                  const status = await this.checkServiceStatus(serviceName);
+                  if (this._statusCache.get(serviceName) !== status) {
+                    this._statusCache.set(serviceName, status);
+                    this.updateServiceCard(serviceName, status);
+                  }
+                } catch (e) {
+                  if (this._statusCache.get(serviceName) !== "unknown") {
+                    this._statusCache.set(serviceName, "unknown");
+                    this.updateServiceCard(serviceName, "unknown");
+                  }
                 }
               }
               return;
@@ -1358,10 +1456,24 @@
         this._isUpdating = false;
         const elapsedMs = Date.now() - startedAt;
         this._logInfo("Check complete", { mode, elapsedMs });
+
+        let runCount = 0;
+        let stopCount = 0;
+        let missingCount = 0;
+        let errCount = 0;
+        for (const st of this._statusCache.values()) {
+          if (st === "running") runCount++;
+          else if (st === "stopped") stopCount++;
+          else if (st === "not-installed") missingCount++;
+          else errCount++;
+        }
+
+        let statsStr = `${runCount} up, ${stopCount} down`;
+        if (missingCount > 0) statsStr += `, ${missingCount} n/a`;
+        if (errCount > 0) statsStr += `, ${errCount} err`;
+
         this._appendUiLogLine(
-          `${this._t("Check complete")}: ${mode}${
-            elapsedMs ? " - " + this._formatElapsedMs(elapsedMs) : ""
-          }`,
+          `Check complete [${mode}]: ${statsStr} (${this._formatElapsedMs(elapsedMs)})`,
         );
       }
     }
@@ -1399,6 +1511,69 @@
       }
     }
 
+    // Deep check через ubus service list — получает полные данные включая data.*_status
+    async _deepCheckService(serviceName) {
+      if (!window.L || !L.resolveDefault || !L.rpc) return "stopped";
+
+      try {
+        if (!this._serviceListOne) {
+          this._serviceListOne = L.rpc.declare({
+            object: "service",
+            method: "list",
+            params: ["name"],
+            expect: { "": {} },
+          });
+        }
+
+        const result = await L.resolveDefault(
+          this._serviceListOne(serviceName),
+          null,
+        );
+
+        if (result && result[serviceName]) {
+          const svc = result[serviceName];
+
+          // Проверяем instances на running
+          if (svc.instances && typeof svc.instances === "object") {
+            const hasActive = Object.values(svc.instances).some(
+              (inst) => inst && inst.running === true,
+            );
+            if (hasActive) return "running";
+          }
+
+          // Проверяем data на *_status поля
+          if (svc.data && typeof svc.data === "object") {
+            const activeIndicators = [
+              "enabled",
+              "running",
+              "active",
+              "started",
+            ];
+            for (const key of Object.keys(svc.data)) {
+              if (key.endsWith("_status")) {
+                const val = svc.data[key];
+                if (
+                  typeof val === "string" &&
+                  activeIndicators.includes(val.toLowerCase())
+                ) {
+                  return "running";
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        this._logDebug("Deep check failed for", serviceName, e);
+      }
+
+      // Fallback на init.d
+      const initCheck = await this.checkViaInitScript(serviceName);
+      if (initCheck === "running") return "running";
+      if (initCheck === null) return "unknown";
+
+      return "stopped";
+    }
+
     async checkServiceStatus(serviceName) {
       try {
         if (!this._isValidServiceName(serviceName)) return "unknown";
@@ -1420,13 +1595,24 @@
             );
 
             if (result && result[serviceName]) {
-              if (result[serviceName].running === true) {
+              const svcData = result[serviceName];
+
+              if (svcData.running === true) {
                 return "running";
               }
-              if (result[serviceName].enabled === true) {
+
+              if (svcData.enabled === true) {
+                // Deep mode: проверяем через service list
+                if (this._deepCheck) {
+                  return await this._deepCheckService(serviceName);
+                }
+
+                // Простой режим: init.d fallback
                 const initCheck = await this.checkViaInitScript(serviceName);
                 if (initCheck === "running") return "running";
+                if (initCheck === null) return "unknown";
               }
+
               return "stopped";
             }
           } catch (e) {
@@ -1437,10 +1623,35 @@
         const initCheck = await this.checkViaInitScript(serviceName);
         if (initCheck !== null) return initCheck;
 
-        return "unknown";
+        // Последний fallback: проверяем через pidof (для ubus и подобных)
+        const pidofCheck = await this.checkViaPidof(serviceName);
+        if (pidofCheck !== null) return pidofCheck;
+
+        // Сервис не найден ни в rc.list, ни в init.d, ни через pidof
+        // — скорее всего пакет удалён с роутера
+        return "not-installed";
       } catch (error) {
         return "error";
       }
+    }
+
+    // Проверка через pidof — используется как последний fallback
+    // для сервисов вроде ubus, которые не видны в rc.list и init.d
+    async checkViaPidof(serviceName) {
+      if (!window.L || !L.fs || !L.fs.exec) return null;
+
+      // Определяем имя процесса
+      const processName = this._processNameMap[serviceName] || serviceName;
+
+      try {
+        const result = await L.fs.exec("/bin/pidof", [processName]);
+        if (result && result.code === 0) return "running";
+        if (result && typeof result.code === "number") return "stopped";
+      } catch (e) {
+        // pidof не доступен или ошибка
+      }
+
+      return null;
     }
 
     async checkViaInitScript(serviceName) {
@@ -1451,42 +1662,45 @@
         const preferred = this._initActionCache.get(serviceName);
 
         const runAction = async (action) => {
-          const result = await L.fs.exec(path, [action]);
-          if (result && result.code === 0) return "running";
-          if (result && typeof result.code === "number") return "stopped";
-          return null;
+          try {
+            const result = await L.fs.exec(path, [action]);
+            if (!result || typeof result.code !== "number") return null;
+            if (result.code === 0) return "running";
+            // 126/127 обычно означают "не удалось выполнить" / "не найдено".
+            if (result.code === 126 || result.code === 127) return null;
+            return "stopped";
+          } catch (e) {
+            return null;
+          }
         };
 
-        // Если уже знаем рабочую команду - используем ровно один exec
+        // Если уже знаем команду, которая ранее вернула "running" — используем её
         if (preferred === "running" || preferred === "status") {
-          try {
-            const res = await runAction(preferred);
-            if (res !== null) return res;
-          } catch (e) {
-            this._initActionCache.delete(serviceName);
+          const res = await runAction(preferred);
+          if (res === "running") return "running";
+          // Не доверяем кэшу, перепроверим обе команды
+          this._initActionCache.delete(serviceName);
+        }
+
+        // Пробуем обе команды: "running" и "status"
+        // Кэшируем ту, которая вернула "running" (= сервис активен)
+        // Некоторые сервисы (adblock, banip) возвращают exit 1 для "running",
+        // но exit 0 для "status" — нужно проверить обе
+        let sawStopped = false;
+        for (const action of ["running", "status"]) {
+          const res = await runAction(action);
+          if (res === "running") {
+            this._initActionCache.set(serviceName, action);
+            return "running";
+          }
+          if (res === "stopped") {
+            sawStopped = true;
           }
         }
 
-        // Пробуем "running", затем "status" и кэшируем удачную
-        try {
-          const res = await runAction("running");
-          if (res !== null) {
-            this._initActionCache.set(serviceName, "running");
-            return res;
-          }
-        } catch (e) {
-          // "running" action not supported, try "status"
-        }
-
-        try {
-          const res = await runAction("status");
-          if (res !== null) {
-            this._initActionCache.set(serviceName, "status");
-            return res;
-          }
-        } catch (e) {
-          // "status" action also not supported
-        }
+        // Если не смогли выполнить ни один вариант — возвращаем null,
+        // чтобы вызывающий код мог показать unknown/перейти к следующему fallback.
+        return sawStopped ? "stopped" : null;
       }
       return null;
     }
@@ -1504,6 +1718,7 @@
       const statusTexts = {
         running: this._t("Running"),
         stopped: this._t("Stopped"),
+        "not-installed": this._t("Not installed"),
         error: this._t("Error"),
         unknown: this._t("Unknown"),
       };
@@ -1637,15 +1852,8 @@
       this._emptyAttempts = 0; // Счетчик попыток без датчиков
       this._maxEmptyAttempts = 3; // Максимум попыток перед показом "Не найдены"
 
-      // Debug mode: localStorage['proton-temp-debug']='1' или window.protonTempDebug=true
-      this._debug =
-        (function () {
-          try {
-            return localStorage.getItem("proton-temp-debug") === "1";
-          } catch (e) {
-            return false;
-          }
-        })() || window.protonTempDebug === true;
+      // Debug mode: window.protonTempDebug = true
+      this._debug = window.protonTempDebug === true;
 
       // Пороговые значения температуры (°C)
       this._thresholds = {

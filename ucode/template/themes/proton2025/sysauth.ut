@@ -105,40 +105,79 @@
 </div>
 
 <script>
-// Handle mobile keyboard: scroll input into view when focused
-(function() {
-	var inputs = document.querySelectorAll('.login-form input');
-	
-	inputs.forEach(function(input) {
-		input.addEventListener('focus', function() {
-			// Small delay to allow keyboard to start opening
-			setTimeout(function() {
-				// Scroll with some offset for better UX
-				input.scrollIntoView({ 
-					behavior: 'smooth', 
-					block: 'center',
-					inline: 'nearest'
-				});
-			}, 300);
+// Mobile keyboard stability
+// Avoid scrollIntoView({behavior:'smooth'}) + window.resize loops which can hide/show the keyboard.
+// Use visualViewport when available and only do minimal, non-animated adjustments.
+(function () {
+	var body = document.body;
+	var container = document.querySelector('.login-container');
+	if (!body || !container) return;
+
+	var vv = window.visualViewport || null;
+	var raf = 0;
+
+	function setViewportVars() {
+		if (!vv) return;
+		document.documentElement.style.setProperty('--proton-vv-height', vv.height + 'px');
+	}
+
+	function isKeyboardOpen() {
+		if (!vv) return false;
+		// Conservative threshold; avoids toggling on small UI chrome changes
+		return vv.height < (window.innerHeight - 120);
+	}
+
+	function applyKeyboardClass() {
+		setViewportVars();
+		body.classList.toggle('proton-kb-open', isKeyboardOpen());
+	}
+
+	function keepFocusedInputVisible() {
+		var el = document.activeElement;
+		if (!el || el.tagName !== 'INPUT') return;
+
+		var margin = 16;
+		var top = vv ? vv.offsetTop : 0;
+		var height = vv ? vv.height : window.innerHeight;
+		var bottom = top + height;
+		var r = el.getBoundingClientRect();
+
+		var delta = 0;
+		if (r.bottom > bottom - margin) delta = r.bottom - (bottom - margin);
+		else if (r.top < top + margin) delta = r.top - (top + margin);
+
+		if (!delta) return;
+		container.scrollTop = container.scrollTop + delta;
+	}
+
+	function scheduleAdjust() {
+		if (raf) cancelAnimationFrame(raf);
+		raf = requestAnimationFrame(function () {
+			applyKeyboardClass();
+			// One more tick after layout settles (keyboard animation)
+			setTimeout(function () {
+				applyKeyboardClass();
+				keepFocusedInputVisible();
+			}, 0);
 		});
-	});
-	
-	// Also handle window resize (keyboard open/close)
-	var initialHeight = window.innerHeight;
-	window.addEventListener('resize', function() {
-		// Keyboard opened (viewport height decreased)
-		if (window.innerHeight < initialHeight * 0.8) {
-			var focused = document.activeElement;
-			if (focused && focused.tagName === 'INPUT') {
-				setTimeout(function() {
-					focused.scrollIntoView({ 
-						behavior: 'smooth', 
-						block: 'center' 
-					});
-				}, 100);
-			}
-		}
-	});
+	}
+
+	document.addEventListener('focusin', function (e) {
+		if (e && e.target && e.target.tagName === 'INPUT') scheduleAdjust();
+	}, true);
+
+	document.addEventListener('focusout', function () {
+		setTimeout(scheduleAdjust, 50);
+	}, true);
+
+	if (vv) {
+		vv.addEventListener('resize', scheduleAdjust);
+		vv.addEventListener('scroll', scheduleAdjust);
+	} else {
+		window.addEventListener('resize', scheduleAdjust);
+	}
+
+	scheduleAdjust();
 })();
 </script>
 </body>

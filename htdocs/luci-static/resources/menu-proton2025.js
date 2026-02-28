@@ -70,6 +70,21 @@ return baseclass.extend({
       this._themeSettingsInit = false;
       this.initThemeSettings();
     });
+
+    // Re-apply zoom and page width on resize (desktop only — mobile ↔ desktop transition)
+    let _resizeTimer = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(_resizeTimer);
+      _resizeTimer = setTimeout(() => {
+        // На мобильных resize часто вызывается скрытием/показом адресной строки —
+        // пропускаем, чтобы не дёргать layout и не сбивать скролл
+        if (window.innerWidth < 800) return;
+        const z = localStorage.getItem("proton-zoom") || "100";
+        this.applyZoom(z);
+        const pw = parseInt(localStorage.getItem("proton-page-width")) || 0;
+        this.applyPageWidth(pw);
+      }, 200);
+    });
   },
 
   loadAndApplyThemeSettings() {
@@ -79,16 +94,17 @@ return baseclass.extend({
       accentColor: localStorage.getItem("proton-accent-color") || "blue",
       borderRadius: localStorage.getItem("proton-border-radius") || "default",
       zoom: localStorage.getItem("proton-zoom") || defaultZoom,
+      pageWidth: localStorage.getItem("proton-page-width") || "0",
       animations: localStorage.getItem("proton-animations") !== "false",
       transparency: localStorage.getItem("proton-transparency") !== "false",
       servicesWidget:
         localStorage.getItem("proton-services-widget-enabled") !== "false",
       temperatureWidget:
         localStorage.getItem("proton-temp-widget-enabled") !== "false",
-      servicesGrouped:
-        localStorage.getItem("proton-services-grouped") === "true",
       servicesLog: localStorage.getItem("proton-services-log") === "true",
       tableWrap: localStorage.getItem("proton-table-wrap") !== "false",
+      logHighlight: localStorage.getItem("proton-log-highlight") !== "false",
+      customFont: localStorage.getItem("proton-custom-font") !== "false",
     };
 
     // Apply theme mode
@@ -628,20 +644,19 @@ return baseclass.extend({
   /**
    * WiFi frequency detection based on real data from radio rows
    * Adds data-freq attribute to wifinet rows for CSS styling
+   * Works with any device names: radio0, MT7981_1_1, ath0, wl0, etc.
    */
   markWifiFrequencies() {
     const wirelessTable = document.querySelector("#cbi-wireless");
     if (!wirelessTable) return;
 
-    // Map to store radio frequencies: radio0 -> "2.4", radio1 -> "5", etc.
+    // Map to store radio frequencies: "radio0" -> "2.4", "MT7981_1_1" -> "5", etc.
     const radioFreqMap = new Map();
 
-    // Step 1: Parse radio rows to get their frequencies
-    const radioRows = wirelessTable.querySelectorAll(
-      'tr[data-section-id^="radio"]',
-    );
+    // Step 1: Parse radio device rows (marked by data-radio-device attribute from header.ut)
+    const radioRows = wirelessTable.querySelectorAll("tr[data-radio-device]");
     radioRows.forEach((row) => {
-      const radioId = row.getAttribute("data-section-id"); // e.g., "radio0"
+      const radioId = row.getAttribute("data-radio-device"); // e.g., "radio0" or "MT7981_1_1"
       const text = row.textContent || "";
 
       // Detect frequency from text content
@@ -673,43 +688,40 @@ return baseclass.extend({
       }
     });
 
-    // Step 2: Assign frequencies to wifinet rows based on their parent radio
+    // Step 2: Assign frequencies to WiFi network rows (those without data-radio-device)
     const wifinetRows = wirelessTable.querySelectorAll(
-      'tr[data-section-id^="wifinet"]',
+      "tr[data-section-id]:not([data-radio-device])",
     );
     wifinetRows.forEach((row) => {
       // Skip if already processed
       if (row.hasAttribute("data-freq")) return;
 
-      // Find parent radio by looking at preceding rows or DOM structure
-      // Method 1: Check the section structure - wifinet rows are usually after their radio
+      // Find parent radio by looking at preceding rows
       let currentRow = row.previousElementSibling;
       let parentRadio = null;
 
       while (currentRow) {
-        const sectionId = currentRow.getAttribute("data-section-id");
-        if (sectionId && sectionId.startsWith("radio")) {
-          parentRadio = sectionId;
+        const radioDevice = currentRow.getAttribute("data-radio-device");
+        if (radioDevice) {
+          parentRadio = radioDevice;
           break;
-        }
-        // If we hit another wifinet, continue searching up
-        if (sectionId && sectionId.startsWith("wifinet")) {
-          currentRow = currentRow.previousElementSibling;
-          continue;
         }
         currentRow = currentRow.previousElementSibling;
       }
 
-      // Method 2: Check row's own data attributes if available
+      // Fallback: check badge text for device name reference
       if (!parentRadio) {
-        // Sometimes LuCI stores device info in data attributes or nested elements
         const deviceCell = row.querySelector('[data-name="_badge"]');
         if (deviceCell) {
           const badgeText = deviceCell.textContent || "";
-          // Look for "radio0", "radio1" in the badge
-          const radioMatch = badgeText.match(/radio(\d+)/i);
-          if (radioMatch) {
-            parentRadio = "radio" + radioMatch[1];
+          // Look for any known wireless device name in the badge
+          if (window._protonWirelessDevices) {
+            for (const devName of window._protonWirelessDevices) {
+              if (badgeText.indexOf(devName) !== -1) {
+                parentRadio = devName;
+                break;
+              }
+            }
           }
         }
       }
@@ -1075,16 +1087,17 @@ return baseclass.extend({
         accentColor: localStorage.getItem("proton-accent-color") || "blue",
         borderRadius: localStorage.getItem("proton-border-radius") || "default",
         zoom: parseInt(localStorage.getItem("proton-zoom") || defaultZoom),
+        pageWidth: parseInt(localStorage.getItem("proton-page-width") || "0"),
         animations: localStorage.getItem("proton-animations") !== "false",
         transparency: localStorage.getItem("proton-transparency") !== "false",
         servicesWidget:
           localStorage.getItem("proton-services-widget-enabled") !== "false",
         temperatureWidget:
           localStorage.getItem("proton-temp-widget-enabled") !== "false",
-        servicesGrouped:
-          localStorage.getItem("proton-services-grouped") === "true",
         servicesLog: localStorage.getItem("proton-services-log") === "true",
         tableWrap: localStorage.getItem("proton-table-wrap") !== "false",
+        logHighlight: localStorage.getItem("proton-log-highlight") !== "false",
+        customFont: localStorage.getItem("proton-custom-font") !== "false",
       };
 
       // Helper function for translations
@@ -1191,6 +1204,36 @@ return baseclass.extend({
           </div>
 
           <div class="cbi-value">
+            <label class="cbi-value-title" for="proton-page-width-check">${t(
+              "Page Width",
+            )} <span id="proton-page-width-value">${
+              settings.pageWidth >= 100
+                ? "100% (" + t("Full width") + ")"
+                : settings.pageWidth > 0
+                  ? settings.pageWidth + "%"
+                  : ""
+            }</span></label>
+            <div class="cbi-value-field">
+              <div class="cbi-checkbox" style="margin-bottom: 8px;">
+                <input id="proton-page-width-check" type="checkbox" ${
+                  settings.pageWidth > 0 ? "checked" : ""
+                }>
+                <label for="proton-page-width-check"></label>
+              </div>
+              <div id="proton-page-width-slider" style="display: ${settings.pageWidth > 0 ? "flex" : "none"}; align-items: center; gap: 12px; margin-top: 8px;">
+                <button type="button" id="proton-page-width-minus" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">−</button>
+                <input type="range" id="proton-page-width-range" min="50" max="100" step="5" value="${
+                  settings.pageWidth > 0 ? settings.pageWidth : 75
+                }" style="flex: 1; accent-color: var(--proton-accent);">
+                <button type="button" id="proton-page-width-plus" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">+</button>
+              </div>
+              <div class="cbi-value-description">${t(
+                "Content area width",
+              )} (50% - 100%)</div>
+            </div>
+          </div>
+
+          <div class="cbi-value">
             <label class="cbi-value-title" for="proton-animations-check">${t(
               "Animations",
             )}</label>
@@ -1291,11 +1334,85 @@ return baseclass.extend({
               )}</div>
             </div>
           </div>
+
+          <div class="cbi-value">
+            <label class="cbi-value-title" for="proton-log-highlight-check">${t(
+              "Log Highlighting",
+            )}</label>
+            <div class="cbi-value-field">
+              <div class="cbi-checkbox">
+                <input id="proton-log-highlight-check" type="checkbox" ${
+                  settings.logHighlight ? "checked" : ""
+                }>
+                <label for="proton-log-highlight-check"></label>
+              </div>
+              <div class="cbi-value-description">${t(
+                "Custom log viewer with syntax highlighting, line numbers, and toolbar on System Log and Kernel Log pages.",
+              )}</div>
+            </div>
+          </div>
+
+          <div class="cbi-value">
+            <label class="cbi-value-title" for="proton-custom-font-check">${t(
+              "Custom Font (Inter)",
+            )}</label>
+            <div class="cbi-value-field">
+              <div class="cbi-checkbox">
+                <input id="proton-custom-font-check" type="checkbox" ${
+                  settings.customFont ? "checked" : ""
+                }>
+                <label for="proton-custom-font-check"></label>
+              </div>
+              <div class="cbi-value-description">${t(
+                "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.",
+              )}</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Backup & Restore section - отдельный блок
+      const backupHTML = `
+        <div id="proton-backup-restore" class="proton-backup-section" style="margin-top: 1.5rem; padding: 1.5rem; background: var(--proton-bg-card); border: 1px solid var(--proton-border); border-radius: var(--proton-radius); box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <div style="max-width: 600px; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 1.25rem;">
+              <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 600; color: var(--proton-accent);">${t(
+                "Backup & Restore",
+              )}</h4>
+              <div class="cbi-value-description" style="opacity: 0.7;">${t(
+                "Export your theme settings to a file or import from a previously saved backup.",
+              )}</div>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+              <button type="button" id="proton-export-settings" class="cbi-button cbi-button-action proton-backup-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="proton-backup-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>${t(
+                  "Export Settings",
+                )}
+              </button>
+              <button type="button" id="proton-import-settings" class="cbi-button proton-backup-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="proton-backup-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>${t(
+                  "Import Settings",
+                )}
+              </button>
+              <button type="button" id="proton-reset-settings" class="cbi-button cbi-button-negative proton-backup-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="proton-backup-icon"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>${t(
+                  "Reset to Defaults",
+                )}
+              </button>
+              <input type="file" id="proton-import-file" accept=".json" style="display: none;">
+            </div>
+          </div>
         </div>
       `;
 
       // Insert after the design field
       designField.insertAdjacentHTML("afterend", settingsHTML);
+
+      // Insert backup section after settings
+      const settingsBlock = document.getElementById("proton-theme-settings");
+      if (settingsBlock) {
+        settingsBlock.insertAdjacentHTML("afterend", backupHTML);
+      }
 
       // Apply current settings
       this.applyThemeSettings(settings);
@@ -1345,7 +1462,9 @@ return baseclass.extend({
         const percent = ((val - min) / (max - min)) * 100;
         const isLight =
           document.documentElement.getAttribute("data-theme") === "light";
-        const fillColor = isLight ? "#4a8fe7" : "#5e9eff";
+        const fillColor = getComputedStyle(document.documentElement)
+          .getPropertyValue("--proton-accent")
+          .trim();
         const trackColor = isLight
           ? "rgba(0,0,0,0.12)"
           : "rgba(255,255,255,0.05)";
@@ -1379,6 +1498,52 @@ return baseclass.extend({
         updateZoom(parseInt(zoomRange.value) + 5),
       );
       zoomReset?.addEventListener("click", () => updateZoom(100));
+
+      // Page width: checkbox + slider
+      const pageWidthCheck = document.getElementById("proton-page-width-check");
+      const pageWidthSlider = document.getElementById(
+        "proton-page-width-slider",
+      );
+      const pageWidthRange = document.getElementById("proton-page-width-range");
+      const pageWidthValue = document.getElementById("proton-page-width-value");
+      const pageWidthMinus = document.getElementById("proton-page-width-minus");
+      const pageWidthPlus = document.getElementById("proton-page-width-plus");
+
+      if (pageWidthRange) updateSliderFill(pageWidthRange);
+
+      const updatePageWidth = (val) => {
+        val = Math.max(50, Math.min(100, parseInt(val)));
+        pageWidthRange.value = val;
+        pageWidthValue.textContent =
+          val >= 100 ? "100% (" + t("Full width") + ")" : val + "%";
+        localStorage.setItem("proton-page-width", val);
+        this.applyPageWidth(val);
+        updateSliderFill(pageWidthRange);
+      };
+
+      pageWidthCheck?.addEventListener("change", (e) => {
+        const enabled = e.target.checked;
+        if (pageWidthSlider)
+          pageWidthSlider.style.display = enabled ? "flex" : "none";
+        if (enabled) {
+          const val = parseInt(pageWidthRange?.value) || 75;
+          updatePageWidth(val);
+        } else {
+          pageWidthValue.textContent = "";
+          localStorage.setItem("proton-page-width", "0");
+          this.applyPageWidth(0);
+        }
+      });
+
+      pageWidthRange?.addEventListener("input", (e) =>
+        updatePageWidth(e.target.value),
+      );
+      pageWidthMinus?.addEventListener("click", () =>
+        updatePageWidth(parseInt(pageWidthRange.value) - 5),
+      );
+      pageWidthPlus?.addEventListener("click", () =>
+        updatePageWidth(parseInt(pageWidthRange.value) + 5),
+      );
 
       animationsCheck?.addEventListener("change", (e) => {
         const enabled = e.target.checked;
@@ -1446,6 +1611,195 @@ return baseclass.extend({
         this.applyTableWrap(enabled);
       });
 
+      const logHighlightCheck = document.getElementById(
+        "proton-log-highlight-check",
+      );
+      logHighlightCheck?.addEventListener("change", (e) => {
+        const enabled = e.target.checked;
+        localStorage.setItem("proton-log-highlight", enabled);
+      });
+
+      const customFontCheck = document.getElementById(
+        "proton-custom-font-check",
+      );
+      customFontCheck?.addEventListener("change", (e) => {
+        const enabled = e.target.checked;
+        localStorage.setItem("proton-custom-font", enabled);
+        this.applyCustomFont(enabled);
+      });
+
+      // --- Backup & Restore ---
+      const PROTON_SETTINGS_KEYS = [
+        "proton-theme-mode",
+        "proton-accent-color",
+        "proton-border-radius",
+        "proton-zoom",
+        "proton-page-width",
+        "proton-animations",
+        "proton-transparency",
+        "proton-services-widget-enabled",
+        "proton-temp-widget-enabled",
+        "proton-services-log",
+        "proton-table-wrap",
+        "proton-log-highlight",
+        "proton-custom-font",
+      ];
+
+      const showBackupStatus = (msg, isError) => {
+        if (typeof L !== "undefined" && L.ui && L.ui.addNotification) {
+          L.ui.addNotification(null, E("p", msg), isError ? "danger" : "info");
+        } else {
+          alert(msg);
+        }
+      };
+
+      // Export
+      document
+        .getElementById("proton-export-settings")
+        ?.addEventListener("click", () => {
+          const now = new Date();
+          const data = {
+            _proton_backup: true,
+            _version: "1.1.0",
+            _date: now.toISOString(),
+          };
+          PROTON_SETTINGS_KEYS.forEach((key) => {
+            const val = localStorage.getItem(key);
+            if (val !== null) data[key] = val;
+          });
+          const blob = new Blob([JSON.stringify(data, null, 2)], {
+            type: "application/json",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          // Генерируем имя файла с датой и временем
+          const dateStr =
+            now.getFullYear() +
+            "-" +
+            String(now.getMonth() + 1).padStart(2, "0") +
+            "-" +
+            String(now.getDate()).padStart(2, "0") +
+            "_" +
+            String(now.getHours()).padStart(2, "0") +
+            "-" +
+            String(now.getMinutes()).padStart(2, "0") +
+            "-" +
+            String(now.getSeconds()).padStart(2, "0");
+          a.download = `proton2025-settings-backup-${dateStr}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+          showBackupStatus(t("Settings exported successfully"), false);
+        });
+
+      // Reset to defaults
+      document
+        .getElementById("proton-reset-settings")
+        ?.addEventListener("click", async () => {
+          if (
+            !confirm(
+              t(
+                "Are you sure you want to reset all theme settings to defaults? This action cannot be undone.",
+              ),
+            )
+          ) {
+            return;
+          }
+
+          if (window.protonSettingsSync?.resetToDefaults) {
+            await window.protonSettingsSync.resetToDefaults();
+          } else {
+            // Fallback if sync module not loaded
+            const defaults = {
+              "proton-theme-mode": "dark",
+              "proton-accent-color": "blue",
+              "proton-zoom": "100",
+              "proton-transparency": "true",
+              "proton-border-radius": "default",
+              "proton-animations": "true",
+              "proton-services-widget-enabled": "true",
+              "proton-temp-widget-enabled": "true",
+              "proton-services-log": "false",
+              "proton-table-wrap": "false",
+              "proton-log-highlight": "true",
+              "proton-page-width": "",
+              "proton-custom-font": "true",
+            };
+
+            Object.keys(defaults).forEach((key) => {
+              localStorage.removeItem(key);
+            });
+
+            Object.entries(defaults).forEach(([key, value]) => {
+              if (value) {
+                localStorage.setItem(key, value);
+              }
+            });
+
+            window.location.reload();
+          }
+        });
+
+      // Import
+      const importFileInput = document.getElementById("proton-import-file");
+      document
+        .getElementById("proton-import-settings")
+        ?.addEventListener("click", () => {
+          importFileInput?.click();
+        });
+
+      importFileInput?.addEventListener("change", (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const data = JSON.parse(ev.target.result);
+            if (!data._proton_backup) {
+              showBackupStatus(t("Invalid backup file"), true);
+              return;
+            }
+
+            let imported = 0;
+            PROTON_SETTINGS_KEYS.forEach((key) => {
+              if (key in data) {
+                localStorage.setItem(key, data[key]);
+                imported++;
+              }
+            });
+
+            if (imported === 0) {
+              showBackupStatus(t("No settings found in file"), true);
+              return;
+            }
+
+            // Re-apply all settings
+            this.loadAndApplyThemeSettings();
+
+            // Re-init settings UI to reflect new values
+            this._themeSettingsInit = false;
+            const panel = document.getElementById("proton-theme-settings");
+            if (panel) panel.remove();
+            const backupSection = document.getElementById(
+              "proton-backup-restore",
+            );
+            if (backupSection) backupSection.remove();
+            this.initThemeSettings();
+
+            showBackupStatus(
+              t("Settings imported successfully") + " (" + imported + ")",
+              false,
+            );
+          } catch (err) {
+            showBackupStatus(t("Failed to read backup file"), true);
+          }
+        };
+        reader.readAsText(file);
+        // Reset input so the same file can be re-imported
+        e.target.value = "";
+      });
+
       return true;
     };
 
@@ -1466,10 +1820,14 @@ return baseclass.extend({
     this.applyAccentColor(settings.accentColor);
     this.applyBorderRadius(settings.borderRadius);
     this.applyZoom(settings.zoom);
+    this.applyPageWidth(settings.pageWidth);
     this.applyAnimations(settings.animations);
     this.applyTransparency(settings.transparency);
     this.applyTableWrap(settings.tableWrap);
+    this.applyCustomFont(settings.customFont);
     this.applyServicesWidget(settings.servicesWidget);
+    this.applyTemperatureWidget(settings.temperatureWidget);
+    this.applyServicesLog(settings.servicesLog);
   },
 
   applyAccentColor(color) {
@@ -1478,31 +1836,37 @@ return baseclass.extend({
         accent: "#4b5563",
         hover: "#374151",
         glow: "rgba(75, 85, 99, 0.22)",
+        rgb: "75, 85, 99",
       },
       blue: {
         accent: "#5e9eff",
         hover: "#7db2ff",
         glow: "rgba(94, 158, 255, 0.18)",
+        rgb: "94, 158, 255",
       },
       purple: {
         accent: "#a78bfa",
         hover: "#c3b4ff",
         glow: "rgba(167, 139, 250, 0.22)",
+        rgb: "167, 139, 250",
       },
       green: {
         accent: "#34d399",
         hover: "#2fb885",
         glow: "rgba(52, 211, 153, 0.18)",
+        rgb: "52, 211, 153",
       },
       orange: {
         accent: "#fb923c",
         hover: "#f47c1f",
         glow: "rgba(251, 146, 60, 0.20)",
+        rgb: "251, 146, 60",
       },
       red: {
         accent: "#f87171",
         hover: "#f04c4c",
         glow: "rgba(248, 113, 113, 0.20)",
+        rgb: "248, 113, 113",
       },
     };
 
@@ -1513,6 +1877,7 @@ return baseclass.extend({
       c.hover,
     );
     document.documentElement.style.setProperty("--proton-accent-glow", c.glow);
+    document.documentElement.style.setProperty("--proton-accent-rgb", c.rgb);
   },
 
   applyBorderRadius(radius) {
@@ -1527,9 +1892,37 @@ return baseclass.extend({
   },
 
   applyZoom(zoom) {
+    // На мобильных экранах не применяем zoom — конфликтует с viewport и pinch-to-zoom
+    if (window.innerWidth < 800) {
+      document.documentElement.style.zoom = "";
+      return;
+    }
     const scale = parseInt(zoom) / 100;
     // Use CSS zoom on html element for true browser-like scaling
     document.documentElement.style.zoom = scale;
+  },
+
+  applyPageWidth(width) {
+    const val = parseInt(width) || 0;
+    // На мобильных экранах не ограничиваем ширину — контент и так занимает 100%
+    if (window.innerWidth < 800) {
+      document.documentElement.style.setProperty(
+        "--proton-page-max-width",
+        "990px",
+      );
+      return;
+    }
+    if (val >= 50 && val <= 100) {
+      document.documentElement.style.setProperty(
+        "--proton-page-max-width",
+        val + "%",
+      );
+    } else {
+      document.documentElement.style.setProperty(
+        "--proton-page-max-width",
+        "990px",
+      );
+    }
   },
 
   applyAnimations(enabled) {
@@ -1553,6 +1946,26 @@ return baseclass.extend({
     if (widget) {
       widget.style.display = enabled ? "" : "none";
     }
+    if (typeof window.updateWidgetsSectionVisibility === "function") {
+      window.updateWidgetsSectionVisibility();
+    }
+  },
+
+  applyTemperatureWidget(enabled) {
+    const widget = document.querySelector(".proton-temp-widget");
+    if (widget) {
+      widget.style.display = enabled ? "" : "none";
+    }
+    if (typeof window.updateWidgetsSectionVisibility === "function") {
+      window.updateWidgetsSectionVisibility();
+    }
+  },
+
+  applyServicesLog(enabled) {
+    const logEl = document.getElementById("proton-services-log");
+    if (logEl) {
+      logEl.style.display = enabled ? "" : "none";
+    }
   },
 
   applyTableWrap(enabled) {
@@ -1561,6 +1974,15 @@ return baseclass.extend({
       root.classList.remove("proton-table-truncate");
     } else {
       root.classList.add("proton-table-truncate");
+    }
+  },
+
+  applyCustomFont(enabled) {
+    const root = document.documentElement;
+    if (enabled) {
+      root.classList.remove("proton-system-font");
+    } else {
+      root.classList.add("proton-system-font");
     }
   },
 });

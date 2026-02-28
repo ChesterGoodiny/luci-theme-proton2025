@@ -4,8 +4,59 @@
  */
 
 /* =====================================================
+   Web Fonts (Inter Variable)
+   ===================================================== */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-display: swap;
+    font-weight: 100 900;
+    src: url('./fonts/inter-cyrillic-ext.woff2') format('woff2');
+    unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-display: swap;
+    font-weight: 100 900;
+    src: url('./fonts/inter-cyrillic.woff2') format('woff2');
+    unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-display: swap;
+    font-weight: 100 900;
+    src: url('./fonts/inter-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-display: swap;
+    font-weight: 100 900;
+    src: url('./fonts/inter-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* =====================================================
    CSS Variables - Proton Dark Theme
    ===================================================== */
+
+/* System font fallback (when Inter is disabled) */
+:root.proton-system-font body,
+:root.proton-system-font input,
+:root.proton-system-font select,
+:root.proton-system-font textarea,
+:root.proton-system-font button,
+:root.proton-system-font .btn,
+:root.proton-system-font .cbi-button {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
 :root {
     /* Primary Colors */
     --proton-bg: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
@@ -23,6 +74,7 @@
     --proton-accent: #5e9eff;
     --proton-accent-hover: #7db2ff;
     --proton-accent-glow: rgba(94, 158, 255, 0.18);
+    --proton-accent-rgb: 94, 158, 255;
 
     /* Status Colors */
     --proton-success: #6bcf7f;
@@ -143,6 +195,7 @@
     --proton-accent: #4b5563;
     --proton-accent-hover: #374151;
     --proton-accent-glow: rgba(75, 85, 99, 0.22);
+    --proton-accent-rgb: 75, 85, 99;
 
     /* Status Colors - Darker for better contrast */
     --proton-success: #38a169;
@@ -320,17 +373,18 @@ html {
     font-size: 16px;
     -webkit-text-size-adjust: none;
     color-scheme: inherit;
+    background-color: var(--proton-bg-solid);
 }
 
 body {
     background: var(--proton-bg-solid);
     background-image:
-        radial-gradient(circle at 20% 30%, rgba(94, 158, 255, 0.06) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(107, 207, 127, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 20% 30%, rgba(var(--proton-accent-rgb), 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(var(--proton-accent-rgb), 0.03) 0%, transparent 50%),
         var(--proton-bg);
     background-attachment: fixed;
     color: var(--proton-fg);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-size: 14px;
     line-height: 1.6;
     min-height: 100%;
@@ -344,8 +398,8 @@ body {
 /* Light theme background gradients */
 :root[data-theme="light"] body {
     background-image:
-        radial-gradient(circle at 20% 30%, rgba(74, 143, 231, 0.04) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(72, 187, 120, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 20% 30%, rgba(var(--proton-accent-rgb), 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(var(--proton-accent-rgb), 0.025) 0%, transparent 50%),
         var(--proton-bg);
 }
 
@@ -765,6 +819,7 @@ button, .btn {
     color: #fff;
     font-weight: 500;
     font-size: 0.9rem;
+    font-family: inherit;
     border: none;
     border-radius: var(--proton-radius);
     cursor: pointer;
@@ -797,6 +852,7 @@ button+button, .btn+.btn, .cbi-button+.cbi-button {
     color: var(--proton-fg);
     font-size: 13px;
     font-weight: 500;
+    font-family: inherit;
     cursor: pointer;
     transition: var(--proton-transition);
     box-shadow: none;
@@ -1202,6 +1258,98 @@ input[type="checkbox"]:checked::after {
     box-sizing: border-box;
 }
 
+/* Range Slider */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    cursor: pointer;
+}
+
+:root[data-theme="light"] input[type="range"] {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* WebKit (Chrome, Safari, Edge) - Track */
+input[type="range"]::-webkit-slider-track {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+}
+
+:root[data-theme="light"] input[type="range"]::-webkit-slider-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Firefox - Track */
+input[type="range"]::-moz-range-track {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+}
+
+:root[data-theme="light"] input[type="range"]::-moz-range-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* WebKit (Chrome, Safari, Edge) - Thumb */
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--proton-accent);
+    cursor: pointer;
+    transition: var(--proton-transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin-top: -6px; /* Center thumb on track */
+}
+
+/* Firefox - Thumb */
+input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--proton-accent);
+    cursor: pointer;
+    border: none;
+    transition: var(--proton-transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Hover effects */
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 4px var(--proton-accent-glow);
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 4px var(--proton-accent-glow);
+}
+
+/* Focus styles for accessibility */
+input[type="range"]:focus {
+    outline: none;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+    box-shadow: 0 0 0 4px var(--proton-accent-glow);
+}
+
+input[type="range"]:focus::-moz-range-thumb {
+    box-shadow: 0 0 0 4px var(--proton-accent-glow);
+}
+
 /* =====================================================
    CBI Form Layouts
    ===================================================== */
@@ -1313,6 +1461,12 @@ span.control-group {
 .cbi-value-field>.control-group,
 .cbi-value-field>span.control-group {
     margin-top: 10px;
+}
+
+/* System → General: keep Sync buttons below the time input, not beside it */
+body[data-page="admin-system-system"] .cbi-value[data-name="_systime"] .cbi-value-field>span.control-group {
+    display: flex;
+    width: 100%;
 }
 
 /* Section create row (input + Add button) */
@@ -1522,23 +1676,27 @@ table.assoclist td.cbi-section-actions button {
    (Шрифты и цвета как на мобилке)
    ===================================================== */
 
-/* #status_leases - DHCP Leases Table Desktop */
-#status_leases td:nth-child(1) {
+/* #status_leases / #status_leases6 - DHCP & DHCPv6 Leases Table Desktop */
+#status_leases td:nth-child(1),
+#status_leases6 td:nth-child(1) {
     font-weight: 600;
     color: var(--proton-fg);
 }
 
-#status_leases td:nth-child(2) {
+#status_leases td:nth-child(2),
+#status_leases6 td:nth-child(2) {
     font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
     color: var(--proton-accent);
 }
 
-#status_leases td:nth-child(3) {
+#status_leases td:nth-child(3),
+#status_leases6 td:nth-child(3) {
     font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
     color: var(--proton-fg-secondary);
 }
 
-#status_leases td:nth-child(4) {
+#status_leases td:nth-child(4),
+#status_leases6 td:nth-child(4) {
     color: var(--proton-success);
 }
 
@@ -1834,8 +1992,8 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     gap: 0;
 }
 
-/* Радио модули - заголовки карточек */
-#cbi-wireless tr[data-section-id^="radio"] {
+/* Радио модули - заголовки карточек (radio0, MT7981_1_1, и т.д.) */
+#cbi-wireless tr[data-radio-device] {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -1848,34 +2006,34 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     gap: 16px;
 }
 
-#cbi-wireless tr[data-section-id^="radio"]:first-child {
+#cbi-wireless tr[data-radio-device]:first-child {
     margin-top: 0;
 }
 
 /* Цветовая полоса слева для radio по частоте */
-#cbi-wireless tr[data-freq="2.4"][data-section-id^="radio"] {
+#cbi-wireless tr[data-freq="2.4"][data-radio-device] {
     border-left: 4px solid #ff9800;
 }
 
-#cbi-wireless tr[data-freq="5"][data-section-id^="radio"] {
+#cbi-wireless tr[data-freq="5"][data-radio-device] {
     border-left: 4px solid #00bcd4;
 }
 
-#cbi-wireless tr[data-freq="6"][data-section-id^="radio"] {
+#cbi-wireless tr[data-freq="6"][data-radio-device] {
     border-left: 4px solid #a78bfa;
 }
 
-#cbi-wireless tr[data-section-id^="radio"] td {
+#cbi-wireless tr[data-radio-device] td {
     padding: 0;
     border: none;
     background: transparent;
 }
 
-#cbi-wireless tr[data-section-id^="radio"] td[data-name="_badge"] {
+#cbi-wireless tr[data-radio-device] td[data-name="_badge"] {
     flex: 0 0 auto;
 }
 
-#cbi-wireless tr[data-section-id^="radio"] td[data-name="_badge"] .ifacebadge {
+#cbi-wireless tr[data-radio-device] td[data-name="_badge"] .ifacebadge {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -1890,17 +2048,17 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     letter-spacing: 0.03em;
 }
 
-#cbi-wireless tr[data-section-id^="radio"] td[data-name="_badge"] .ifacebadge img {
+#cbi-wireless tr[data-radio-device] td[data-name="_badge"] .ifacebadge img {
     width: 22px;
     height: 22px;
     opacity: 0.85;
 }
 
-#cbi-wireless tr[data-section-id^="radio"] td[data-name="_stat"] {
+#cbi-wireless tr[data-radio-device] td[data-name="_stat"] {
     flex: 1 1 auto;
 }
 
-#cbi-wireless tr[data-section-id^="radio"] td[data-name="_stat"] big {
+#cbi-wireless tr[data-radio-device] td[data-name="_stat"] big {
     display: block;
     color: var(--proton-fg);
     font-size: 0.9rem;
@@ -1908,21 +2066,21 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     margin-bottom: 2px;
 }
 
-#cbi-wireless tr[data-section-id^="radio"] td[data-name="_stat"] big strong {
+#cbi-wireless tr[data-radio-device] td[data-name="_stat"] big strong {
     font-weight: 600;
 }
 
-#cbi-wireless tr[data-section-id^="radio"] td[data-name="_stat"] div {
+#cbi-wireless tr[data-radio-device] td[data-name="_stat"] div {
     color: var(--proton-fg-secondary);
     font-size: 0.8rem;
 }
 
-#cbi-wireless tr[data-section-id^="radio"] td.cbi-section-actions {
+#cbi-wireless tr[data-radio-device] td.cbi-section-actions {
     flex: 0 0 auto;
 }
 
-/* WiFi сети - вложенные карточки (любой section-id кроме radio*) */
-#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) {
+/* WiFi сети - вложенные карточки (строки без data-radio-device) */
+#cbi-wireless tr[data-section-id]:not([data-radio-device]) {
     display: flex;
     flex-wrap: nowrap;
     align-items: flex-start;
@@ -1936,60 +2094,60 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 }
 
 /* Последняя сеть в группе - закругляем низ */
-#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]):has(+ tr[data-section-id^="radio"]),
-#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]):last-child {
+#cbi-wireless tr[data-section-id]:not([data-radio-device]):has(+ tr[data-radio-device]),
+#cbi-wireless tr[data-section-id]:not([data-radio-device]):last-child {
     border-radius: 0 0 var(--proton-radius) var(--proton-radius);
     margin-bottom: 0;
 }
 
-#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]):hover {
+#cbi-wireless tr[data-section-id]:not([data-radio-device]):hover {
     background: var(--proton-bg-hover);
 }
 
-#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td {
+#cbi-wireless tr[data-section-id]:not([data-radio-device]) td {
     padding: 0;
     border: none;
     background: transparent;
 }
 
-#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] {
+#cbi-wireless tr[data-section-id]:not([data-radio-device]) td[data-name="_badge"] {
     flex: 0 0 auto;
     align-self: center;
 }
 
-#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_stat"] {
+#cbi-wireless tr[data-section-id]:not([data-radio-device]) td[data-name="_stat"] {
     flex: 1 1 auto;
     min-width: 0;
     font-size: 0.9rem;
     line-height: 1.6;
 }
 
-#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_stat"]>* {
+#cbi-wireless tr[data-section-id]:not([data-radio-device]) td[data-name="_stat"]>* {
     display: block;
 }
 
-#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_stat"] br {
+#cbi-wireless tr[data-section-id]:not([data-radio-device]) td[data-name="_stat"] br {
     display: block;
     content: "";
     margin: 0;
 }
 
-#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_stat"] strong {
+#cbi-wireless tr[data-section-id]:not([data-radio-device]) td[data-name="_stat"] strong {
     color: var(--proton-fg);
 }
 
-#cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td.cbi-section-actions {
+#cbi-wireless tr[data-section-id]:not([data-radio-device]) td.cbi-section-actions {
     flex: 0 0 auto;
     align-self: center;
     margin-left: auto;
 }
 
 /* WiFi 2.4 GHz - оранжевый акцент (по data-freq атрибуту) */
-#cbi-wireless tr[data-freq="2.4"][data-section-id]:not([data-section-id^="radio"]) {
+#cbi-wireless tr[data-freq="2.4"][data-section-id]:not([data-radio-device]) {
     border-left: 4px solid #ff9800;
 }
 
-#cbi-wireless tr[data-freq="2.4"][data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge {
+#cbi-wireless tr[data-freq="2.4"][data-section-id]:not([data-radio-device]) td[data-name="_badge"] .ifacebadge {
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -1999,7 +2157,7 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     padding: 8px 12px;
 }
 
-#cbi-wireless tr[data-freq="2.4"][data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge::after {
+#cbi-wireless tr[data-freq="2.4"][data-section-id]:not([data-radio-device]) td[data-name="_badge"] .ifacebadge::after {
     content: "2.4 GHz";
     padding: 4px 10px;
     border-radius: 10px;
@@ -2011,11 +2169,11 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 }
 
 /* WiFi 5 GHz - голубой акцент (по data-freq атрибуту) */
-#cbi-wireless tr[data-freq="5"][data-section-id]:not([data-section-id^="radio"]) {
+#cbi-wireless tr[data-freq="5"][data-section-id]:not([data-radio-device]) {
     border-left: 4px solid #00bcd4;
 }
 
-#cbi-wireless tr[data-freq="5"][data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge {
+#cbi-wireless tr[data-freq="5"][data-section-id]:not([data-radio-device]) td[data-name="_badge"] .ifacebadge {
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -2025,7 +2183,7 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     padding: 8px 12px;
 }
 
-#cbi-wireless tr[data-freq="5"][data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge::after {
+#cbi-wireless tr[data-freq="5"][data-section-id]:not([data-radio-device]) td[data-name="_badge"] .ifacebadge::after {
     content: "5 GHz";
     padding: 4px 10px;
     border-radius: 10px;
@@ -2037,11 +2195,11 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 }
 
 /* WiFi 6 GHz - фиолетовый акцент (по data-freq атрибуту) */
-#cbi-wireless tr[data-freq="6"][data-section-id]:not([data-section-id^="radio"]) {
+#cbi-wireless tr[data-freq="6"][data-section-id]:not([data-radio-device]) {
     border-left: 4px solid #a78bfa;
 }
 
-#cbi-wireless tr[data-freq="6"][data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge {
+#cbi-wireless tr[data-freq="6"][data-section-id]:not([data-radio-device]) td[data-name="_badge"] .ifacebadge {
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -2051,7 +2209,7 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     padding: 8px 12px;
 }
 
-#cbi-wireless tr[data-freq="6"][data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge::after {
+#cbi-wireless tr[data-freq="6"][data-section-id]:not([data-radio-device]) td[data-name="_badge"] .ifacebadge::after {
     content: "6 GHz";
     padding: 4px 10px;
     border-radius: 10px;
@@ -2208,6 +2366,84 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     #cbi-wireless-wifi-device {
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch;
+        position: relative;
+    }
+
+    /* Элегантная анимированная стрелка-подсказка свайпа */
+    #cbi-wireless-wifi-device::before {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        margin-top: -20px;
+        display: block;
+        width: 38px;
+        height: 40px;
+        /* Мягкий полупрозрачный градиент вместо глухого цвета */
+        background: linear-gradient(270deg, var(--proton-accent) 0%, rgba(var(--proton-accent-rgb), 0.7) 100%);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        /* Белая иконка со стрелкой влево (свайп влево) */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 18l-6-6 6-6'/%3E%3C/svg%3E");
+        background-position: center left 10px;
+        background-repeat: no-repeat;
+        background-size: 20px;
+        border-radius: 20px 0 0 20px;
+        box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+        z-index: 100;
+        pointer-events: none;
+        animation: swipeHintPulse 4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        animation-delay: 1s;
+        opacity: 0;
+    }
+
+    /* Более плавная и естественная анимация, имитирующая жест пальцем */
+    @keyframes swipeHintPulse {
+        0% {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        10% {
+            opacity: 0.9;
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(12px);
+            opacity: 0.8;
+        }
+
+        40% {
+            transform: translateX(0);
+            opacity: 0.9;
+        }
+
+        55% {
+            transform: translateX(12px);
+            opacity: 0.8;
+        }
+
+        70% {
+            transform: translateX(0);
+            opacity: 0.9;
+        }
+
+        85% {
+            opacity: 0.9;
+            transform: translateX(0);
+        }
+
+        99% {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        100% {
+            opacity: 0;
+            transform: translateX(20px);
+            visibility: hidden;
+        }
     }
 
     /* Таблица - минимальная ширина для активации скролла */
@@ -2652,6 +2888,17 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     box-shadow: 0 4px 12px rgba(108, 122, 137, 0.4);
 }
 
+/* Light gray zones (238, 238, 238) - darker gradient for better contrast */
+#cbi-network-interface .ifacebox-head[style*="238, 238, 238"] {
+    background: linear-gradient(135deg, #5a6c7d 0%, #3d4a59 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(90, 108, 125, 0.3);
+}
+
+#cbi-network-interface .ifacebox-head[style*="238, 238, 238"]:hover {
+    box-shadow: 0 4px 12px rgba(90, 108, 125, 0.4);
+}
+
 /*
 #cbi-network-interface table.cbi-section-table td.cbi-section-actions .cbi-button,
 #cbi-network-interface table.cbi-section-table td.cbi-section-actions .btn,
@@ -2922,7 +3169,7 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 
 .cbi-page-actions .cbi-dropdown.btn>ul,
 .cbi-page-actions .cbi-dropdown.cbi-button>ul {
-    width: auto;
+    width: 160px;
 }
 
 :root[data-theme="light"] .cbi-dropdown {
@@ -3238,7 +3485,25 @@ body[data-page="admin-network-diagnostics"] .td {
     padding: 12px;
 }
 
-/* Port Status Grid (Status → Overview): центрируем иконку в ifacebox-body и убираем смещение baseline */
+/* =====================================================
+   Port Status Grid (Состояние портов) - десктопная версия
+   Компактные карточки портов на больших экранах
+   ===================================================== */
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"] {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: flex-start;
+    margin: 0;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox {
+    flex: 1 1 180px !important;
+    min-width: 160px !important;
+    max-width: none !important;
+    margin: 0 !important;
+}
+
 body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox .ifacebox-body {
     text-align: center;
 }
@@ -3256,8 +3521,13 @@ body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifa
 }
 
 .network-status-table>.ifacebox {
-    flex: 1 1 280px;
-    min-width: 250px;
+    flex: 1 1 calc(50% - 16px);
+    min-width: 280px;
+}
+
+.network-status-table .ifacebox-body {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /* =====================================================
@@ -3291,6 +3561,7 @@ body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifa
    Modal
    ===================================================== */
 #modal_overlay {
+    overscroll-behavior: none;
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.7);
@@ -3310,10 +3581,6 @@ body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifa
 
 :root[data-theme="light"] #modal_overlay {
     background: rgba(0, 0, 0, 0.4);
-}
-
-body.modal-overlay-active {
-    overflow: hidden;
 }
 
 body.modal-overlay-active #modal_overlay {
@@ -3756,6 +4023,8 @@ body.modal-overlay-active #modal_overlay {
         overflow-x: hidden;
         width: 100%;
         max-width: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
 
     body {
@@ -3764,6 +4033,29 @@ body.modal-overlay-active #modal_overlay {
         width: 100%;
         max-width: 100%;
         position: relative;
+        background-attachment: scroll;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: var(--proton-bg-solid);
+        background-image:
+            radial-gradient(circle at 20% 30%, rgba(94, 158, 255, 0.06) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(107, 207, 127, 0.04) 0%, transparent 50%),
+            var(--proton-bg);
+    }
+
+    :root[data-theme="light"] body::before {
+        background-image:
+            radial-gradient(circle at 20% 30%, rgba(74, 143, 231, 0.04) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(72, 187, 120, 0.03) 0%, transparent 50%),
+            var(--proton-bg);
     }
 
     #menubar {
@@ -3912,7 +4204,7 @@ body.modal-overlay-active #modal_overlay {
 
     #mainmenu .mainmenu.l2>li>a {
         padding: 14px 60px;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
     }
 
     /* Restore mobile submenu expansion */
@@ -3959,7 +4251,7 @@ body.modal-overlay-active #modal_overlay {
     table {
         display: flex;
         flex-direction: column;
-        font-size: 13px;
+        font-size: 0.9rem;
         background: transparent;
         box-shadow: none;
         border-radius: 0;
@@ -4010,10 +4302,77 @@ body.modal-overlay-active #modal_overlay {
     .cbi-value-title {
         flex: none;
         margin-bottom: 8px;
+        padding-right: 0;
+        /* Reset global 16px to prevent asymmetry in mobile column layout */
     }
 
+    /* Reset unnecessary descriptions styles */
     .cbi-value-description {
-        padding-left: 0;
+        margin-top: 6px;
+        /* consistent with desktop */
+    }
+
+    /* Checkbox rows: [✓] Label
+                       Description
+       Два варианта рендера чекбокса в LuCI:
+       1) .cbi-value-field > .cbi-checkbox > input  (CBI.FlagValue с обёрткой)
+       2) .cbi-value-field > input[type="checkbox"] (прямой input)
+       В обоих случаях display:contents на .cbi-value-field выводит дочерние
+       элементы напрямую в grid родителя */
+    .cbi-value:has(.cbi-checkbox),
+    .cbi-value:has(.cbi-value-field > input[type="checkbox"]) {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto;
+        column-gap: 10px;
+        align-items: center;
+    }
+
+    .cbi-value:has(.cbi-checkbox)>label:first-child,
+    .cbi-value:has(.cbi-checkbox) .cbi-value-title,
+    .cbi-value:has(.cbi-value-field > input[type="checkbox"])>label:first-child,
+    .cbi-value:has(.cbi-value-field > input[type="checkbox"]) .cbi-value-title {
+        grid-column: 2;
+        grid-row: 1;
+        flex: unset;
+        min-width: unset;
+        margin: 0;
+        align-self: center;
+        line-height: var(--proton-input-height, 1.5);
+    }
+
+    /* «Растворяем» .cbi-value-field — его дети становятся прямыми grid-элементами */
+    .cbi-value:has(.cbi-checkbox) .cbi-value-field,
+    .cbi-value:has(.cbi-value-field > input[type="checkbox"]) .cbi-value-field {
+        display: contents;
+    }
+
+    /* Вариант 1: через .cbi-checkbox обёртку */
+    .cbi-value:has(.cbi-checkbox) .cbi-checkbox {
+        grid-column: 1;
+        grid-row: 1;
+        align-self: center;
+        margin: 0;
+        /* Убираем возможные внешние отступы */
+        display: flex;
+        align-items: center;
+        /* Центруем внутренний input */
+    }
+
+    /* Вариант 2: прямой input */
+    .cbi-value:has(.cbi-value-field > input[type="checkbox"]) input[type="checkbox"] {
+        grid-column: 1;
+        grid-row: 1;
+        align-self: center;
+        margin: 0;
+        /* Убираем возможные внешние отступы */
+    }
+
+    .cbi-value:has(.cbi-checkbox) .cbi-value-description,
+    .cbi-value:has(.cbi-value-field > input[type="checkbox"]) .cbi-value-description {
+        grid-column: 2;
+        grid-row: 2;
+        margin: 6px 0 0 0;
     }
 
     input:not([type]),
@@ -4031,7 +4390,7 @@ body.modal-overlay-active #modal_overlay {
     /* Buttons */
     button, .btn, .cbi-button {
         font-size: 1rem;
-        padding: 12px 20px;
+        padding: 12px 18px;
     }
 
     button+button, .btn+.btn, .cbi-button+.cbi-button {
@@ -4160,6 +4519,22 @@ body.modal-overlay-active #modal_overlay {
         gap: 6px;
     }
 
+    /* Исключение: чекбокс-строки в модалке — grid как у основного контента */
+    #modal_overlay>.modal .cbi-value:has(.cbi-checkbox),
+    #modal_overlay>.modal .cbi-value:has(.cbi-value-field > input[type="checkbox"]) {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto;
+        column-gap: 10px;
+        row-gap: 0;
+        align-items: center;
+    }
+
+    #modal_overlay>.modal .cbi-value:has(.cbi-checkbox) .cbi-value-field,
+    #modal_overlay>.modal .cbi-value:has(.cbi-value-field > input[type="checkbox"]) .cbi-value-field {
+        display: contents;
+    }
+
     #modal_overlay>.modal .cbi-value-title {
         flex: none;
         width: 100%;
@@ -4243,7 +4618,7 @@ body.modal-overlay-active #modal_overlay {
         content: attr(data-title);
         font-weight: 600;
         color: var(--proton-fg-secondary);
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         flex-shrink: 0;
         min-width: 80px;
     }
@@ -4270,16 +4645,16 @@ body.modal-overlay-active #modal_overlay {
         word-break: break-word;
     }
 
-    /* Убираем стили WiFi-сетей внутри модальных окон (любой section-id кроме radio) */
-    #modal_overlay #cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) {
+    /* Убираем стили WiFi-сетей внутри модальных окон */
+    #modal_overlay #cbi-wireless tr[data-section-id]:not([data-radio-device]) {
         border-left: none !important;
     }
 
-    #modal_overlay #cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] {
+    #modal_overlay #cbi-wireless tr[data-section-id]:not([data-radio-device]) td[data-name="_badge"] {
         background: none !important;
     }
 
-    #modal_overlay #cbi-wireless tr[data-section-id]:not([data-section-id^="radio"]) td[data-name="_badge"] .ifacebadge::after {
+    #modal_overlay #cbi-wireless tr[data-section-id]:not([data-radio-device]) td[data-name="_badge"] .ifacebadge::after {
         content: none !important;
     }
 
@@ -4293,7 +4668,7 @@ body.modal-overlay-active #modal_overlay {
 
     #indicators>* {
         padding: 9px 18px;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         flex-shrink: 1;
         min-width: 0;
         overflow: hidden;
@@ -4350,7 +4725,7 @@ body.modal-overlay-active #modal_overlay {
 
     #cbi-network-interface .ifacebox-head {
         border-radius: 0;
-        font-size: 0.95rem;
+        font-size: 1rem;
     }
 
     #cbi-network-interface .ifacebox-body {
@@ -4361,7 +4736,7 @@ body.modal-overlay-active #modal_overlay {
     /* Статистика интерфейса */
     #cbi-network-interface td[data-name="_ifacestat"] {
         background: var(--proton-bg-tertiary);
-        font-size: 0.875rem;
+        font-size: 0.8rem;
         line-height: 1.6;
     }
 
@@ -4483,7 +4858,7 @@ body.modal-overlay-active #modal_overlay {
     }
 
     .network-status-table .ifacebox-body strong {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         color: var(--proton-muted);
     }
 
@@ -4514,6 +4889,7 @@ body.modal-overlay-active #modal_overlay {
         flex-wrap: wrap;
         gap: 8px;
         justify-content: center;
+        max-width: none;
     }
 
     body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox {
@@ -4607,7 +4983,7 @@ body.modal-overlay-active #modal_overlay {
     #wifi_assoclist_table td:first-child {
         background: var(--proton-bg-tertiary);
         font-weight: 600;
-        font-size: 0.95rem;
+        font-size: 1rem;
         color: var(--proton-fg);
         font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
     }
@@ -4676,7 +5052,7 @@ body.modal-overlay-active #modal_overlay {
         content: attr(data-title);
         font-weight: 600;
         color: var(--proton-fg-secondary);
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         flex-shrink: 0;
         min-width: 70px;
     }
@@ -4699,7 +5075,7 @@ body.modal-overlay-active #modal_overlay {
     [data-tab] [id="channel_graph"]~table.table tr:not(.placeholder) td:nth-child(2) {
         order: -2;
         background: var(--proton-bg-hover);
-        font-size: 0.95rem;
+        font-size: 1rem;
     }
 
     [data-tab] [id="channel_graph"]~table.table tr:not(.placeholder) td:nth-child(2) span[style*="color"] {
@@ -4741,19 +5117,22 @@ body.modal-overlay-active #modal_overlay {
     }
 
     /* =====================================================
-       DHCP Leases Table (#status_leases) - карточки на мобилке
+       DHCP & DHCPv6 Leases Tables (#status_leases, #status_leases6) - карточки на мобилке
        ===================================================== */
-    #status_leases {
+    #status_leases,
+    #status_leases6 {
         display: block !important;
     }
 
-    #status_leases tbody {
+    #status_leases tbody,
+    #status_leases6 tbody {
         display: flex;
         flex-direction: column;
         gap: 0;
     }
 
-    #status_leases tr {
+    #status_leases tr,
+    #status_leases6 tr {
         display: flex !important;
         flex-direction: column;
         background: var(--proton-bg-secondary);
@@ -4764,15 +5143,18 @@ body.modal-overlay-active #modal_overlay {
         overflow: hidden;
     }
 
-    #status_leases tr:last-child {
+    #status_leases tr:last-child,
+    #status_leases6 tr:last-child {
         margin-bottom: 0;
     }
 
-    #status_leases thead {
+    #status_leases thead,
+    #status_leases6 thead {
         display: none;
     }
 
-    #status_leases td {
+    #status_leases td,
+    #status_leases6 td {
         display: flex !important;
         justify-content: space-between;
         align-items: center;
@@ -4784,44 +5166,50 @@ body.modal-overlay-active #modal_overlay {
         overflow: visible;
     }
 
-    #status_leases td::before {
+    #status_leases td::before,
+    #status_leases6 td::before {
         content: attr(data-title);
         font-weight: 600;
         color: var(--proton-muted);
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         text-transform: uppercase;
         letter-spacing: 0.02em;
         flex-shrink: 0;
         margin-right: 12px;
     }
 
-    #status_leases td:last-child {
+    #status_leases td:last-child,
+    #status_leases6 td:last-child {
         border-bottom: none;
     }
 
-    /* Hostname - выделяем как заголовок карточки */
-    #status_leases td:first-child {
+    /* Hostname / Host - выделяем как заголовок карточки */
+    #status_leases td:first-child,
+    #status_leases6 td:first-child {
         background: var(--proton-bg-tertiary);
         font-weight: 600;
-        font-size: 0.95rem;
+        font-size: 1rem;
         color: var(--proton-fg);
     }
 
-    /* IP адрес */
-    #status_leases td:nth-child(2) {
+    /* IP / IPv6 адрес */
+    #status_leases td:nth-child(2),
+    #status_leases6 td:nth-child(2) {
         font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
         color: var(--proton-accent);
     }
 
-    /* MAC адрес */
-    #status_leases td:nth-child(3) {
+    /* MAC адрес / DUID */
+    #status_leases td:nth-child(3),
+    #status_leases6 td:nth-child(3) {
         font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         color: var(--proton-fg-secondary);
     }
 
     /* Lease time */
-    #status_leases td:nth-child(4) {
+    #status_leases td:nth-child(4),
+    #status_leases6 td:nth-child(4) {
         color: var(--proton-success);
     }
 }
@@ -5783,12 +6171,12 @@ body.modal-overlay-active #modal_overlay {
         max-width: 100% !important;
         min-height: 48px !important;
         padding: 14px 16px !important;
-        font-size: 0.9rem !important;
+        font-size: 16px !important;
         box-sizing: border-box !important;
     }
 
     #view>.controls input[type="text"]::placeholder {
-        font-size: 0.9rem !important;
+        font-size: 16px !important;
     }
 
     /* Все кнопки - единый размер */
@@ -5801,7 +6189,7 @@ body.modal-overlay-active #modal_overlay {
         width: 100% !important;
         min-height: 48px !important;
         padding: 14px 16px !important;
-        font-size: 0.9rem !important;
+        font-size: 1rem !important;
         font-weight: 600 !important;
         text-align: center !important;
         box-sizing: border-box !important;
@@ -5818,7 +6206,7 @@ body.modal-overlay-active #modal_overlay {
     }
 
     #view>.controls .cbi-progressbar::after {
-        font-size: 0.75rem !important;
+        font-size: 0.8rem !important;
         right: 10px !important;
     }
 
@@ -5866,7 +6254,7 @@ body.modal-overlay-active #modal_overlay {
 
     .controls .pager .text,
     .pager .text {
-        font-size: 0.875rem !important;
+        font-size: 0.9rem !important;
         padding: 8px 10px !important;
         white-space: nowrap !important;
         text-align: center !important;
@@ -5960,7 +6348,7 @@ body.modal-overlay-active #modal_overlay {
     #packages .td.col-2:nth-child(1) {
         grid-column: 1 / -1 !important;
         grid-row: 1 !important;
-        font-size: 0.95rem !important;
+        font-size: 1rem !important;
         font-weight: 600 !important;
         color: var(--proton-accent) !important;
         word-wrap: break-word !important;
@@ -5992,7 +6380,7 @@ body.modal-overlay-active #modal_overlay {
         grid-column: 2 !important;
         grid-row: 2 !important;
         text-align: right !important;
-        font-size: 0.75rem !important;
+        font-size: 0.7rem !important;
         color: var(--proton-fg) !important;
         display: inline-block !important;
         font-weight: 600 !important;
@@ -6010,7 +6398,7 @@ body.modal-overlay-active #modal_overlay {
     #packages .td:nth-child(4) {
         grid-column: 1 / -1 !important;
         grid-row: 3 !important;
-        font-size: 0.85rem !important;
+        font-size: 0.8rem !important;
         line-height: 1.4 !important;
         color: var(--proton-fg-secondary) !important;
         margin-top: 4px !important;
@@ -6038,7 +6426,7 @@ body.modal-overlay-active #modal_overlay {
         width: 100% !important;
         max-width: 100% !important;
         padding: 12px 16px !important;
-        font-size: 0.9rem !important;
+        font-size: 1rem !important;
         font-weight: 600 !important;
         white-space: nowrap !important;
         text-align: center !important;
@@ -6519,7 +6907,7 @@ body[data-page="admin-system-leds"] #cbi-system-led .cbi-button-add:hover {
         content: attr(data-title);
         font-weight: 600;
         color: var(--proton-fg-secondary);
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         min-width: 80px;
         flex-shrink: 0;
     }
@@ -6529,7 +6917,7 @@ body[data-page="admin-system-leds"] #cbi-system-led .cbi-button-add:hover {
         order: -2;
         padding-bottom: 10px;
         border-bottom: 1px solid var(--proton-border-subtle) !important;
-        font-size: 1.05rem;
+        font-size: 1rem;
     }
 
     body[data-page="admin-system-leds"] #cbi-system-led .td[data-title="Name"]::before {
@@ -6555,7 +6943,7 @@ body[data-page="admin-system-leds"] #cbi-system-led .cbi-button-add:hover {
     body[data-page="admin-system-leds"] #cbi-system-led .cbi-button-edit,
     body[data-page="admin-system-leds"] #cbi-system-led .cbi-button-remove {
         padding: 10px 16px !important;
-        font-size: 0.85rem !important;
+        font-size: 0.9rem !important;
     }
 
     /* Hide drag handle on mobile */
@@ -6725,7 +7113,7 @@ body[data-page="admin-system-startup"] #view .table .cbi-button-action:hover {
         content: attr(data-title);
         font-weight: 600;
         color: var(--proton-fg-secondary);
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         min-width: 100px;
         flex-shrink: 0;
     }
@@ -6767,7 +7155,7 @@ body[data-page="admin-system-startup"] #view .table .cbi-button-action:hover {
 
     body[data-page="admin-system-startup"] #view .table .td.cbi-section-actions .btn {
         padding: 8px 14px !important;
-        font-size: 0.8rem !important;
+        font-size: 0.9rem !important;
     }
 
     /* Enabled/Disabled takes full row on top of actions */
@@ -6798,6 +7186,181 @@ body[data-page="admin-system-startup"] #view .table .cbi-button-action:hover {
     body[data-page="admin-system-startup"] #view .table .cbi-button-negative {
         width: 100%;
         flex: none !important;
+    }
+}
+
+/* =====================================================
+   Reboot Page - System Reboot Form
+   ===================================================== */
+body[data-page="admin-system-reboot"] .cbi-section {
+    background: linear-gradient(135deg, var(--proton-bg-tertiary) 0%, var(--proton-bg-secondary) 100%);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius);
+    padding: 32px 28px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    text-align: center;
+}
+
+:root[data-theme="light"] body[data-page="admin-system-reboot"] .cbi-section {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.95) 100%);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+body[data-page="admin-system-reboot"] .cbi-section>h3,
+body[data-page="admin-system-reboot"] .cbi-section>legend {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--proton-fg);
+    margin: 0 0 16px;
+    padding-bottom: 0;
+    border-bottom: none;
+    letter-spacing: -0.02em;
+}
+
+body[data-page="admin-system-reboot"] .cbi-section-descr {
+    color: var(--proton-fg-secondary);
+    font-size: 1rem;
+    margin-bottom: 28px;
+    line-height: 1.6;
+}
+
+/* Hide separator line above button */
+body[data-page="admin-system-reboot"] hr,
+body[data-page="admin-system-reboot"] .cbi-page-actions {
+    border-top: none !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+body[data-page="admin-system-reboot"] hr {
+    display: none;
+}
+
+/* Perform reboot button */
+body[data-page="admin-system-reboot"] .cbi-button-action,
+body[data-page="admin-system-reboot"] .cbi-button-apply {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 20px !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    background: var(--proton-danger) !important;
+    border: 2px solid var(--proton-danger) !important;
+    border-radius: var(--proton-radius) !important;
+    color: #fff !important;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(229, 62, 62, 0.3);
+}
+
+body[data-page="admin-system-reboot"] .cbi-button-action:hover,
+body[data-page="admin-system-reboot"] .cbi-button-apply:hover {
+    background: rgba(229, 62, 62, 0.9) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(229, 62, 62, 0.4);
+}
+
+body[data-page="admin-system-reboot"] .cbi-button-action:active,
+body[data-page="admin-system-reboot"] .cbi-button-apply:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(229, 62, 62, 0.3);
+}
+
+/* Icon before button text */
+body[data-page="admin-system-reboot"] .cbi-button-action::before,
+body[data-page="admin-system-reboot"] .cbi-button-apply::before {
+    content: "⭮";
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* No animations mode */
+.proton-no-animations body[data-page="admin-system-reboot"] .cbi-button-action:hover,
+.proton-no-animations body[data-page="admin-system-reboot"] .cbi-button-apply:hover {
+    transform: none;
+}
+
+/* Mobile adjustments */
+@media screen and (max-width: 800px) {
+    body[data-page="admin-system-reboot"] .cbi-section {
+        padding: 24px 20px;
+    }
+
+    body[data-page="admin-system-reboot"] .cbi-button-action,
+    body[data-page="admin-system-reboot"] .cbi-button-apply {
+        width: 100%;
+        padding: 12px 20px !important;
+    }
+}
+
+/* Reboot confirmation modal */
+.proton-reboot-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+
+.proton-reboot-modal {
+    background: var(--proton-bg-secondary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius);
+    padding: 28px;
+    max-width: 440px;
+    width: calc(100% - 40px);
+    box-shadow: var(--proton-shadow-lg);
+    animation: slideUp 0.3s ease;
+}
+
+:root[data-theme="light"] .proton-reboot-modal {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.proton-reboot-modal h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--proton-fg);
+}
+
+.proton-reboot-modal p {
+    color: var(--proton-fg);
+    line-height: 1.6;
+}
+
+.proton-reboot-modal .cbi-button {
+    transition: var(--proton-transition);
+}
+
+.proton-reboot-modal .cbi-button:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--proton-shadow-md);
+}
+
+.proton-reboot-modal .cbi-button:active {
+    transform: translateY(0);
+}
+
+@media screen and (max-width: 480px) {
+    .proton-reboot-modal {
+        padding: 20px;
+        max-width: calc(100% - 32px);
+    }
+
+    .proton-reboot-modal h3 {
+        font-size: 1.1rem;
     }
 }
 
@@ -6963,7 +7526,7 @@ body[data-page="admin-status-routes"] .cbi-section .table .tr.placeholder .td {
         content: attr(data-title);
         font-weight: 600;
         color: var(--proton-fg-secondary);
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         min-width: 100px;
         flex-shrink: 0;
     }
@@ -7032,7 +7595,7 @@ body[data-page="admin-status-routes"] .cbi-section .table .tr.placeholder .td {
 
     body[data-page="admin-status-routes"] .cbi-section .table .td::before {
         min-width: 80px;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
     }
 
     body[data-page="admin-status-routes"] .cbi-section .table .td[data-title="IP address"],
@@ -7165,7 +7728,7 @@ body[data-page="admin-status-processes"] #view>.table .btn {
         content: attr(data-title);
         font-weight: 600;
         color: var(--proton-fg-secondary);
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         min-width: 100px;
         flex-shrink: 0;
     }
@@ -7178,7 +7741,7 @@ body[data-page="admin-status-processes"] #view>.table .btn {
     }
 
     body[data-page="admin-status-processes"] #view>.table .td[data-title="PID"]::before {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         color: var(--proton-fg);
     }
 
@@ -7186,7 +7749,7 @@ body[data-page="admin-status-processes"] #view>.table .btn {
         flex-direction: column;
         align-items: flex-start;
         gap: 4px;
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         background: var(--proton-bg-tertiary);
         padding: 10px !important;
         border-radius: var(--proton-radius-sm);
@@ -7205,7 +7768,7 @@ body[data-page="admin-status-processes"] #view>.table .btn {
     /* CPU and Memory inline */
     body[data-page="admin-status-processes"] #view>.table .td[data-title="CPU usage (%)"],
     body[data-page="admin-status-processes"] #view>.table .td[data-title="Memory usage (%)"] {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
     }
 
     /* Actions row */
@@ -7229,7 +7792,7 @@ body[data-page="admin-status-processes"] #view>.table .btn {
 
     body[data-page="admin-status-processes"] #view>.table .td.cbi-section-actions .btn {
         padding: 8px 14px !important;
-        font-size: 0.8rem !important;
+        font-size: 0.9rem !important;
     }
 }
 
@@ -7241,7 +7804,7 @@ body[data-page="admin-status-processes"] #view>.table .btn {
 
     body[data-page="admin-status-processes"] #view>.table .td::before {
         min-width: 80px;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
     }
 
     body[data-page="admin-status-processes"] #view>.table .td[data-title="Command"] {
@@ -7654,7 +8217,7 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
     body[data-page="admin-status-overview"] .cbi-section table.table:not(.assoclist):not(#status_leases):not(#status_leases6) td:first-child {
         background: var(--proton-bg-tertiary);
         font-weight: 600;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         color: var(--proton-accent);
         text-transform: uppercase;
         letter-spacing: 0.02em;
@@ -7669,7 +8232,7 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
     /* Вторая колонка - значение */
     body[data-page="admin-status-overview"] .cbi-section table.table:not(.assoclist):not(#status_leases):not(#status_leases6) td:last-child {
         font-weight: 500;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         color: var(--proton-fg);
         padding: 12px 16px;
         padding-left: 16px;
@@ -7764,98 +8327,70 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
     --proton-zoom: 1;
 }
 
-/* Zoom range slider styling */
-input[type="range"]#proton-zoom-range {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 6px;
-    border-radius: 3px;
-    background: var(--proton-bg-hover);
-    cursor: pointer;
-    border: none;
-    outline: none;
-    margin: 0;
-    padding: 0;
-}
-
-:root[data-theme="light"] input[type="range"]#proton-zoom-range {
-    background: rgba(0, 0, 0, 0.12);
-}
-
-input[type="range"]#proton-zoom-range::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #5e9eff;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    margin-top: -6px;
-    /* Center thumb on track: (thumb_height - track_height) / 2 = (18-6)/2 = 6 */
-}
-
-:root[data-theme="light"] input[type="range"]#proton-zoom-range::-webkit-slider-thumb {
-    background: #4a8fe7;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-input[type="range"]#proton-zoom-range::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #5e9eff;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
-:root[data-theme="light"] input[type="range"]#proton-zoom-range::-moz-range-thumb {
-    background: #4a8fe7;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-/* Webkit slider track */
-input[type="range"]#proton-zoom-range::-webkit-slider-runnable-track {
-    height: 6px;
-    border-radius: 3px;
-    background: var(--proton-bg-hover);
-}
-
-:root[data-theme="light"] input[type="range"]#proton-zoom-range::-webkit-slider-runnable-track {
-    background: rgba(0, 0, 0, 0.12);
-}
-
-/* Firefox slider track */
-input[type="range"]#proton-zoom-range::-moz-range-track {
-    height: 6px;
-    border-radius: 3px;
-    background: var(--proton-bg-hover);
-    border: none;
-}
-
-:root[data-theme="light"] input[type="range"]#proton-zoom-range::-moz-range-track {
-    background: rgba(0, 0, 0, 0.12);
-}
-
-/* Firefox progress (filled part) */
-input[type="range"]#proton-zoom-range::-moz-range-progress {
-    height: 6px;
-    border-radius: 3px 0 0 3px;
-    background: #5e9eff;
-}
-
-:root[data-theme="light"] input[type="range"]#proton-zoom-range::-moz-range-progress {
-    background: #4a8fe7;
-}
-
-#proton-zoom-value {
+#proton-zoom-value,
+#proton-page-width-value {
     font-weight: 600;
     color: var(--proton-accent);
     margin-left: 0.5rem;
+}
+
+/* =====================================================
+   Theme Settings - Backup & Restore
+   ===================================================== */
+.proton-backup-section {
+    --proton-bg-card: rgba(255, 255, 255, 0.03);
+    --proton-border: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .proton-backup-section {
+    --proton-bg-card: rgba(0, 0, 0, 0.02);
+    --proton-border: rgba(0, 0, 0, 0.1);
+}
+
+.proton-backup-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.65rem 1.25rem;
+    font-size: 0.875rem;
+    border-radius: var(--proton-radius, 8px);
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s, border-color 0.2s;
+    min-width: 160px;
+    justify-content: center;
+}
+
+.proton-backup-btn:hover {
+    box-shadow: 0 2px 8px var(--proton-accent-glow);
+}
+
+.proton-backup-btn:active {
+    transform: scale(0.98);
+}
+
+.proton-backup-icon {
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.proton-backup-btn:hover .proton-backup-icon {
+    transform: translateY(-1px);
+}
+
+/* Mobile adaptations */
+@media (max-width: 600px) {
+    .proton-backup-section {
+        margin-left: -12px;
+        margin-right: -12px;
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+    }
+
+    .proton-backup-btn {
+        flex: 1;
+        min-width: 0;
+    }
 }
 
 /* =====================================================
@@ -8829,6 +9364,11 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     box-shadow: 0 0 6px var(--proton-danger);
 }
 
+.proton-service-status-dot.not-installed {
+    background: var(--proton-muted);
+    opacity: 0.5;
+}
+
 .proton-service-status-text {
     font-size: 10px;
     font-weight: 600;
@@ -8846,6 +9386,12 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
 
 .proton-service-status-text.error {
     color: var(--proton-danger);
+}
+
+.proton-service-status-text.not-installed {
+    color: var(--proton-muted);
+    opacity: 0.6;
+    font-style: italic;
 }
 
 .proton-service-description {
@@ -8956,19 +9502,31 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
 }
 
 .proton-widget-toggle-info {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
     align-items: center;
-    gap: 12px;
+    gap: 2px 12px;
 }
 
 .proton-widget-toggle-icon {
     font-size: 20px;
+    grid-row: 1 / -1;
 }
 
 .proton-widget-toggle-name {
     font-size: 14px;
     font-weight: 500;
     color: var(--proton-fg);
+}
+
+.proton-widget-toggle-desc {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--proton-fg-muted, rgba(255, 255, 255, 0.45));
+    margin-top: 2px;
+    line-height: 1.3;
 }
 
 .proton-widget-toggle input[type="checkbox"] {
@@ -9133,6 +9691,20 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     background: transparent;
 }
 
+/* Кнопка удаления для сервисов, добавленных в виджет, но удалённых с роутера */
+.proton-service-item-add.not-installed-remove {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    cursor: pointer;
+    opacity: 1;
+}
+
+.proton-service-item-add.not-installed-remove:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+}
+
 .proton-service-item:hover {
     background: var(--proton-bg-hover);
     border-color: var(--proton-accent);
@@ -9284,7 +9856,7 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     }
 
     .proton-service-modal-title {
-        font-size: 18px;
+        font-size: 1.1rem;
     }
 
     .proton-service-item {
@@ -9325,7 +9897,7 @@ input[type="range"]#proton-zoom-range::-moz-range-progress {
     }
 
     .proton-widget-toggle-name {
-        font-size: 13px;
+        font-size: 0.9rem;
     }
 
     .proton-widget-toggle-slider {
@@ -9351,6 +9923,7 @@ body.login-page {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+    min-height: 100dvh;
     padding: 20px;
     background: var(--proton-bg-solid);
     transition: background 0.3s ease;
@@ -9362,6 +9935,35 @@ body.login-page {
     max-width: 420px;
     animation: fadeInUp 0.6s ease-out;
     margin: auto;
+}
+
+/* Mobile keyboard stability */
+@media (max-width: 768px) {
+    body.login-page {
+        /* visualViewport-driven height (set by sysauth.ut). Fallback keeps old behavior. */
+        height: var(--proton-vv-height, 100dvh);
+        min-height: var(--proton-vv-height, 100dvh);
+        overflow: hidden;
+        padding: 12px;
+    }
+
+    body.login-page.proton-kb-open {
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+
+    .login-container {
+        max-height: 100%;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 auto;
+        padding-bottom: 12px;
+    }
+
+    body.login-page:not(.proton-kb-open) .login-container {
+        margin: auto;
+        padding-bottom: 0;
+    }
 }
 
 @keyframes fadeInUp {
@@ -9471,24 +10073,32 @@ body.login-page {
     font-weight: 600;
     background: var(--proton-accent);
     color: #fff;
-    border: none;
+    border: 1px solid var(--proton-accent);
     border-radius: var(--proton-radius-sm);
     cursor: pointer;
-    transition: var(--proton-transition);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     margin-top: 8px;
 }
 
 .login-form button:hover {
+    background: transparent;
+    color: var(--proton-accent);
+    border-color: var(--proton-accent);
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(74, 143, 231, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 :root[data-theme="light"] .login-form button:hover {
-    box-shadow: 0 8px 20px rgba(74, 143, 231, 0.3);
+    background: transparent;
+    color: var(--proton-accent);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .login-form button:active {
     transform: translateY(0);
+    background: transparent;
+    color: var(--proton-accent);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .login-error {
@@ -9680,4 +10290,1209 @@ body.proton-custom-page .cbi-section-table-descr th {
     height: 0;
     line-height: 0;
     font-size: 0;
+}
+
+
+/* =====================================================
+   Log Viewer - Syntax Highlighting
+   ===================================================== */
+
+/* Hide log textareas instantly on log pages to prevent FOUC */
+/* Skip textareas marked visible (when log highlighting is disabled) */
+[data-page*="logs"] textarea[readonly]:not([data-proton-visible]),
+[data-page*="syslog"] textarea[readonly]:not([data-proton-visible]),
+[data-page*="dmesg"] textarea[readonly]:not([data-proton-visible]) {
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+}
+
+/* Обёртка: toolbar + viewer */
+.proton-log-wrapper {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    overflow: hidden;
+    background: var(--proton-bg-secondary);
+}
+
+/* ── Toolbar ──────────────────────────────────────── */
+
+.proton-log-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--proton-border);
+    flex-shrink: 0;
+    min-height: 38px;
+    user-select: none;
+}
+
+/* Stats row */
+.proton-log-stats {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.proton-log-stat-total {
+    color: var(--proton-muted);
+    font-weight: 500;
+}
+
+.proton-log-stat-sep {
+    color: var(--proton-border);
+    margin: 0 2px;
+}
+
+/* Clickable severity badges */
+.proton-log-stat {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.proton-log-stat:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.15);
+}
+
+.proton-log-stat.active {
+    border-color: currentColor;
+    box-shadow: 0 0 6px currentColor;
+}
+
+.proton-log-stat-critical {
+    color: #ff4757;
+    background: rgba(255, 71, 87, 0.12);
+}
+
+.proton-log-stat-error {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.12);
+}
+
+.proton-log-stat-warning {
+    color: #ffd93d;
+    background: rgba(255, 217, 61, 0.10);
+}
+
+.proton-log-stat-denied {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.10);
+}
+
+.proton-log-stat-disconnected {
+    color: #ff9671;
+    background: rgba(255, 150, 113, 0.10);
+}
+
+.proton-log-stat-success {
+    color: #6bcf7f;
+    background: rgba(107, 207, 127, 0.10);
+}
+
+.proton-log-stat-notice {
+    color: #5e9eff;
+    background: rgba(94, 158, 255, 0.10);
+}
+
+/* Action buttons */
+.proton-log-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.proton-log-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--proton-border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--proton-muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.proton-log-btn:hover {
+    color: var(--proton-fg);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--proton-accent);
+}
+
+.proton-log-btn.active {
+    color: var(--proton-accent);
+    background: var(--proton-accent-glow);
+    border-color: var(--proton-accent);
+}
+
+/* Brief success feedback on copy/download */
+.proton-log-btn-ok {
+    color: #6bcf7f !important;
+    border-color: #6bcf7f !important;
+}
+
+/* Button group separator */
+.proton-log-btn-sep {
+    display: inline-block;
+    width: 1px;
+    height: 20px;
+    background: var(--proton-border);
+    margin: 0 4px;
+    opacity: 0.5;
+}
+
+/* Pulse animation for "new content below" indicator */
+.proton-log-btn-pulse {
+    animation: protonLogPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes protonLogPulse {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    20% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    80% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ── Hide Timestamps Mode ─────────────────────────── */
+
+.proton-log-hide-ts .proton-log-timestamp {
+    display: none;
+}
+
+/* ── Fullscreen Mode ──────────────────────────────── */
+
+.proton-log-fullscreen {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 99999;
+    border-radius: 0 !important;
+    border: none !important;
+    margin: 0 !important;
+    background: var(--proton-bg-solid) !important;
+}
+
+.proton-log-fullscreen .proton-log-viewer {
+    max-height: none !important;
+    flex: 1;
+}
+
+body.proton-log-fs-active {
+    overflow: hidden !important;
+}
+
+/* Hide page chrome in fullscreen — prevents stacking context conflicts */
+body.proton-log-fs-active #menubar,
+body.proton-log-fs-active #modemenu,
+body.proton-log-fs-active #mainmenu,
+body.proton-log-fs-active #tabmenu {
+    display: none !important;
+}
+
+/* Remove animation stacking context so position:fixed escapes properly */
+body.proton-log-fs-active #maincontent {
+    animation: none !important;
+    padding: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    overflow: visible !important;
+}
+
+body.proton-log-fs-active #maincontainer {
+    display: block !important;
+}
+
+/* ── Log Viewer (scroll area) ─────────────────────── */
+
+.proton-log-viewer {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--proton-fg);
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    max-height: calc(100vh - 260px);
+    min-height: 200px;
+    scroll-behavior: smooth;
+    position: relative;
+    contain: style paint;
+}
+
+.proton-log-viewer:focus {
+    outline: none;
+}
+
+.proton-log-viewer:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--proton-accent-glow);
+}
+
+/* Word wrap mode */
+.proton-log-wrapped {
+    overflow-x: hidden;
+}
+
+.proton-log-wrapped .proton-log-content {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* ── Log Line ─────────────────────────────────────── */
+
+.proton-log-line {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.015);
+    border-left: 3px solid transparent;
+    transition: background 0.1s ease;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 28px;
+    min-width: max-content;
+}
+
+/* Zebra striping */
+.proton-log-line:nth-child(odd) {
+    background: rgba(255, 255, 255, 0.008);
+}
+
+.proton-log-line:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Severity left-border gutter */
+.proton-log-line[data-severity="critical"] {
+    border-left-color: #ff4757;
+    background: rgba(255, 71, 87, 0.04);
+}
+
+.proton-log-line[data-severity="error"] {
+    border-left-color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.03);
+}
+
+.proton-log-line[data-severity="warning"] {
+    border-left-color: #ffd93d;
+}
+
+.proton-log-line[data-severity="denied"] {
+    border-left-color: #ff6b6b;
+}
+
+.proton-log-line[data-severity="disconnected"] {
+    border-left-color: #ff9671;
+}
+
+.proton-log-line[data-severity="notice"] {
+    border-left-color: #5e9eff;
+}
+
+.proton-log-line[data-severity="success"] {
+    border-left-color: #6bcf7f;
+}
+
+.proton-log-line[data-severity="started"] {
+    border-left-color: #6bcf7f;
+}
+
+.proton-log-line[data-severity="stopped"] {
+    border-left-color: #ff9671;
+}
+
+.proton-log-line[data-severity="debug"] {
+    border-left-color: #b19cd9;
+}
+
+/* ── Severity Filter Dimming ──────────────────────── */
+
+.proton-log-viewer[data-active-filter] .proton-log-line {
+    opacity: 0.2;
+    transition: opacity 0.2s ease;
+}
+
+.proton-log-viewer[data-active-filter="critical"] .proton-log-line[data-severity="critical"],
+.proton-log-viewer[data-active-filter="error"] .proton-log-line[data-severity="error"],
+.proton-log-viewer[data-active-filter="warning"] .proton-log-line[data-severity="warning"],
+.proton-log-viewer[data-active-filter="denied"] .proton-log-line[data-severity="denied"],
+.proton-log-viewer[data-active-filter="disconnected"] .proton-log-line[data-severity="disconnected"],
+.proton-log-viewer[data-active-filter="notice"] .proton-log-line[data-severity="notice"],
+.proton-log-viewer[data-active-filter="success"] .proton-log-line[data-severity="success"],
+.proton-log-viewer[data-active-filter="debug"] .proton-log-line[data-severity="debug"] {
+    opacity: 1;
+}
+
+/* ── Line Number Gutter ───────────────────────────── */
+
+.proton-log-gutter {
+    display: inline-block;
+    min-width: 44px;
+    padding: 4px 10px 4px 8px;
+    text-align: right;
+    color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.01);
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+    user-select: none;
+    flex-shrink: 0;
+    font-size: 11px;
+    line-height: 1.6;
+    font-variant-numeric: tabular-nums;
+}
+
+.proton-log-line:hover .proton-log-gutter {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Line Content ─────────────────────────────────── */
+
+.proton-log-content {
+    flex: 1;
+    padding: 4px 12px;
+    white-space: pre;
+    min-width: 0;
+    line-height: 1.6;
+}
+
+/* ── Token Styles ─────────────────────────────────── */
+
+/* Временные метки */
+.proton-log-timestamp {
+    color: var(--proton-muted);
+    opacity: 0.65;
+}
+
+/* Префиксы уровня лога */
+.proton-log-prefix {
+    font-weight: 600;
+    padding: 0 4px;
+    border-radius: 3px;
+    margin-right: 2px;
+}
+
+/* Prefix badges with subtle backgrounds */
+.proton-log-level-emerg,
+.proton-log-level-alert,
+.proton-log-level-crit {
+    color: #ff4757;
+    background: rgba(255, 71, 87, 0.12);
+    font-weight: 700;
+}
+
+.proton-log-level-err {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.10);
+}
+
+.proton-log-level-warn {
+    color: #ffd93d;
+    background: rgba(255, 217, 61, 0.08);
+}
+
+.proton-log-level-notice {
+    color: #5e9eff;
+    background: rgba(94, 158, 255, 0.08);
+}
+
+.proton-log-level-info {
+    color: #a8dadc;
+    background: rgba(168, 218, 220, 0.06);
+}
+
+.proton-log-level-debug {
+    color: #b19cd9;
+    background: rgba(177, 156, 217, 0.06);
+}
+
+/* Keyword styles */
+.proton-log-keyword-critical {
+    color: #ff4757;
+    font-weight: 700;
+    text-shadow: 0 0 6px rgba(255, 71, 87, 0.35);
+}
+
+.proton-log-keyword-error {
+    color: #ff6b6b;
+    font-weight: 600;
+}
+
+.proton-log-keyword-warning {
+    color: #ffd93d;
+    font-weight: 600;
+}
+
+.proton-log-keyword-notice {
+    color: #5e9eff;
+}
+
+.proton-log-keyword-info {
+    color: #a8dadc;
+}
+
+.proton-log-keyword-debug {
+    color: #b19cd9;
+}
+
+.proton-log-keyword-success {
+    color: #6bcf7f;
+    font-weight: 600;
+}
+
+.proton-log-keyword-disconnected {
+    color: #ff9671;
+    font-weight: 600;
+}
+
+.proton-log-keyword-denied {
+    color: #ff6b6b;
+    font-weight: 600;
+}
+
+.proton-log-keyword-started {
+    color: #6bcf7f;
+}
+
+.proton-log-keyword-stopped {
+    color: #ff9671;
+}
+
+/* IP адреса */
+.proton-log-ip {
+    color: #74c0fc;
+    font-weight: 500;
+}
+
+/* MAC адреса */
+.proton-log-mac {
+    color: #b197fc;
+    font-weight: 500;
+}
+
+/* Процессы и сервисы */
+.proton-log-process {
+    color: #ffa94d;
+    font-weight: 500;
+}
+
+/* ── LuCI Native Filter Controls (restyled) ──────── */
+
+.proton-log-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-bottom: 1px solid var(--proton-border);
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.proton-log-filter-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+}
+
+.proton-log-filter-row+.proton-log-filter-row {
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.proton-log-filter-label {
+    color: var(--proton-muted);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+}
+
+/* "Не" labels (invert checkboxes) — они перед чекбоксами */
+.proton-log-filter-label[for*="invert"] {
+    color: var(--proton-muted);
+    opacity: 0.7;
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.proton-log-filter-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    color: var(--proton-fg);
+    font-size: 13px;
+    font-family: inherit;
+    padding: 8px 32px 8px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b92a8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    min-width: 120px;
+    max-width: 280px;
+}
+
+.proton-log-filter-select:hover {
+    border-color: var(--proton-accent);
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.proton-log-filter-select:focus {
+    outline: none;
+    border-color: var(--proton-accent);
+    box-shadow: 0 0 0 2px var(--proton-accent-glow);
+}
+
+.proton-log-filter-select option {
+    background: #1a1d29;
+    color: var(--proton-fg);
+    padding: 4px 8px;
+}
+
+.proton-log-filter-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--proton-border);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.04);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+.proton-log-filter-checkbox:checked {
+    background: var(--proton-accent);
+    border-color: var(--proton-accent);
+}
+
+.proton-log-filter-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 5px;
+    width: 4px;
+    height: 8px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.proton-log-filter-checkbox:hover {
+    border-color: var(--proton-accent);
+}
+
+.proton-log-filter-checkbox:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--proton-accent-glow);
+}
+
+.proton-log-filter-input {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    color: var(--proton-fg);
+    font-size: 13px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    padding: 8px 12px;
+    transition: all 0.15s ease;
+    min-width: 160px;
+    flex: 1;
+    max-width: 400px;
+}
+
+.proton-log-filter-input::placeholder {
+    color: var(--proton-muted);
+    opacity: 0.5;
+}
+
+.proton-log-filter-input:hover {
+    border-color: var(--proton-accent);
+}
+
+.proton-log-filter-input:focus {
+    outline: none;
+    border-color: var(--proton-accent);
+    box-shadow: 0 0 0 2px var(--proton-accent-glow);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Responsive ───────────────────────────────────── */
+
+@media screen and (max-width: 800px) {
+
+    /* Wrapper: убираем внешние отступы */
+    .proton-log-wrapper {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        margin-left: -10px;
+        margin-right: -10px;
+    }
+
+    /* Toolbar: stats сверху, кнопки снизу */
+    .proton-log-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 10px;
+        min-height: auto;
+    }
+
+    /* Stats: горизонтальная прокрутка вместо переноса */
+    .proton-log-stats {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+        gap: 6px;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--proton-border) transparent;
+        justify-content: flex-start;
+    }
+
+    .proton-log-stats::-webkit-scrollbar {
+        height: 3px;
+    }
+
+    .proton-log-stats::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .proton-log-stats::-webkit-scrollbar-thumb {
+        background: var(--proton-border);
+        border-radius: 2px;
+    }
+
+    /* Кнопки: на всю ширину, по центру */
+    .proton-log-actions {
+        justify-content: space-between;
+        gap: 4px;
+        flex-wrap: nowrap;
+        width: 100%;
+    }
+
+    .proton-log-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+        border-radius: 8px;
+        flex: 1;
+        min-width: 36px;
+        max-width: 48px;
+    }
+
+    .proton-log-btn-sep {
+        height: 20px;
+        margin: 0 2px;
+        flex: 0 0 auto;
+    }
+
+    /* Viewer: больше места на экране */
+    .proton-log-viewer {
+        font-size: 10.5px;
+        max-height: calc(100vh - 220px);
+        line-height: 1.5;
+    }
+
+    /* Gutter: компактнее */
+    .proton-log-gutter {
+        min-width: 28px;
+        padding: 2px 4px 2px 3px;
+        font-size: 9px;
+    }
+
+    /* Content: минимальные паддинги */
+    .proton-log-content {
+        padding: 2px 6px;
+    }
+
+    /* Badges: поменьше для мобилки */
+    .proton-log-stat {
+        font-size: 9px;
+        padding: 2px 6px;
+        border-radius: 8px;
+        white-space: nowrap;
+    }
+
+    .proton-log-stat-total {
+        font-size: 10px;
+    }
+
+    .proton-log-stat-sep {
+        margin: 0 1px;
+    }
+
+    /* Фильтры: вертикальная компоновка */
+    .proton-log-filter-row {
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 6px 10px;
+    }
+
+    .proton-log-filter-select {
+        min-width: 0;
+        flex: 1;
+        max-width: 100%;
+        font-size: 12px;
+        padding: 6px 28px 6px 10px;
+    }
+
+    .proton-log-filter-input {
+        min-width: 0;
+        flex: 1 1 100%;
+        max-width: 100%;
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .proton-log-filter-label {
+        font-size: 12px;
+    }
+
+    .proton-log-filter-checkbox {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Fullscreen: без скругления */
+    .proton-log-fullscreen {
+        border-radius: 0;
+    }
+
+    .proton-log-fullscreen .proton-log-viewer {
+        max-height: calc(100vh - 130px);
+    }
+}
+
+/* ── Light Theme Improvements ─────────────────────── */
+
+:root[data-theme="light"] .proton-log-wrapper {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme="light"] .proton-log-toolbar {
+    background: rgba(0, 0, 0, 0.02);
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="light"] .proton-log-viewer {
+    background: #ffffff;
+    color: #1a1d29;
+}
+
+:root[data-theme="light"] .proton-log-line {
+    border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+
+:root[data-theme="light"] .proton-log-line:nth-child(odd) {
+    background: rgba(0, 0, 0, 0.015);
+}
+
+:root[data-theme="light"] .proton-log-line:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+:root[data-theme="light"] .proton-log-gutter {
+    color: rgba(0, 0, 0, 0.35);
+    background: rgba(0, 0, 0, 0.02);
+    border-right-color: rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="light"] .proton-log-line:hover .proton-log-gutter {
+    color: rgba(0, 0, 0, 0.55);
+}
+
+:root[data-theme="light"] .proton-log-timestamp {
+    color: #6b7280;
+    opacity: 0.8;
+}
+
+:root[data-theme="light"] .proton-log-btn {
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #4a5568;
+}
+
+:root[data-theme="light"] .proton-log-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: var(--proton-accent);
+    color: var(--proton-accent);
+}
+
+:root[data-theme="light"] .proton-log-btn.active {
+    background: rgba(75, 85, 99, 0.12);
+    border-color: var(--proton-accent);
+}
+
+:root[data-theme="light"] .proton-log-btn-sep {
+    background: rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme="light"] .proton-log-stat-total {
+    color: #4a5568;
+}
+
+:root[data-theme="light"] .proton-log-stat-sep {
+    color: rgba(0, 0, 0, 0.2);
+}
+
+/* Light theme severity colors - darker for better contrast */
+:root[data-theme="light"] .proton-log-stat-critical {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.12);
+}
+
+:root[data-theme="light"] .proton-log-stat-error {
+    color: #e53e3e;
+    background: rgba(229, 62, 62, 0.12);
+}
+
+:root[data-theme="light"] .proton-log-stat-warning {
+    color: #d97706;
+    background: rgba(217, 119, 6, 0.12);
+}
+
+:root[data-theme="light"] .proton-log-stat-denied {
+    color: #e53e3e;
+    background: rgba(229, 62, 62, 0.10);
+}
+
+:root[data-theme="light"] .proton-log-stat-disconnected {
+    color: #ea580c;
+    background: rgba(234, 88, 12, 0.10);
+}
+
+:root[data-theme="light"] .proton-log-stat-success {
+    color: #16a34a;
+    background: rgba(22, 163, 74, 0.12);
+}
+
+:root[data-theme="light"] .proton-log-stat-notice {
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.12);
+}
+
+:root[data-theme="light"] .proton-log-line[data-severity="critical"] {
+    border-left-color: #dc2626;
+    background: rgba(220, 38, 38, 0.05);
+}
+
+:root[data-theme="light"] .proton-log-line[data-severity="error"] {
+    border-left-color: #e53e3e;
+    background: rgba(229, 62, 62, 0.04);
+}
+
+:root[data-theme="light"] .proton-log-line[data-severity="warning"] {
+    border-left-color: #d97706;
+    background: rgba(217, 119, 6, 0.03);
+}
+
+:root[data-theme="light"] .proton-log-line[data-severity="denied"] {
+    border-left-color: #e53e3e;
+}
+
+:root[data-theme="light"] .proton-log-line[data-severity="disconnected"] {
+    border-left-color: #ea580c;
+}
+
+:root[data-theme="light"] .proton-log-line[data-severity="notice"] {
+    border-left-color: #2563eb;
+}
+
+:root[data-theme="light"] .proton-log-line[data-severity="success"] {
+    border-left-color: #16a34a;
+}
+
+/* Light theme keyword colors */
+:root[data-theme="light"] .proton-log-keyword-critical {
+    color: #dc2626;
+}
+
+:root[data-theme="light"] .proton-log-keyword-error {
+    color: #e53e3e;
+}
+
+:root[data-theme="light"] .proton-log-keyword-warning {
+    color: #d97706;
+}
+
+:root[data-theme="light"] .proton-log-keyword-notice {
+    color: #2563eb;
+}
+
+:root[data-theme="light"] .proton-log-keyword-success {
+    color: #16a34a;
+}
+
+:root[data-theme="light"] .proton-log-keyword-disconnected {
+    color: #ea580c;
+}
+
+:root[data-theme="light"] .proton-log-keyword-denied {
+    color: #e53e3e;
+}
+
+:root[data-theme="light"] .proton-log-ip {
+    color: #0284c7;
+}
+
+:root[data-theme="light"] .proton-log-mac {
+    color: #7c3aed;
+}
+
+:root[data-theme="light"] .proton-log-process {
+    color: #ea580c;
+}
+
+/* Light theme prefix badges */
+:root[data-theme="light"] .proton-log-level-emerg,
+:root[data-theme="light"] .proton-log-level-alert,
+:root[data-theme="light"] .proton-log-level-crit {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.15);
+}
+
+:root[data-theme="light"] .proton-log-level-err {
+    color: #e53e3e;
+    background: rgba(229, 62, 62, 0.12);
+}
+
+:root[data-theme="light"] .proton-log-level-warn {
+    color: #d97706;
+    background: rgba(217, 119, 6, 0.12);
+}
+
+:root[data-theme="light"] .proton-log-level-notice {
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.12);
+}
+
+:root[data-theme="light"] .proton-log-level-info {
+    color: #0891b2;
+    background: rgba(8, 145, 178, 0.10);
+}
+
+:root[data-theme="light"] .proton-log-level-debug {
+    color: #7c3aed;
+    background: rgba(124, 58, 237, 0.10);
+}
+
+:root[data-theme="light"] .proton-log-filters {
+    background: rgba(0, 0, 0, 0.02);
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="light"] .proton-log-filter-row+.proton-log-filter-row {
+    border-top-color: rgba(0, 0, 0, 0.05);
+}
+
+:root[data-theme="light"] .proton-log-filter-label {
+    color: #4a5568;
+}
+
+:root[data-theme="light"] .proton-log-filter-select,
+:root[data-theme="light"] .proton-log-filter-input {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.15);
+    color: #1a1d29;
+}
+
+:root[data-theme="light"] .proton-log-filter-select:hover,
+:root[data-theme="light"] .proton-log-filter-input:hover {
+    border-color: var(--proton-accent);
+    background: #ffffff;
+}
+
+:root[data-theme="light"] .proton-log-filter-select:focus,
+:root[data-theme="light"] .proton-log-filter-input:focus {
+    background: #ffffff;
+    box-shadow: 0 0 0 2px rgba(75, 85, 99, 0.15);
+}
+
+:root[data-theme="light"] .proton-log-filter-checkbox {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+:root[data-theme="light"] .proton-log-filter-checkbox:hover {
+    border-color: var(--proton-accent);
+}
+
+/* =====================================================
+   Repo Public Keys Page
+   [data-page="admin-system-admin-repokeys"]
+   ===================================================== */
+
+/* Override LuCI inline max-width: 800px — use full available width */
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist {
+    max-width: 100% !important;
+}
+
+/* Key items contain <strong> + <br> + <code> — flex-row breaks them into columns.
+   Switch to block layout so content flows naturally. */
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.item {
+    display: block;
+    min-height: unset;
+    height: auto;
+    overflow: visible;
+    padding: 12px 52px 12px 16px;
+    /* right space for × button */
+    line-height: 1.7;
+    cursor: default;
+    word-break: break-all;
+}
+
+/* Delete button stays top-right */
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.item::after {
+    content: "−";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 2.4rem;
+    height: 100%;
+    border-radius: 0 var(--proton-radius-sm) var(--proton-radius-sm) 0;
+}
+
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.item strong {
+    font-family: "SF Mono", Monaco, "Consolas", monospace;
+    color: var(--proton-accent);
+    font-size: 0.88rem;
+    display: block;
+    margin-bottom: 2px;
+}
+
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.item code {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--proton-fg-secondary);
+    word-break: break-all;
+    white-space: pre-wrap;
+}
+
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.item br {
+    display: none;
+    /* margin on block elements is enough */
+}
+
+/* Add-item area: stack textarea and button vertically */
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.add-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    min-height: unset;
+    padding: 14px;
+    background: var(--proton-bg-tertiary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+}
+
+/* Override LuCI inline width: 300px */
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.add-item>textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 100px;
+    resize: vertical;
+    border-radius: var(--proton-radius-sm);
+    padding: 10px 14px;
+    font-family: "SF Mono", Monaco, "Consolas", monospace;
+    font-size: 0.82rem;
+    background: var(--proton-bg-secondary);
+    border: 1px solid var(--proton-border);
+    color: var(--proton-fg);
+    transition: var(--proton-transition);
+}
+
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.add-item>textarea:focus {
+    outline: none;
+    border-color: var(--proton-accent);
+    box-shadow: 0 0 0 3px var(--proton-accent-glow);
+}
+
+/* "Add key" button — restore full-width readable size */
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.add-item>.cbi-button,
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.add-item>button {
+    width: auto !important;
+    min-width: unset !important;
+    height: auto !important;
+    flex: 0 0 auto !important;
+    align-self: flex-end;
+    padding: 10px 28px !important;
+    border-radius: var(--proton-radius-sm) !important;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: var(--proton-accent) !important;
+    color: #fff !important;
+    border-color: var(--proton-accent) !important;
 }

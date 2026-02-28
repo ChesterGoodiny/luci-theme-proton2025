@@ -18,7 +18,11 @@ const VALID_OPTIONS = {
 	animations: { default: '1', values: ['0', '1'] },
 	services_widget: { default: '1', values: ['0', '1'] },
 	temp_widget: { default: '1', values: ['0', '1'] },
-	services_log: { default: '0', values: ['0', '1'] }
+	services_log: { default: '0', values: ['0', '1'] },
+	table_wrap: { default: '1', values: ['0', '1'] },
+	log_highlight: { default: '1', values: ['0', '1'] },
+	page_width: { default: '0', min: 0, max: 100 },
+	custom_font: { default: '1', values: ['0', '1'] }
 };
 
 // Validate option value

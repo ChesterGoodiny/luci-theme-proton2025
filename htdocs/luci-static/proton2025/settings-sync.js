@@ -26,6 +26,9 @@
     "proton-temp-widget-enabled": "temp_widget",
     "proton-services-log": "services_log",
     "proton-table-wrap": "table_wrap",
+    "proton-log-highlight": "log_highlight",
+    "proton-page-width": "page_width",
+    "proton-custom-font": "custom_font",
   };
 
   // Reverse mapping
@@ -44,12 +47,15 @@
       "temp_widget",
       "services_log",
       "table_wrap",
+      "log_highlight",
+      "custom_font",
     ];
 
     if (booleanOptions.includes(uciName)) {
       return uciValue === "1" ? "true" : "false";
     }
 
+    // Numeric options: keep as-is
     return uciValue;
   }
 
@@ -63,6 +69,8 @@
       "temp_widget",
       "services_log",
       "table_wrap",
+      "log_highlight",
+      "custom_font",
     ];
 
     if (booleanOptions.includes(uciName)) {
@@ -253,6 +261,84 @@
     // Force full sync (useful after login)
     forceSync: async function () {
       await syncFromUci();
+    },
+
+    // Reset all settings to defaults
+    resetToDefaults: async function () {
+      const defaults = {
+        "proton-theme-mode": "dark",
+        "proton-accent-color": "blue",
+        "proton-zoom": "100",
+        "proton-transparency": "true",
+        "proton-border-radius": "default",
+        "proton-animations": "true",
+        "proton-services-widget-enabled": "true",
+        "proton-temp-widget-enabled": "true",
+        "proton-services-log": "false",
+        "proton-table-wrap": "false",
+        "proton-log-highlight": "true",
+        "proton-page-width": "",
+        "proton-custom-font": "true",
+      };
+
+      // Clear all proton settings from localStorage
+      Object.keys(SETTINGS_MAP).forEach((key) => {
+        localStorage.removeItem(key);
+      });
+
+      // Apply defaults to localStorage
+      Object.entries(defaults).forEach(([key, value]) => {
+        if (value) {
+          originalSetItem(key, value);
+        }
+      });
+
+      // Reset UCI settings on server
+      try {
+        const resetData = {};
+        Object.keys(SETTINGS_MAP).forEach((key) => {
+          const uciName = SETTINGS_MAP[key];
+          const defaultValue = defaults[key];
+          resetData[uciName] = defaultValue
+            ? localToUci(key, defaultValue)
+            : "";
+        });
+
+        if (window.L && window.L.Request) {
+          await L.Request.post(L.env.ubuspath || "/ubus/", {
+            jsonrpc: "2.0",
+            id: Date.now(),
+            method: "call",
+            params: [
+              L.env.sessionid || "00000000000000000000000000000000",
+              "luci.proton-settings",
+              "setSettings",
+              { settings: resetData },
+            ],
+          });
+        } else {
+          await fetch("/ubus/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              jsonrpc: "2.0",
+              id: Date.now(),
+              method: "call",
+              params: [
+                "00000000000000000000000000000000",
+                "luci.proton-settings",
+                "setSettings",
+                { settings: resetData },
+              ],
+            }),
+          });
+        }
+      } catch (err) {
+        console.warn("[Proton2025] Failed to reset UCI settings:", err);
+      }
+
+      // Reload page to apply defaults
+      window.location.reload();
     },
   };
 

@@ -7,6 +7,7 @@
 	import { getuid, getspnam } from 'luci.core';
 
 	const boardinfo = ubus.call('system', 'board');
+	const wirelessStatus = ubus.call('network.wireless', 'status') || {};
 
 	http.prepare_content('text/html; charset=UTF-8');
 -%}
@@ -29,7 +30,9 @@
 	
 	var defaultZoom = '100';
 	var z = localStorage.getItem('proton-zoom') || defaultZoom;
-	document.documentElement.style.zoom = z / 100;
+	if (window.innerWidth >= 800) {
+		document.documentElement.style.zoom = z / 100;
+	}
 	var t = localStorage.getItem('proton-transparency');
 	if (t !== 'false') document.documentElement.classList.add('proton-transparency');
 	var r = localStorage.getItem('proton-border-radius');
@@ -50,6 +53,10 @@
 		document.documentElement.style.setProperty('--proton-accent-glow', c[a].glow);
 	}
 	if (localStorage.getItem('proton-animations') === 'false') document.documentElement.classList.add('proton-no-animations');
+	var pw = localStorage.getItem('proton-page-width');
+	if (pw && parseInt(pw) > 0 && window.innerWidth >= 800) {
+		document.documentElement.style.setProperty('--proton-page-max-width', pw + '%');
+	}
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -57,6 +64,8 @@
 <meta name="color-scheme" content="dark" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="preload" href="{{ media }}/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="{{ media }}/fonts/inter-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
 <style>
 /* Critical: keep header height stable before cascade.css loads */
 :root {
@@ -126,6 +135,19 @@
 	var mediaBase = '{{ media }}';
 	var localIconBase = mediaBase + '/icons/';
 
+	// Имена wireless-устройств из ubus (server-side, zero HTTP overhead)
+	// radio0/radio1 на стандартном OpenWrt, MT7981_1_1/MT7981_1_2 на MTK и т.д.
+	var _protonWirelessDeviceList = {{ sprintf('%J', keys(wirelessStatus)) }};
+	window._protonWirelessDevices = new Set(_protonWirelessDeviceList);
+
+	// Проверяет, является ли имя wireless-устройством (radio)
+	function isWirelessDevice(name) {
+		if (window._protonWirelessDevices && window._protonWirelessDevices.size > 0) {
+			return window._protonWirelessDevices.has(name);
+		}
+		return /^radio\d+$/.test(name); // fallback для стандартных имён
+	}
+
 	// Паттерны для разных типов иконок
 	var iconPatterns = [
 		{ re: /\/luci-static\/resources\/icons\/signal-(none|\d{3}-\d{3})\.svg$/, prefix: 'proton-signal-' },
@@ -151,12 +173,12 @@
 				var iconName = match[1];
 				var suffix = match[2] || '';
 
-				// Для физических радио (radio0, radio1) используем иконку вышки вместо wifi
+				// Для физических радио (radio0, radio1, MT7981_1_1, ...) используем иконку вышки вместо wifi
 				if (iconName === 'wifi') {
 					var badge = img.closest('.ifacebadge');
 					if (badge) {
 						var text = badge.textContent.trim();
-						if (/^radio\d+$/.test(text)) {
+						if (isWirelessDevice(text)) {
 							iconName = 'radio';
 						}
 					}
@@ -176,9 +198,9 @@
 		for (var i = 0; i < imgs.length; i++) remapIcon(imgs[i]);
 	}
 
-	// Проставляем data-freq для WiFi-сетей на основе родительского radio
-	// Работает с любыми section-id: wifinet*, default_radio*, custom_name, и т.д.
-	function propagateDataFreq() {
+	// Проставляем data-radio-device для wireless-устройств и data-freq для WiFi-сетей
+	// Работает с любыми именами устройств: radio0, MT7981_1_1, ath0, wl0 и т.д.
+	function markRadioDevicesAndFreq() {
 		var table = document.querySelector('#cbi-wireless table.cbi-section-table');
 		if (!table) return;
 
@@ -189,8 +211,9 @@
 			var row = rows[i];
 			var sectionId = row.getAttribute('data-section-id') || '';
 
-			// Если это radio-устройство (radio0, radio1, ...) — запоминаем его частоту
-			if (/^radio\d+$/.test(sectionId)) {
+			// Если это wireless-устройство — ставим маркер и запоминаем частоту
+			if (isWirelessDevice(sectionId)) {
+				row.setAttribute('data-radio-device', sectionId);
 				currentFreq = row.getAttribute('data-freq');
 				continue;
 			}
@@ -204,7 +227,7 @@
 
 	function start() {
 		scan(document.documentElement);
-		propagateDataFreq();
+		markRadioDevicesAndFreq();
 
 		var mo = new MutationObserver(function(mutations) {
 			for (var i = 0; i < mutations.length; i++) {
@@ -219,8 +242,8 @@
 					}
 				}
 			}
-			// Всегда проверяем data-freq после любых изменений в DOM
-			propagateDataFreq();
+			// Всегда проверяем radio-device маркеры и data-freq после любых изменений в DOM
+			markRadioDevicesAndFreq();
 		});
 
 		mo.observe(document.documentElement, {

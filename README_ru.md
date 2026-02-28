@@ -192,6 +192,15 @@ luci-theme-proton2025/
 
 Apache-2.0
 
+### Сторонние ресурсы
+
+Эта тема включает следующие сторонние ресурсы:
+
+- **Шрифт Inter** - Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
+  - Лицензия: SIL Open Font License 1.1
+  - Файл лицензии: `htdocs/luci-static/proton2025/fonts/LICENSE.txt`
+  - Используется для единообразной типографики на всех платформах
+
 ## Статистика
 
 [![Stargazers over time](https://starchart.cc/ChesterGoodiny/luci-theme-proton2025.svg?variant=adaptive)](https://starchart.cc/ChesterGoodiny/luci-theme-proton2025)
