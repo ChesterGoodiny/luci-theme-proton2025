@@ -79,7 +79,12 @@ jobs:
           make package/luci-theme-proton2025/compile V=s
 
           mkdir -p "$GITHUB_WORKSPACE/dist/$PACKAGE_FORMAT"
-          find bin/packages -type f -name "luci-theme-proton2025_*.${PACKAGE_FORMAT}" -print > "$RUNNER_TEMP/package-files.txt"
+          if [ "$PACKAGE_FORMAT" = "apk" ]; then
+            find bin/packages -type f -name "luci-theme-proton2025-*.apk" -print > "$RUNNER_TEMP/package-files.txt"
+          else
+            find bin/packages -type f -name "luci-theme-proton2025_*.ipk" -print > "$RUNNER_TEMP/package-files.txt"
+          fi
+
           if [ ! -s "$RUNNER_TEMP/package-files.txt" ]; then
             echo "No .${PACKAGE_FORMAT} package was produced" >&2
             exit 1
@@ -134,7 +139,7 @@ jobs:
 
             **apk (APK):**
             ```bash
-            apk add --allow-untrusted luci-theme-proton2025_*.apk
+            apk add --allow-untrusted luci-theme-proton2025-*.apk
             ```
 
             ### Notes
