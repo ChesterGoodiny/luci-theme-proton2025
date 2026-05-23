@@ -124,6 +124,12 @@ body.login-page .login-logo {
   color: #152033;
 }
 
+:root[data-theme="light"] .login-form label,
+:root[data-theme="light"] .form-group label,
+:root[data-theme="light"] .cbi-value-title {
+  color: rgba(21, 32, 51, 0.72) !important;
+}
+
 :root[data-theme="light"] .login-logo text {
   fill: #152033 !important;
 }
