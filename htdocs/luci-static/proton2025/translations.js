@@ -272,6 +272,23 @@ window.ProtonTranslations = {
     "Invalid backup file": "Неверный файл резервной копии",
     "No settings found in file": "В файле не найдено настроек",
     "Failed to read backup file": "Ошибка чтения файла резервной копии",
+
+    // Login Animation
+    "Login Page Animation": "Анимация страницы входа",
+    "Animation used on the LuCI login page. The color follows the selected Proton accent color.": "Анимация на странице входа LuCI. Цвет берётся из выбранного акцента Proton.",
+    "Login animation saved": "Анимация входа сохранена",
+    Off: "Выкл",
+    "Classic Particles": "Классические частицы",
+    Constellation: "Созвездие",
+    "Plexus / Neural": "Плекс / Нейронный",
+    "Breathing Particles": "Дышащие частицы",
+    "Gravity Hover": "Гравитация",
+    "Low Poly Mesh": "Низкополигональная сетка",
+    "Data Flow": "Поток данных",
+    "Flow Field": "Поле течений",
+    "Circuit Board": "Плата схем",
+    "Packet Pulses": "Пакетные импульсы",
+    "Hex Grid": "Шестиугольная сетка",
   },
 
   zh: {
@@ -532,6 +549,23 @@ window.ProtonTranslations = {
     "Invalid backup file": "无效的备份文件",
     "No settings found in file": "文件中未找到设置",
     "Failed to read backup file": "读取备份文件失败",
+
+    // Login Animation
+    "Login Page Animation": "登录页面动画",
+    "Animation used on the LuCI login page. The color follows the selected Proton accent color.": "LuCI 登录页面使用的动画。颜色跟随所选的 Proton 强调色。",
+    "Login animation saved": "登录动画已保存",
+    Off: "关",
+    "Classic Particles": "经典粒子",
+    Constellation: "星座",
+    "Plexus / Neural": "神经丛 / 神经网络",
+    "Breathing Particles": "呼吸粒子",
+    "Gravity Hover": "重力悬浮",
+    "Low Poly Mesh": "低多边形网格",
+    "Data Flow": "数据流",
+    "Flow Field": "流场",
+    "Circuit Board": "电路板",
+    "Packet Pulses": "数据包脉冲",
+    "Hex Grid": "六边形网格",
   },
 
   de: {
@@ -799,6 +833,23 @@ window.ProtonTranslations = {
     "Invalid backup file": "Ungültige Sicherungsdatei",
     "No settings found in file": "Keine Einstellungen in der Datei gefunden",
     "Failed to read backup file": "Sicherungsdatei konnte nicht gelesen werden",
+
+    // Login Animation
+    "Login Page Animation": "Anmelde-Seitenanimation",
+    "Animation used on the LuCI login page. The color follows the selected Proton accent color.": "Animation auf der LuCI-Anmeldeseite. Die Farbe folgt der gewählten Proton-Akzentfarbe.",
+    "Login animation saved": "Anmelde-Animation gespeichert",
+    Off: "Aus",
+    "Classic Particles": "Klassische Partikel",
+    Constellation: "Sternbild",
+    "Plexus / Neural": "Plexus / Neuronal",
+    "Breathing Particles": "Atmende Partikel",
+    "Gravity Hover": "Schwerkraft",
+    "Low Poly Mesh": "Low-Poly-Gitter",
+    "Data Flow": "Datenfluss",
+    "Flow Field": "Strömungsfeld",
+    "Circuit Board": "Platine",
+    "Packet Pulses": "Paketimpulse",
+    "Hex Grid": "Sechseckraster",
   },
 
   uk: {
@@ -1065,6 +1116,23 @@ window.ProtonTranslations = {
     "Invalid backup file": "Невірний файл резервної копії",
     "No settings found in file": "У файлі не знайдено налаштувань",
     "Failed to read backup file": "Помилка читання файлу резервної копії",
+
+    // Login Animation
+    "Login Page Animation": "Анімація сторінки входу",
+    "Animation used on the LuCI login page. The color follows the selected Proton accent color.": "Анімація на сторінці входу LuCI. Колір береться з обраного акценту Proton.",
+    "Login animation saved": "Анімацію входу збережено",
+    Off: "Вимк",
+    "Classic Particles": "Класичні частинки",
+    Constellation: "Сузір'я",
+    "Plexus / Neural": "Плексус / Нейронний",
+    "Breathing Particles": "Дихаючі частинки",
+    "Gravity Hover": "Гравітація",
+    "Low Poly Mesh": "Малополігональна сітка",
+    "Data Flow": "Потік даних",
+    "Flow Field": "Поле течій",
+    "Circuit Board": "Схемна плата",
+    "Packet Pulses": "Пакетні імпульси",
+    "Hex Grid": "Шестикутна сітка",
   },
 
   es: {
@@ -1334,6 +1402,23 @@ window.ProtonTranslations = {
     "No settings found in file": "No se encontró configuración en el archivo",
     "Failed to read backup file":
       "Error al leer el archivo de copia de seguridad",
+
+    // Login Animation
+    "Login Page Animation": "Animación de Página de Inicio de Sesión",
+    "Animation used on the LuCI login page. The color follows the selected Proton accent color.": "Animación en la página de inicio de sesión de LuCI. El color sigue el color de acento de Proton seleccionado.",
+    "Login animation saved": "Animación de inicio de sesión guardada",
+    Off: "Apagado",
+    "Classic Particles": "Partículas Clásicas",
+    Constellation: "Constelación",
+    "Plexus / Neural": "Plexo / Neural",
+    "Breathing Particles": "Partículas Respirantes",
+    "Gravity Hover": "Gravedad",
+    "Low Poly Mesh": "Malla de Baja Poligonalidad",
+    "Data Flow": "Flujo de Datos",
+    "Flow Field": "Campo de Flujo",
+    "Circuit Board": "Placa de Circuito",
+    "Packet Pulses": "Pulsos de Paquetes",
+    "Hex Grid": "Cuadrícula Hexagonal",
   },
 
   pt: {
@@ -1601,6 +1686,23 @@ window.ProtonTranslations = {
     "Invalid backup file": "Arquivo de backup inválido",
     "No settings found in file": "Nenhuma configuração encontrada no arquivo",
     "Failed to read backup file": "Falha ao ler o arquivo de backup",
+
+    // Login Animation
+    "Login Page Animation": "Animação da Página de Login",
+    "Animation used on the LuCI login page. The color follows the selected Proton accent color.": "Animação usada na página de login do LuCI. A cor segue a cor de destaque Proton selecionada.",
+    "Login animation saved": "Animação de login salva",
+    Off: "Desligado",
+    "Classic Particles": "Partículas Clássicas",
+    Constellation: "Constelação",
+    "Plexus / Neural": "Plexo / Neural",
+    "Breathing Particles": "Partículas Respirantes",
+    "Gravity Hover": "Gravidade",
+    "Low Poly Mesh": "Malha Poligonal Baixa",
+    "Data Flow": "Fluxo de Dados",
+    "Flow Field": "Campo de Fluxo",
+    "Circuit Board": "Placa de Circuito",
+    "Packet Pulses": "Pulsos de Pacotes",
+    "Hex Grid": "Grade Hexagonal",
   },
 
   pl: {
@@ -1867,6 +1969,23 @@ window.ProtonTranslations = {
     "No settings found in file": "Nie znaleziono ustawień w pliku",
     "Failed to read backup file":
       "Nie udało się odczytać pliku kopii zapasowej",
+
+    // Login Animation
+    "Login Page Animation": "Animacja Strony Logowania",
+    "Animation used on the LuCI login page. The color follows the selected Proton accent color.": "Animacja na stronie logowania LuCI. Kolor odpowiada wybranemu kolorowi akcentu Proton.",
+    "Login animation saved": "Animacja logowania zapisana",
+    Off: "Wyłącz",
+    "Classic Particles": "Klasyczne Cząsteczki",
+    Constellation: "Konstelacja",
+    "Plexus / Neural": "Plexus / Neuronowy",
+    "Breathing Particles": "Oddychające Cząsteczki",
+    "Gravity Hover": "Grawitacja",
+    "Low Poly Mesh": "Siatka Low Poly",
+    "Data Flow": "Przepływ Danych",
+    "Flow Field": "Pole Przepływu",
+    "Circuit Board": "Płyta Drukowana",
+    "Packet Pulses": "Impulsy Pakietów",
+    "Hex Grid": "Siatka Heksagonalna",
   },
 
   fr: {
@@ -2135,6 +2254,23 @@ window.ProtonTranslations = {
     "No settings found in file": "Aucun paramètre trouvé dans le fichier",
     "Failed to read backup file":
       "Échec de la lecture du fichier de sauvegarde",
+
+    // Login Animation
+    "Login Page Animation": "Animation de la Page de Connexion",
+    "Animation used on the LuCI login page. The color follows the selected Proton accent color.": "Animation sur la page de connexion LuCI. La couleur suit la couleur d'accent Proton sélectionnée.",
+    "Login animation saved": "Animation de connexion enregistrée",
+    Off: "Désactivé",
+    "Classic Particles": "Particules Classiques",
+    Constellation: "Constellation",
+    "Plexus / Neural": "Plexus / Neuronal",
+    "Breathing Particles": "Particules Respirantes",
+    "Gravity Hover": "Gravité",
+    "Low Poly Mesh": "Maillage Low Poly",
+    "Data Flow": "Flux de Données",
+    "Flow Field": "Champ de Flux",
+    "Circuit Board": "Circuit Imprimé",
+    "Packet Pulses": "Impulsions de Paquets",
+    "Hex Grid": "Grille Hexagonale",
   },
 
   it: {
@@ -2402,6 +2538,23 @@ window.ProtonTranslations = {
     "Invalid backup file": "File di backup non valido",
     "No settings found in file": "Nessuna impostazione trovata nel file",
     "Failed to read backup file": "Impossibile leggere il file di backup",
+
+    // Login Animation
+    "Login Page Animation": "Animazione Pagina di Accesso",
+    "Animation used on the LuCI login page. The color follows the selected Proton accent color.": "Animazione utilizzata nella pagina di accesso LuCI. Il colore segue il colore accento Proton selezionato.",
+    "Login animation saved": "Animazione di accesso salvata",
+    Off: "Spento",
+    "Classic Particles": "Particelle Classiche",
+    Constellation: "Costellazione",
+    "Plexus / Neural": "Plexus / Neurale",
+    "Breathing Particles": "Particelle Respiranti",
+    "Gravity Hover": "Gravità",
+    "Low Poly Mesh": "Mesh Low Poly",
+    "Data Flow": "Flusso di Dati",
+    "Flow Field": "Campo di Flusso",
+    "Circuit Board": "Circuito Stampato",
+    "Packet Pulses": "Impulsi di Pacchetti",
+    "Hex Grid": "Griglia Esagonale",
   },
 };
 

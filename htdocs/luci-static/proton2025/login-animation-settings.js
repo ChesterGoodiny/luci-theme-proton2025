@@ -22,13 +22,8 @@
         ["hex", "Hex Grid"]
     ];
 
-    function isRu() {
-        var lang = (document.documentElement.lang || document.body.dataset.lang || "").toLowerCase();
-        return lang.indexOf("ru") === 0;
-    }
-
-    function tr(en, ru) {
-        return isRu() ? ru : en;
+    function _t(key) {
+        return (window.protonT && window.protonT(key)) || key;
     }
 
     function getTitleText(row) {
@@ -61,7 +56,7 @@
 
         var title = document.createElement("label");
         title.className = "cbi-value-title";
-        title.textContent = tr("Login Page Animation", "Анимация страницы входа");
+        title.textContent = _t("Login Page Animation");
 
         var field = document.createElement("div");
         field.className = "cbi-value-field";
@@ -73,7 +68,7 @@
         OPTIONS.forEach(function (item) {
             var option = document.createElement("option");
             option.value = item[0];
-            option.textContent = item[1];
+            option.textContent = _t(item[1]);
 
             if (item[0] === current) {
                 option.selected = true;
@@ -84,10 +79,7 @@
 
         var desc = document.createElement("div");
         desc.className = "cbi-value-description";
-        desc.textContent = tr(
-            "Animation used on the LuCI login page. The color follows the selected Proton accent color.",
-            "Анимация на странице входа LuCI. Цвет берётся из выбранного акцента Proton."
-        );
+        desc.textContent = _t("Animation used on the LuCI login page. The color follows the selected Proton accent color.");
 
         select.addEventListener("change", function () {
             localStorage.setItem(STORAGE_KEY, select.value);
@@ -96,7 +88,7 @@
                 window.protonSettingsSync.saveToUci();
             }
 
-            showToast(tr("Login animation saved", "Анимация входа сохранена"));
+            showToast(_t("Login animation saved"));
         });
 
         field.appendChild(select);
