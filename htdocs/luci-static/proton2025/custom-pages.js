@@ -1742,16 +1742,18 @@
 })();
 
 // =====================================================
-// SSClash / Mihomo inline-style dark-theme patcher
+// SSClash / Mihomo inline-style patcher
 //
-// Problem: SSClash mutates element.style.backgroundColor at runtime
-// (hover, selection). When any style property is set via JS, the browser
-// re-serializes the entire CSSStyleDeclaration, normalizing hex colors to
-// rgb() — so "color: #1f2937" becomes "color: rgb(31, 41, 55)".
-// Our CSS [style*="color: #1f2937"] no longer matches → text turns black.
+// Problem: SSClash mutates element.style.* at runtime (hover, selection).
+// When any property is set via JS, the browser re-serializes the entire
+// CSSStyleDeclaration, normalizing hex colors to rgb() — so
+// "color: #1f2937" becomes "color: rgb(31, 41, 55)" and our CSS
+// [style*="color: #1f2937"] stops matching.
 //
-// Solution: MutationObserver watches for style attribute changes and
-// remaps the normalized rgb() values to dark-theme CSS variables.
+// Patches are split into two tiers:
+//   ACCENT — applied in both dark and light themes (selection states,
+//             borders that should follow the Proton theme accent color).
+//   DARK   — applied only in dark theme (neutral backgrounds / text).
 // =====================================================
 (function () {
   "use strict";
@@ -1765,11 +1767,29 @@
     return document.documentElement.getAttribute("data-theme") !== "light";
   }
 
-  // Browser-normalized backgroundColor values → dark-theme equivalents.
-  // Includes both hex originals (for patchAll initial scan) and rgb() forms
-  // (for post-mutation interception).
+  // ── Tier 1: accent-aware remaps (both themes) ──────────────────────
+
+  // SSClash hardcodes #0066cc as its "selected" border.
+  // Remap to --proton-accent so the theme colour is respected.
+  var BORDER_ACCENT = {
+    "#0066cc":          "var(--proton-accent)",
+    "rgb(0, 102, 204)": "var(--proton-accent)",
+  };
+
+  // SSClash uses #f0f8ff / #e6f3ff as selected-state backgrounds.
+  // Remap to --proton-accent-rgb tints so the accent colour is respected.
+  // setProperty() is used below to store CSS-var expressions safely.
+  var BG_ACCENT = {
+    "#f0f8ff":            "rgba(var(--proton-accent-rgb), 0.10)",
+    "rgb(240, 248, 255)": "rgba(var(--proton-accent-rgb), 0.10)",
+    "#e6f3ff":            "rgba(var(--proton-accent-rgb), 0.08)",
+    "rgb(230, 243, 255)": "rgba(var(--proton-accent-rgb), 0.08)",
+  };
+
+  // ── Tier 2: dark-theme remaps (dark mode only) ─────────────────────
+
+  // White / near-white panels → dark surface
   var BG_DARK = {
-    // white / near-white panels
     "white":              "var(--proton-bg-secondary)",
     "#fff":               "var(--proton-bg-secondary)",
     "rgb(255, 255, 255)": "var(--proton-bg-secondary)",
@@ -1779,11 +1799,6 @@
     "rgb(248, 249, 250)": "var(--proton-bg-secondary)",
     "#f8f8f8":            "var(--proton-bg-secondary)",
     "rgb(248, 248, 248)": "var(--proton-bg-secondary)",
-    // blue-tint: selected mode card, hover on unchecked interface label
-    "#f0f8ff":            "rgba(59, 130, 246, 0.14)",
-    "rgb(240, 248, 255)": "rgba(59, 130, 246, 0.14)",
-    "#e6f3ff":            "rgba(59, 130, 246, 0.11)",
-    "rgb(230, 243, 255)": "rgba(59, 130, 246, 0.11)",
     // green-tint: auto-detected LAN bridge, hover on checked interface
     "#f8fff8":            "rgba(40, 167, 69, 0.13)",
     "rgb(248, 255, 248)": "rgba(40, 167, 69, 0.13)",
@@ -1796,38 +1811,57 @@
     "rgb(255, 243, 205)": "rgba(255, 193, 7, 0.14)",
   };
 
-  // Dark text colors → light equivalents for dark mode
+  // Dark text → readable in dark theme
   var COLOR_DARK = {
-    "rgb(31, 41, 55)":    "var(--proton-fg)",    // #1f2937 – main text
-    "rgb(55, 65, 81)":    "var(--proton-fg)",    // #374151
-    "rgb(75, 85, 99)":    "var(--proton-muted)", // #4b5563 – muted text
-    "rgb(107, 114, 128)": "var(--proton-muted)", // #6b7280
-    "rgb(133, 100, 4)":   "#e9c46a",             // #856404 → warm amber
-    "rgb(21, 87, 36)":    "#6fcf97",             // #155724 → light green
-    "rgb(0, 102, 204)":   "#60a5fa",             // #0066cc → sky blue
+    "rgb(31, 41, 55)":    "var(--proton-fg)",
+    "rgb(55, 65, 81)":    "var(--proton-fg)",
+    "rgb(75, 85, 99)":    "var(--proton-muted)",
+    "rgb(107, 114, 128)": "var(--proton-muted)",
+    "rgb(133, 100, 4)":   "#e9c46a",
+    "rgb(21, 87, 36)":    "#6fcf97",
   };
 
-  // Border color normalization
+  // Neutral borders → Proton border token (dark-mode only)
   var BORDER_DARK = {
-    "rgb(221, 221, 221)": "var(--proton-border)", // #ddd
-    "rgb(204, 204, 204)": "var(--proton-border)", // #ccc
+    "rgb(221, 221, 221)": "var(--proton-border)",
+    "rgb(204, 204, 204)": "var(--proton-border)",
   };
+
+  // ── Patch a single element ─────────────────────────────────────────
 
   function patchEl(el) {
     if (!el || !el.style) return;
     var s = el.style;
 
+    // Tier 1: accent border (both themes)
+    var bc = s.borderColor;
+    if (bc && BORDER_ACCENT[bc] !== undefined) {
+      s.setProperty("border-color", BORDER_ACCENT[bc]);
+    }
+
+    // Tier 1: accent background tint (both themes)
     var bg = s.backgroundColor;
+    if (bg && BG_ACCENT[bg] !== undefined) {
+      s.setProperty("background-color", BG_ACCENT[bg]);
+      bg = null; // skip BG_DARK check for this element
+    }
+
+    if (!isDark()) return;
+
+    // Tier 2: neutral background → dark surface
+    if (bg === null) bg = s.backgroundColor;
     if (bg && BG_DARK[bg] !== undefined) {
       s.backgroundColor = BG_DARK[bg];
     }
 
+    // Tier 2: text colour
     var col = s.color;
     if (col && COLOR_DARK[col] !== undefined) {
       s.color = COLOR_DARK[col];
     }
 
-    var bc = s.borderColor;
+    // Tier 2: neutral border
+    bc = s.borderColor;
     if (bc && BORDER_DARK[bc] !== undefined) {
       s.borderColor = BORDER_DARK[bc];
     }
@@ -1838,8 +1872,9 @@
     }
   }
 
+  // ── Patch all styled elements inside maincontent ───────────────────
+
   function patchAll() {
-    if (!isDark()) return;
     var root = document.getElementById("maincontent") || document.body;
     var els = root.querySelectorAll("[style]");
     for (var i = 0; i < els.length; i++) {
@@ -1847,13 +1882,14 @@
     }
   }
 
+  // ── MutationObserver setup ─────────────────────────────────────────
+
   var styleObs = null;
 
   function startObs() {
     if (styleObs) return;
     var root = document.getElementById("maincontent") || document.body;
     styleObs = new MutationObserver(function (mutations) {
-      if (!isDark()) return;
       for (var i = 0; i < mutations.length; i++) {
         var m = mutations[i];
         if (m.type === "attributes") {
@@ -1919,7 +1955,7 @@
     attributeFilter: ["data-page"],
   });
 
-  // Theme toggle (dark ↔ light)
+  // Theme toggle (dark ↔ light): re-patch so accent/dark tiers both apply
   var ssThemeObs = new MutationObserver(function (mutations) {
     for (var i = 0; i < mutations.length; i++) {
       if (mutations[i].attributeName === "data-theme") {
