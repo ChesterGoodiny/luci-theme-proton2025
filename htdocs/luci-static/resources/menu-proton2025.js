@@ -1380,12 +1380,16 @@ return baseclass.extend({
               : "light"
             : mode;
         document.documentElement.setAttribute("data-theme", effective);
+        if (zoomRange) updateSliderFill(zoomRange);
+        if (pageWidthRange) updateSliderFill(pageWidthRange);
       });
 
       accentSelect?.addEventListener("change", (e) => {
         const color = e.target.value;
         localStorage.setItem("proton-accent-color", color);
         this.applyAccentColor(color);
+        if (zoomRange) updateSliderFill(zoomRange);
+        if (pageWidthRange) updateSliderFill(pageWidthRange);
       });
 
       radiusSelect?.addEventListener("change", (e) => {

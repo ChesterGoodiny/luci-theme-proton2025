@@ -4039,15 +4039,15 @@ body.modal-overlay-active #modal_overlay {
         z-index: -1;
         background: var(--proton-bg-solid);
         background-image:
-            radial-gradient(circle at 20% 30%, rgba(94, 158, 255, 0.06) 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, rgba(107, 207, 127, 0.04) 0%, transparent 50%),
+            radial-gradient(circle at 20% 30%, rgba(var(--proton-accent-rgb), 0.06) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(var(--proton-accent-rgb), 0.03) 0%, transparent 50%),
             var(--proton-bg);
     }
 
     :root[data-theme="light"] body::before {
         background-image:
-            radial-gradient(circle at 20% 30%, rgba(74, 143, 231, 0.04) 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, rgba(72, 187, 120, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 20% 30%, rgba(var(--proton-accent-rgb), 0.04) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(var(--proton-accent-rgb), 0.025) 0%, transparent 50%),
             var(--proton-bg);
     }
 
@@ -9414,6 +9414,11 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
     box-shadow: 0 0 6px var(--proton-danger);
 }
 
+.proton-service-status-dot.unknown {
+    background: #ffc107;
+    box-shadow: 0 0 6px rgba(255, 193, 7, 0.4);
+}
+
 .proton-service-status-dot.not-installed {
     background: var(--proton-muted);
     opacity: 0.5;
@@ -9436,6 +9441,10 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
 
 .proton-service-status-text.error {
     color: var(--proton-danger);
+}
+
+.proton-service-status-text.unknown {
+    color: #ffc107;
 }
 
 .proton-service-status-text.not-installed {
@@ -11550,4 +11559,50 @@ body.proton-log-fs-active #maincontainer {
     background: var(--proton-accent) !important;
     color: #fff !important;
     border-color: var(--proton-accent) !important;
+}
+
+/* =====================================================
+   luci-mod-dashboard — card background fix
+   luci-mod-dashboard renders cards as .Dashboard .dashboard-bg
+   using --background-color-medium (#1a1f2e, hardcoded dark).
+   Override to use an accent-aware semi-transparent background
+   consistent with the rest of the theme.
+   ===================================================== */
+body[data-page^="admin-dashboard"] .Dashboard .dashboard-bg {
+    background: rgba(var(--proton-accent-rgb), 0.07) !important;
+    border: 1px solid var(--proton-border) !important;
+    box-shadow: var(--proton-shadow-sm) !important;
+}
+
+:root[data-theme="light"] body[data-page^="admin-dashboard"] .Dashboard .dashboard-bg {
+    background: rgba(0, 0, 0, 0.025) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+body[data-page^="admin-dashboard"] .cbi-section {
+    background: var(--proton-bg-secondary) !important;
+    border-color: var(--proton-border) !important;
+}
+
+:root[data-theme="light"] body[data-page^="admin-dashboard"] .cbi-section {
+    background: var(--proton-bg-secondary) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* =====================================================
+   luci-mod-dashboard — SVG icon theme fix
+   Dashboard icons (router.svg, wireless.svg, devices.svg,
+   not-internet.svg) have hardcoded stroke="#000".
+   The dashboard's own custom.css uses [data-darkmode="true"]
+   which our theme never sets — so icons stay black in dark mode.
+   Mirror the invert logic using our data-theme attribute.
+   ===================================================== */
+body[data-page^="admin-dashboard"] .Dashboard .svgmonotone {
+    filter: invert(1);
+}
+
+:root[data-theme="light"] body[data-page^="admin-dashboard"] .Dashboard .svgmonotone {
+    filter: none;
 }

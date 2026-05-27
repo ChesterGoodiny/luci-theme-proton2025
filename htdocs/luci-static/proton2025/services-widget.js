@@ -90,6 +90,7 @@
         // AdBlock / DNS фильтрация
         adblock: { category: "adblock", icon: "🚫" },
         adguardhome: { category: "adblock", icon: "🛡️" },
+        smartdns: { category: "adblock", icon: "🛡️" },
         pihole: { category: "adblock", icon: "🕳️" },
 
         // Система

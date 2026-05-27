@@ -1685,3 +1685,58 @@
   });
   buttonObserver.observe(document.body, { childList: true, subtree: true });
 })();
+
+// =====================================================
+// luci-mod-dashboard — fix section inline backgrounds
+// luci-mod-dashboard may assign var(--proton-bg) via
+// inline style. CSS !important handles class-based rules;
+// this handles any remaining inline style overrides.
+// =====================================================
+(function () {
+  "use strict";
+
+  function fixDashboardSectionBackgrounds() {
+    var page = document.body.dataset.page || "";
+    if (page.indexOf("admin-dashboard") !== 0) return;
+
+    var sections = document.querySelectorAll(".cbi-section");
+    for (var i = 0; i < sections.length; i++) {
+      var el = sections[i];
+      var inlineStyle = el.getAttribute("style") || "";
+      // Только если инлайн-стиль явно выставляет var(--proton-bg) без суффикса
+      if (inlineStyle && /--proton-bg\b/.test(inlineStyle) && !/--proton-bg-/.test(inlineStyle)) {
+        el.style.background = "var(--proton-bg-secondary)";
+        el.style.borderColor = "var(--proton-border)";
+      }
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", fixDashboardSectionBackgrounds);
+  } else {
+    fixDashboardSectionBackgrounds();
+  }
+
+  // SPA navigation
+  var dashBgObserver = new MutationObserver(function (mutations) {
+    for (var i = 0; i < mutations.length; i++) {
+      if (mutations[i].attributeName === "data-page") {
+        setTimeout(fixDashboardSectionBackgrounds, 100);
+        break;
+      }
+    }
+  });
+  dashBgObserver.observe(document.body, {
+    attributes: true,
+    attributeFilter: ["data-page"],
+  });
+
+  // Watch for dynamically added sections on dashboard
+  var dashContentObserver = new MutationObserver(function () {
+    var page = document.body.dataset.page || "";
+    if (page.indexOf("admin-dashboard") === 0) {
+      fixDashboardSectionBackgrounds();
+    }
+  });
+  dashContentObserver.observe(document.body, { childList: true, subtree: true });
+})();
