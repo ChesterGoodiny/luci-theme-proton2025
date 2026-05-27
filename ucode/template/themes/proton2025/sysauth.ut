@@ -14,51 +14,69 @@
 <head>
 <meta charset="utf-8" />
 <script>
-// Apply all theme settings from localStorage (same as header.ut)
 (function() {
-	// Theme mode (dark/light)
 	var themeMode = localStorage.getItem('proton-theme-mode') || 'auto';
-	if (themeMode === 'light') {
+	var effectiveTheme = themeMode === 'auto'
+		? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+		: themeMode;
+	if (effectiveTheme === 'light') {
 		document.documentElement.setAttribute('data-theme', 'light');
+		document.documentElement.setAttribute('data-darkmode', 'false');
+	} else {
+		document.documentElement.setAttribute('data-theme', 'dark');
+		document.documentElement.setAttribute('data-darkmode', 'true');
 	}
-	
-	// Zoom
-	var defaultZoom = '100';
-	var z = localStorage.getItem('proton-zoom') || defaultZoom;
+
+	var z = localStorage.getItem('proton-zoom') || '100';
 	document.documentElement.style.zoom = z / 100;
-	
-	// Transparency
+
 	var t = localStorage.getItem('proton-transparency');
 	if (t !== 'false') document.documentElement.classList.add('proton-transparency');
-	
-	// Border radius
+
 	var r = localStorage.getItem('proton-border-radius');
 	if (r === 'sharp') document.documentElement.classList.add('proton-radius-sharp');
 	else if (r === 'extra') document.documentElement.classList.add('proton-radius-extra');
-	
-	// Accent color
+
 	var a = localStorage.getItem('proton-accent-color') || 'blue';
 	var c = {
-		default: { accent: '#4b5563', hover: '#374151', glow: 'rgba(75, 85, 99, 0.22)' },
-		blue:    { accent: '#5e9eff', hover: '#7db2ff', glow: 'rgba(94, 158, 255, 0.18)' },
-		purple:  { accent: '#a78bfa', hover: '#c3b4ff', glow: 'rgba(167, 139, 250, 0.22)' },
-		green:   { accent: '#34d399', hover: '#2fb885', glow: 'rgba(52, 211, 153, 0.18)' },
-		orange:  { accent: '#fb923c', hover: '#f47c1f', glow: 'rgba(251, 146, 60, 0.20)' },
-		red:     { accent: '#f87171', hover: '#f04c4c', glow: 'rgba(248, 113, 113, 0.20)' }
+		default: { accent: '#4b5563', hover: '#374151', glow: 'rgba(75, 85, 99, 0.22)', rgb: '75, 85, 99' },
+		blue:    { accent: '#5e9eff', hover: '#7db2ff', glow: 'rgba(94, 158, 255, 0.18)', rgb: '94, 158, 255' },
+		purple:  { accent: '#a78bfa', hover: '#c3b4ff', glow: 'rgba(167, 139, 250, 0.22)', rgb: '167, 139, 250' },
+		green:   { accent: '#34d399', hover: '#2fb885', glow: 'rgba(52, 211, 153, 0.18)', rgb: '52, 211, 153' },
+		orange:  { accent: '#fb923c', hover: '#f47c1f', glow: 'rgba(251, 146, 60, 0.20)', rgb: '251, 146, 60' },
+		red:     { accent: '#f87171', hover: '#f04c4c', glow: 'rgba(248, 113, 113, 0.20)', rgb: '248, 113, 113' }
 	};
 	if (c[a]) {
 		document.documentElement.style.setProperty('--proton-accent', c[a].accent);
 		document.documentElement.style.setProperty('--proton-accent-hover', c[a].hover);
 		document.documentElement.style.setProperty('--proton-accent-glow', c[a].glow);
+		document.documentElement.style.setProperty('--proton-accent-rgb', c[a].rgb);
 	}
-	
-	// Animations
+
 	if (localStorage.getItem('proton-animations') === 'false') document.documentElement.classList.add('proton-no-animations');
+
+	var bgSolid = effectiveTheme === 'light' ? '#ffffff' : '#0f1419';
+	document.documentElement.style.setProperty('background-color', bgSolid);
+
+	if (themeMode === 'auto') {
+		var mq = window.matchMedia('(prefers-color-scheme: dark)');
+		var applyOsTheme = function(dark) {
+			var theme = dark ? 'dark' : 'light';
+			document.documentElement.setAttribute('data-theme', theme);
+			document.documentElement.setAttribute('data-darkmode', dark ? 'true' : 'false');
+			document.documentElement.style.setProperty('background-color', dark ? '#0f1419' : '#ffffff');
+		};
+		if (typeof mq.addEventListener === 'function') {
+			mq.addEventListener('change', function(ev) { applyOsTheme(ev.matches); });
+		} else if (typeof mq.addListener === 'function') {
+			mq.addListener(function(ev) { applyOsTheme(ev.matches); });
+		}
+	}
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#0f1419" />
-<meta name="color-scheme" content="dark" />
+<meta name="color-scheme" content="light dark" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="stylesheet" href="{{ media }}/cascade.css" />
