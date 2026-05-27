@@ -80,6 +80,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="stylesheet" href="{{ media }}/cascade.css" />
+<link rel="stylesheet" href="{{ media }}/login-bg.css" />
+
 <link rel="icon" href="{{ media }}/logo.svg" sizes="any" />
 <title>{{ _('Authorization Required') }} - {{ boardinfo.hostname ?? '?' }} - LuCI</title>
 </head>
@@ -198,5 +200,6 @@
 	scheduleAdjust();
 })();
 </script>
+<script src="{{ media }}/login-particles.js"></script>
 </body>
 </html>

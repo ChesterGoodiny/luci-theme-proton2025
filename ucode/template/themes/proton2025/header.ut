@@ -186,6 +186,7 @@ body {
 <script src="{{ media }}/settings-sync.js" defer></script>
 <script src="{{ media }}/services-widget.js" defer></script>
 <script src="{{ media }}/custom-pages.js" defer></script>
+<script src="{{ media }}/login-animation-settings.js"></script>
 
 <script>
 (function() {

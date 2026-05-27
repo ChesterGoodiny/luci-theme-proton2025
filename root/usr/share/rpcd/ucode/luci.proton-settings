@@ -22,7 +22,24 @@ const VALID_OPTIONS = {
 	table_wrap: { default: '1', values: ['0', '1'] },
 	log_highlight: { default: '1', values: ['0', '1'] },
 	page_width: { default: '0', min: 0, max: 100 },
-	custom_font: { default: '1', values: ['0', '1'] }
+	custom_font: { default: '1', values: ['0', '1'] },
+	login_animation: {
+    	default: 'particles',
+    	values: [
+        	'off',
+        	'particles',
+        	'constellation',
+        	'plexus',
+        	'breathing',
+        	'gravity',
+        	'lowpoly',
+        	'dataflow',
+        	'flowfield',
+        	'circuit',
+        	'packetpulses',
+        	'hex'
+    	]
+	}
 };
 
 // Validate option value

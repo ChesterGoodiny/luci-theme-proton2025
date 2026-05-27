@@ -29,6 +29,7 @@
     "proton-log-highlight": "log_highlight",
     "proton-page-width": "page_width",
     "proton-custom-font": "custom_font",
+    "proton-login-animation": "login_animation",
   };
 
   // Reverse mapping
@@ -279,6 +280,7 @@
         "proton-log-highlight": "true",
         "proton-page-width": "",
         "proton-custom-font": "true",
+        "proton-login-animation": "particles",
       };
 
       // Clear all proton settings from localStorage
