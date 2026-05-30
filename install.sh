@@ -1,4 +1,18 @@
 #!/bin/sh
+# Copyright 2025-2026 ChesterGoodiny
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 # ============================================================
 # Proton2025 Theme Installer for OpenWrt/LuCI
 # ============================================================
@@ -126,6 +140,7 @@ install_theme() {
     mkdir -p "$LUCI_RESOURCES"
     mkdir -p "$LUCI_THEMES/$THEME_NAME"
     mkdir -p "$UCI_DEFAULTS"
+    mkdir -p /usr/share/luci/menu.d
     
     if [ -d "$EXTRACT_DIR/htdocs/luci-static/$THEME_NAME" ]; then
         cp -rf "$EXTRACT_DIR/htdocs/luci-static/$THEME_NAME/"* "$LUCI_STATIC/$THEME_NAME/"
@@ -146,6 +161,11 @@ install_theme() {
         cp -rf "$EXTRACT_DIR/root/etc/uci-defaults/"* "$UCI_DEFAULTS/"
         ok "Installed uci-defaults"
     fi
+
+    if [ -d "$EXTRACT_DIR/root/usr/share/luci/menu.d" ]; then
+        cp -rf "$EXTRACT_DIR/root/usr/share/luci/menu.d/"* /usr/share/luci/menu.d/
+        ok "Installed LuCI menu entries"
+    fi
     
     # Install RPC module for temperature widget
     if [ -d "$EXTRACT_DIR/root/usr/share/rpcd" ]; then
@@ -155,9 +175,17 @@ install_theme() {
             cp -f "$EXTRACT_DIR/root/usr/share/rpcd/ucode/luci.proton-temp" /usr/share/rpcd/ucode/
             ok "Installed temperature RPC module"
         fi
+        if [ -f "$EXTRACT_DIR/root/usr/share/rpcd/ucode/luci.proton-system" ]; then
+            cp -f "$EXTRACT_DIR/root/usr/share/rpcd/ucode/luci.proton-system" /usr/share/rpcd/ucode/
+            ok "Installed system info RPC module"
+        fi
         if [ -f "$EXTRACT_DIR/root/usr/share/rpcd/ucode/luci.proton-settings" ]; then
             cp -f "$EXTRACT_DIR/root/usr/share/rpcd/ucode/luci.proton-settings" /usr/share/rpcd/ucode/
             ok "Installed settings RPC module"
+        fi
+        if [ -f "$EXTRACT_DIR/root/usr/share/rpcd/ucode/luci.proton-search-cache" ]; then
+            cp -f "$EXTRACT_DIR/root/usr/share/rpcd/ucode/luci.proton-search-cache" /usr/share/rpcd/ucode/
+            ok "Installed search cache RPC module"
         fi
         if [ -f "$EXTRACT_DIR/root/usr/share/rpcd/acl.d/luci-theme-proton2025.json" ]; then
             cp -f "$EXTRACT_DIR/root/usr/share/rpcd/acl.d/luci-theme-proton2025.json" /usr/share/rpcd/acl.d/
@@ -195,12 +223,19 @@ register_theme() {
         /etc/init.d/rpcd restart 2>/dev/null || true
         ok "Restarted rpcd service"
     fi
+
+    if [ -x /etc/init.d/uhttpd ]; then
+        /etc/init.d/uhttpd reload 2>/dev/null || /etc/init.d/uhttpd restart 2>/dev/null || true
+        ok "Reloaded uhttpd service"
+    fi
 }
 
 # Cleanup
 cleanup() {
     info "Cleaning up..."
     rm -rf "$TMP_DIR"
+    rm -f /tmp/proton-search-prefetch-cache.json /tmp/proton-search-prefetch-cache-meta.json 2>/dev/null || true
+    rm -rf /tmp/proton-search-cache /tmp/proton-search-cache-meta 2>/dev/null || true
     rm -rf /tmp/luci-modulecache 2>/dev/null || true
     rm -rf /tmp/luci-indexcache* 2>/dev/null || true
     ok "Cleanup complete"

@@ -1,1 +1,5 @@
+<!-- Proton2025 Icon Asset -->
+<!-- Copyright 2025-2026 ChesterGoodiny -->
+<!-- Licensed under the Apache License, Version 2.0 -->
+<!-- See LICENSE and NOTICE for details. -->
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 8v13" stroke="#AAB4C4" stroke-width="1.8" stroke-linecap="round" opacity=".4"/><path d="M9 21h6" stroke="#AAB4C4" stroke-width="1.8" stroke-linecap="round" opacity=".4"/><circle cx="12" cy="5" r="2" fill="#AAB4C4" opacity=".4"/><path d="M6 5c-2.5 0-4 2.5-4 5" stroke="#AAB4C4" stroke-width="1.8" stroke-linecap="round" opacity=".3"/><path d="M18 5c2.5 0 4 2.5 4 5" stroke="#AAB4C4" stroke-width="1.8" stroke-linecap="round" opacity=".3"/><line x1="5" y1="19" x2="19" y2="5" stroke="#AAB4C4" stroke-width="2" stroke-linecap="round" opacity=".6"/></svg>

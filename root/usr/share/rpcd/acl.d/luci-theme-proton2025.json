@@ -7,12 +7,27 @@
                     "getSensors",
                     "resetPeaks"
                 ],
+                "luci.proton-system": [
+                    "getSystemInfo"
+                ],
+                "luci.proton-search-cache": [
+                    "loadCache"
+                ],
                 "luci.proton-settings": [
                     "getSettings"
+                ],
+                "network.interface": [
+                    "dump"
+                ],
+                "luci-rpc": [
+                    "getDHCPLeases"
                 ]
             },
             "uci": [
-                "proton2025"
+                "proton2025",
+                "network",
+                "wireless",
+                "dhcp"
             ],
             "file": {
                 "/etc/init.d/*": [
@@ -29,6 +44,10 @@
                     "setSetting",
                     "setSettings",
                     "resetSettings"
+                ],
+                "luci.proton-search-cache": [
+                    "saveCache",
+                    "clearCache"
                 ]
             },
             "uci": [

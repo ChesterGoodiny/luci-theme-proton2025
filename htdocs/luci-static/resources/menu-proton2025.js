@@ -1,3 +1,10 @@
+/**
+ * Proton2025 - LuCI Menu Integration
+ * Copyright 2025-2026 ChesterGoodiny
+ * Licensed under the Apache License, Version 2.0
+ * See LICENSE and NOTICE for details.
+ */
+
 "use strict";
 "require baseclass";
 "require ui";
@@ -47,10 +54,23 @@ var translate = function (s) {
 // Use safe wrappers
 var E = defined_E;
 var _ = translate;
+var SEARCH_INDEX_ACTIVITY_LOG_KEY = "proton-search-index-activity-log";
+var SEARCH_INDEX_ACTIVITY_LOG_EXPANDED_KEY =
+  "proton-search-index-activity-log-expanded";
+var SEARCH_INDEX_ACTIVITY_LOG_LIMIT = 6;
+var SEARCH_INDEX_ACTIVITY_DETAILS_LIMIT = 32;
+var SEARCH_INDEX_PANEL_HASH = "#proton-search-index-panel";
+var SEARCH_INDEX_PANEL_FOCUS_EVENT = "proton-focus-search-index-panel";
 
 return baseclass.extend({
   __init__() {
     ui.menu.load().then((tree) => this.render(tree));
+
+    this.installThemeModeObserver();
+    this.initSearchIndexFeedback();
+    window.addEventListener(SEARCH_INDEX_PANEL_FOCUS_EVENT, () => {
+      this.focusSearchIndexPanel();
+    });
 
     // Apply saved theme settings on every page
     this.loadAndApplyThemeSettings();
@@ -76,6 +96,8 @@ return baseclass.extend({
     window.addEventListener("resize", () => {
       clearTimeout(_resizeTimer);
       _resizeTimer = setTimeout(() => {
+        requestAnimationFrame(() => this.repositionAlerts());
+
         // На мобильных resize часто вызывается скрытием/показом адресной строки —
         // пропускаем, чтобы не дёргать layout и не сбивать скролл
         if (window.innerWidth < 800) return;
@@ -85,12 +107,22 @@ return baseclass.extend({
         this.applyPageWidth(pw);
       }, 200);
     });
+
+    // Initialize floating alert messages
+    document.addEventListener("DOMContentLoaded", () => {
+      this.initFloatingAlerts();
+    });
+    setTimeout(() => this.initFloatingAlerts(), 100);
   },
 
   loadAndApplyThemeSettings() {
     const defaultZoom = "100";
+    const storedThemeMode = localStorage.getItem("proton-theme-mode");
     const settings = {
-      themeMode: localStorage.getItem("proton-theme-mode") || "dark",
+      themeMode:
+        storedThemeMode === "light" || storedThemeMode === "auto"
+          ? storedThemeMode
+          : "dark",
       accentColor: localStorage.getItem("proton-accent-color") || "blue",
       borderRadius: localStorage.getItem("proton-border-radius") || "default",
       zoom: localStorage.getItem("proton-zoom") || defaultZoom,
@@ -107,10 +139,937 @@ return baseclass.extend({
       customFont: localStorage.getItem("proton-custom-font") !== "false",
     };
 
-    // Apply theme mode
-    document.documentElement.setAttribute("data-theme", settings.themeMode);
-
+    this.applyThemeMode(settings.themeMode);
     this.applyThemeSettings(settings);
+  },
+
+  translateThemeText(key) {
+    if (typeof window.protonT === "function") {
+      try {
+        return window.protonT(key);
+      } catch (error) {
+        // Fall back to LuCI translation helpers below.
+      }
+    }
+
+    return _(key);
+  },
+
+  focusSearchIndexPanel() {
+    const focusPanel = () => {
+      const panel = document.getElementById("proton-search-index-panel");
+      if (!panel) return false;
+
+      panel.scrollIntoView({ behavior: "smooth", block: "center" });
+      panel.classList.add("proton-search-index-panel-focus");
+
+      if (this._searchIndexPanelFocusTimer) {
+        clearTimeout(this._searchIndexPanelFocusTimer);
+      }
+
+      this._searchIndexPanelFocusTimer = setTimeout(() => {
+        panel.classList.remove("proton-search-index-panel-focus");
+      }, 1600);
+
+      const runButton = document.getElementById("proton-search-index-run");
+      if (runButton && typeof runButton.focus === "function") {
+        runButton.focus({ preventScroll: true });
+      }
+
+      return true;
+    };
+
+    if (focusPanel()) return true;
+
+    let attempts = 0;
+    const maxAttempts = 12;
+
+    const retryFocus = () => {
+      attempts += 1;
+      if (focusPanel() || attempts >= maxAttempts) return;
+      setTimeout(retryFocus, 160);
+    };
+
+    setTimeout(retryFocus, 120);
+    return false;
+  },
+
+  maybeFocusSearchIndexPanelFromHash() {
+    if (window.location.hash !== SEARCH_INDEX_PANEL_HASH) return false;
+    this.focusSearchIndexPanel();
+    return true;
+  },
+
+  normalizeSearchIndexActivityDetails(details) {
+    return Array.isArray(details)
+      ? details
+          .map((detail) =>
+            String(detail || "")
+              .replace(/\s+/g, " ")
+              .trim(),
+          )
+          .filter(Boolean)
+          .slice(0, SEARCH_INDEX_ACTIVITY_DETAILS_LIMIT)
+      : [];
+  },
+
+  normalizeSearchIndexActivityDetailsLabel(label) {
+    const normalizedLabel = String(label || "")
+      .replace(/\s+/g, " ")
+      .trim();
+    return normalizedLabel || "";
+  },
+
+  loadSearchIndexActivityEntries() {
+    if (Array.isArray(this._searchIndexActivityEntries)) {
+      return this._searchIndexActivityEntries;
+    }
+
+    let entries = [];
+
+    try {
+      const rawValue = localStorage.getItem(SEARCH_INDEX_ACTIVITY_LOG_KEY);
+      const parsed = rawValue ? JSON.parse(rawValue) : [];
+
+      if (Array.isArray(parsed)) {
+        entries = parsed
+          .filter((entry) => entry && typeof entry.message === "string")
+          .map((entry) => ({
+            timestamp: Number(entry.timestamp) || Date.now(),
+            tone: typeof entry.tone === "string" ? entry.tone : "info",
+            message: String(entry.message || "").trim(),
+            details: this.normalizeSearchIndexActivityDetails(entry.details),
+            detailsLabel: this.normalizeSearchIndexActivityDetailsLabel(
+              entry.detailsLabel,
+            ),
+          }))
+          .filter((entry) => entry.message)
+          .slice(0, SEARCH_INDEX_ACTIVITY_LOG_LIMIT);
+      }
+    } catch (error) {
+      entries = [];
+    }
+
+    this._searchIndexActivityEntries = entries;
+    return entries;
+  },
+
+  persistSearchIndexActivityEntries() {
+    try {
+      localStorage.setItem(
+        SEARCH_INDEX_ACTIVITY_LOG_KEY,
+        JSON.stringify(
+          (this._searchIndexActivityEntries || []).slice(
+            0,
+            SEARCH_INDEX_ACTIVITY_LOG_LIMIT,
+          ),
+        ),
+      );
+    } catch (error) {
+      // Ignore localStorage write failures.
+    }
+  },
+
+  loadSearchIndexActivityExpanded() {
+    if (typeof this._searchIndexActivityExpanded === "boolean") {
+      return this._searchIndexActivityExpanded;
+    }
+
+    let expanded = false;
+
+    try {
+      expanded =
+        localStorage.getItem(SEARCH_INDEX_ACTIVITY_LOG_EXPANDED_KEY) === "true";
+    } catch (error) {
+      expanded = false;
+    }
+
+    this._searchIndexActivityExpanded = expanded;
+    return expanded;
+  },
+
+  persistSearchIndexActivityExpanded() {
+    try {
+      localStorage.setItem(
+        SEARCH_INDEX_ACTIVITY_LOG_EXPANDED_KEY,
+        this._searchIndexActivityExpanded ? "true" : "false",
+      );
+    } catch (error) {
+      // Ignore localStorage write failures.
+    }
+  },
+
+  setSearchIndexActivityExpanded(expanded) {
+    const normalizedExpanded = expanded === true;
+    const rootNode = document.getElementById("proton-search-index-log-root");
+    const toggleNode = document.getElementById(
+      "proton-search-index-log-toggle",
+    );
+    const contentNode = document.getElementById(
+      "proton-search-index-log-content",
+    );
+
+    this._searchIndexActivityExpanded = normalizedExpanded;
+    this.persistSearchIndexActivityExpanded();
+
+    if (rootNode) {
+      rootNode.classList.toggle("is-expanded", normalizedExpanded);
+    }
+
+    if (toggleNode) {
+      toggleNode.setAttribute(
+        "aria-expanded",
+        normalizedExpanded ? "true" : "false",
+      );
+      toggleNode.classList.toggle("is-expanded", normalizedExpanded);
+    }
+
+    if (contentNode) {
+      contentNode.hidden = !normalizedExpanded;
+    }
+  },
+
+  formatSearchIndexActivityTime(timestamp) {
+    const date = new Date(Number(timestamp) || Date.now());
+
+    if (Number.isNaN(date.getTime())) {
+      return "--:--:--";
+    }
+
+    try {
+      return new Intl.DateTimeFormat("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(date);
+    } catch (error) {
+      const pad = (value) => String(value).padStart(2, "0");
+      return [
+        pad(date.getHours()),
+        pad(date.getMinutes()),
+        pad(date.getSeconds()),
+      ].join(":");
+    }
+  },
+
+  formatSearchIndexBytes(bytes) {
+    const value = Number(bytes) || 0;
+    if (value <= 0) return "0 B";
+
+    const units = ["B", "KB", "MB", "GB"];
+    let size = value;
+    let unitIndex = 0;
+
+    while (size >= 1024 && unitIndex < units.length - 1) {
+      size /= 1024;
+      unitIndex += 1;
+    }
+
+    return `${size >= 10 || unitIndex === 0 ? size.toFixed(0) : size.toFixed(1)} ${units[unitIndex]}`;
+  },
+
+  buildSearchIndexIssueSummary(state, options) {
+    const status = state?.status || {};
+    const routeErrorCount = Number(status.routeErrorCount) || 0;
+    const persistenceErrorCount = Number(status.persistenceErrorCount) || 0;
+    const totalErrorCount = Number(status.errorCount) || 0;
+    const details = [];
+
+    if (options?.includeRouteErrors && routeErrorCount > 0) {
+      details.push(
+        routeErrorCount === 1
+          ? "1 route error"
+          : `${routeErrorCount} route errors`,
+      );
+    }
+
+    if (options?.includePersistenceErrors && persistenceErrorCount > 0) {
+      details.push(
+        persistenceErrorCount === 1
+          ? "cache persistence failed"
+          : `${persistenceErrorCount} cache persistence issues`,
+      );
+    }
+
+    if (
+      !details.length &&
+      options?.includeGenericErrors &&
+      totalErrorCount > 0
+    ) {
+      details.push(
+        totalErrorCount === 1
+          ? "1 index issue"
+          : `${totalErrorCount} index issues`,
+      );
+    }
+
+    return details.join(", ");
+  },
+
+  buildSearchIndexActivitySummary(state, options) {
+    const status = state?.status || {};
+    const routeCount = Number(status.routeCount) || 0;
+    const indexedRouteCount = Number(status.indexedRouteCount) || routeCount;
+    const cachedEntryCount = Number(state?.cachedEntryCount) || 0;
+    const cacheBytes = Number(state?.cacheBytes) || 0;
+    const durationMs = Number(options?.durationMs) || 0;
+    const details = [];
+
+    if (routeCount > 0) {
+      details.push(`${indexedRouteCount}/${routeCount} routes`);
+    }
+
+    if (cachedEntryCount > 0) {
+      details.push(`${cachedEntryCount} cached entries`);
+    }
+
+    if (cacheBytes > 0) {
+      details.push(this.formatSearchIndexBytes(cacheBytes));
+    }
+
+    if (durationMs > 0) {
+      details.push(this.formatSearchIndexDuration(durationMs));
+    }
+
+    const issueSummary = this.buildSearchIndexIssueSummary(state, {
+      includeRouteErrors: options?.includeErrors === true,
+      includePersistenceErrors: options?.includeErrors === true,
+      includeGenericErrors: options?.includeErrors === true,
+    });
+    if (issueSummary) {
+      details.push(issueSummary);
+    }
+
+    return details.join(", ");
+  },
+
+  appendSearchIndexActivityEntry(message, tone, key, details, detailsLabel) {
+    const normalizedMessage = String(message || "").trim();
+    const normalizedDetails = this.normalizeSearchIndexActivityDetails(details);
+    const normalizedDetailsLabel =
+      this.normalizeSearchIndexActivityDetailsLabel(detailsLabel);
+    if (!normalizedMessage) {
+      return;
+    }
+
+    if (key && key === this._lastSearchIndexActivityEventKey) {
+      return;
+    }
+
+    if (key) {
+      this._lastSearchIndexActivityEventKey = key;
+    }
+
+    const entries = this.loadSearchIndexActivityEntries().slice();
+    entries.unshift({
+      timestamp: Date.now(),
+      tone: tone || "info",
+      message: normalizedMessage,
+      details: normalizedDetails,
+      detailsLabel: normalizedDetailsLabel,
+    });
+
+    this._searchIndexActivityEntries = entries.slice(
+      0,
+      SEARCH_INDEX_ACTIVITY_LOG_LIMIT,
+    );
+    this.persistSearchIndexActivityEntries();
+    this.renderSearchIndexActivity(this._lastObservedSearchIndexState);
+  },
+
+  recordSearchIndexCleared() {
+    this.appendSearchIndexActivityEntry(
+      "Cached index cleared.",
+      "muted",
+      `clear:${Date.now()}`,
+    );
+  },
+
+  buildSearchIndexErrorDetails(state, options) {
+    const status = state?.status || {};
+    const details = this.normalizeSearchIndexActivityDetails(
+      status.recentErrors,
+    );
+    const fallbackMessage = String(options?.errorMessage || "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!fallbackMessage) {
+      return details;
+    }
+
+    if (details.indexOf(fallbackMessage) !== -1) {
+      return details;
+    }
+
+    return [fallbackMessage]
+      .concat(details)
+      .slice(0, SEARCH_INDEX_ACTIVITY_DETAILS_LIMIT);
+  },
+
+  buildSearchIndexIndexedPageDetails(state) {
+    return this.normalizeSearchIndexActivityDetails(
+      state?.status?.indexedPages,
+    );
+  },
+
+  buildSearchIndexLiveMessage(state) {
+    const status = state?.status || {};
+    if (!status.inProgress) {
+      return "";
+    }
+
+    const routeCount = Number(status.routeCount) || 0;
+    const indexedRouteCount = Number(status.indexedRouteCount) || 0;
+    const cachedEntryCount = Number(state?.cachedEntryCount) || 0;
+    const routeErrorCount = Number(status.routeErrorCount) || 0;
+    const details = [];
+
+    if (routeCount > 0) {
+      details.push(`${indexedRouteCount}/${routeCount} routes indexed`);
+    } else {
+      details.push("preparing route list");
+    }
+
+    if (cachedEntryCount > 0) {
+      details.push(`${cachedEntryCount} cached entries ready`);
+    }
+
+    if (routeErrorCount > 0) {
+      details.push(
+        routeErrorCount === 1
+          ? "1 route error"
+          : `${routeErrorCount} route errors`,
+      );
+    }
+
+    return `Running now: ${details.join(" · ")}.`;
+  },
+
+  buildSearchIndexActivityEntriesKey(entries) {
+    if (!Array.isArray(entries) || !entries.length) {
+      return "";
+    }
+
+    return entries
+      .map(
+        (entry) =>
+          `${Number(entry?.timestamp) || 0}|${String(entry?.tone || "info")}|${String(entry?.message || "")}|${this.normalizeSearchIndexActivityDetails(entry?.details).join("||")}|${this.normalizeSearchIndexActivityDetailsLabel(entry?.detailsLabel)}`,
+      )
+      .join("\n");
+  },
+
+  renderSearchIndexActivity(state) {
+    const liveNode = document.getElementById("proton-search-index-log-live");
+    const listNode = document.getElementById("proton-search-index-log-list");
+    const emptyNode = document.getElementById("proton-search-index-log-empty");
+
+    if (!liveNode || !listNode || !emptyNode) {
+      return;
+    }
+
+    const liveMessage = this.buildSearchIndexLiveMessage(state);
+    liveNode.textContent = liveMessage;
+    liveNode.hidden = !liveMessage;
+    liveNode.classList.toggle("is-visible", !!liveMessage);
+
+    const entries = this.loadSearchIndexActivityEntries();
+    const entriesKey = this.buildSearchIndexActivityEntriesKey(entries);
+
+    if (entriesKey === this._searchIndexActivityRenderKey) {
+      emptyNode.hidden = entries.length > 0;
+      return;
+    }
+
+    this._searchIndexActivityRenderKey = entriesKey;
+    listNode.textContent = "";
+
+    entries.forEach((entry) => {
+      const itemNode = document.createElement("div");
+      itemNode.className = `proton-search-index-log-entry proton-search-index-log-entry-${entry.tone || "info"}`;
+
+      const timeNode = document.createElement("div");
+      timeNode.className = "proton-search-index-log-time";
+      timeNode.textContent = this.formatSearchIndexActivityTime(
+        entry.timestamp,
+      );
+
+      const contentNode = document.createElement("div");
+      contentNode.className = "proton-search-index-log-entry-body";
+
+      const messageNode = document.createElement("div");
+      messageNode.className = "proton-search-index-log-message";
+      messageNode.textContent = entry.message;
+
+      contentNode.appendChild(messageNode);
+
+      const entryDetails = this.normalizeSearchIndexActivityDetails(
+        entry.details,
+      );
+      if (entryDetails.length) {
+        const detailsNode = document.createElement("details");
+        detailsNode.className = "proton-search-index-log-entry-details";
+
+        const summaryNode = document.createElement("summary");
+        summaryNode.className = "proton-search-index-log-entry-details-toggle";
+        const detailsLabel =
+          this.normalizeSearchIndexActivityDetailsLabel(entry.detailsLabel) ||
+          "Details";
+        summaryNode.textContent =
+          entryDetails.length > 1
+            ? `${detailsLabel} (${entryDetails.length})`
+            : detailsLabel;
+
+        const detailsListNode = document.createElement("ul");
+        detailsListNode.className =
+          "proton-search-index-log-entry-details-list";
+
+        entryDetails.forEach((detail) => {
+          const detailNode = document.createElement("li");
+          detailNode.className = "proton-search-index-log-entry-detail";
+          detailNode.textContent = detail;
+          detailsListNode.appendChild(detailNode);
+        });
+
+        detailsNode.appendChild(summaryNode);
+        detailsNode.appendChild(detailsListNode);
+        contentNode.appendChild(detailsNode);
+      }
+
+      itemNode.appendChild(timeNode);
+      itemNode.appendChild(contentNode);
+      listNode.appendChild(itemNode);
+    });
+
+    emptyNode.hidden = entries.length > 0;
+  },
+
+  maybeRecordSearchIndexActivity(previousState, currentState, options) {
+    const previousStatus = previousState?.status || {};
+    const status = currentState?.status || {};
+    const forceError = options?.forceError === true;
+
+    if (status.inProgress && !previousStatus.inProgress) {
+      const routeCount = Number(status.routeCount) || 0;
+      const message =
+        routeCount > 0
+          ? `Index run started: ${routeCount} routes queued.`
+          : "Index run started.";
+
+      this.appendSearchIndexActivityEntry(
+        message,
+        "info",
+        `start:${this._searchIndexRunStartedAt || Date.now()}:${routeCount}`,
+      );
+      return;
+    }
+
+    const completedTransition =
+      !!previousStatus.inProgress && !status.inProgress;
+
+    if (!completedTransition && !forceError) {
+      return;
+    }
+
+    if (status.canceled) {
+      const routeCount = Number(status.routeCount) || 0;
+      const indexedRouteCount = Number(status.indexedRouteCount) || 0;
+      const message =
+        routeCount > 0
+          ? `Index run canceled: ${indexedRouteCount}/${routeCount} routes processed.`
+          : "Index run canceled.";
+
+      this.appendSearchIndexActivityEntry(
+        message,
+        "warning",
+        `cancel:${Number(status.lastIndexedAt) || 0}:${indexedRouteCount}:${routeCount}`,
+      );
+      return;
+    }
+
+    if (forceError) {
+      const errorCount = Number(status.errorCount) || 0;
+      const errorDetails = this.buildSearchIndexErrorDetails(
+        currentState,
+        options,
+      );
+      const summary = this.buildSearchIndexActivitySummary(currentState, {
+        includeErrors: errorCount > 0,
+      });
+      const issueSummary = this.buildSearchIndexIssueSummary(currentState, {
+        includeRouteErrors: true,
+        includePersistenceErrors: true,
+        includeGenericErrors: true,
+      });
+      const message = summary
+        ? `Index run failed: ${summary}.`
+        : issueSummary
+          ? `Index run failed: ${issueSummary}.`
+          : "Index run failed before completion.";
+
+      this.appendSearchIndexActivityEntry(
+        message,
+        "error",
+        `fail:${Number(status.lastIndexedAt) || 0}:${errorCount}:${Number(currentState?.cachedEntryCount) || 0}`,
+        errorDetails,
+        errorDetails.length ? "Error details" : "",
+      );
+      return;
+    }
+
+    const errorCount = Number(status.errorCount) || 0;
+    const indexedPageDetails =
+      this.buildSearchIndexIndexedPageDetails(currentState);
+    const errorDetails =
+      errorCount > 0
+        ? this.buildSearchIndexErrorDetails(currentState, options)
+        : [];
+    const summary = this.buildSearchIndexActivitySummary(currentState, {
+      durationMs: options?.durationMs,
+      includeErrors: errorCount > 0,
+    });
+    const message =
+      errorCount > 0
+        ? summary
+          ? `Index run completed with warnings: ${summary}.`
+          : "Index run completed with warnings."
+        : summary
+          ? `Index run completed: ${summary}.`
+          : "Index run completed.";
+
+    this.appendSearchIndexActivityEntry(
+      message,
+      errorCount > 0 ? "warning" : "success",
+      `complete:${Number(status.lastIndexedAt) || 0}:${errorCount}:${Number(currentState?.cachedEntryCount) || 0}`,
+      errorCount > 0 ? errorDetails : indexedPageDetails,
+      errorCount > 0
+        ? errorDetails.length
+          ? "Error details"
+          : ""
+        : indexedPageDetails.length
+          ? "Indexed pages"
+          : "",
+    );
+  },
+
+  ensureSearchIndexFeedbackUi() {
+    let progressRoot = document.getElementById("proton-search-index-progress");
+    if (!progressRoot) {
+      progressRoot = document.createElement("div");
+      progressRoot.id = "proton-search-index-progress";
+      progressRoot.className = "proton-search-index-progress";
+      progressRoot.hidden = true;
+
+      const progressBar = document.createElement("div");
+      progressBar.className = "proton-search-index-progress-bar";
+      progressRoot.appendChild(progressBar);
+      document.body.appendChild(progressRoot);
+    }
+
+    let toastRoot = document.getElementById("proton-search-index-toast");
+    if (!toastRoot) {
+      toastRoot = document.createElement("div");
+      toastRoot.id = "proton-search-index-toast";
+      toastRoot.className = "proton-search-index-toast";
+      toastRoot.hidden = true;
+      toastRoot.innerHTML =
+        '<div class="proton-search-index-toast-content"><div class="proton-search-index-toast-title"></div><div class="proton-search-index-toast-body"></div></div>';
+      document.body.appendChild(toastRoot);
+    }
+
+    let hudRoot = document.getElementById("proton-search-index-hud");
+    if (!hudRoot) {
+      hudRoot = document.createElement("div");
+      hudRoot.id = "proton-search-index-hud";
+      hudRoot.className = "proton-search-index-hud";
+      hudRoot.hidden = true;
+      hudRoot.innerHTML =
+        '<div class="proton-search-index-hud-content"><div class="proton-search-index-hud-title"></div><div class="proton-search-index-hud-body"></div></div><button type="button" class="proton-search-index-hud-cancel cbi-button cbi-button-negative"></button>';
+      document.body.appendChild(hudRoot);
+    }
+
+    const hudCancelButton = hudRoot.querySelector(
+      ".proton-search-index-hud-cancel",
+    );
+    if (hudCancelButton && !hudCancelButton.dataset.boundCancel) {
+      hudCancelButton.dataset.boundCancel = "1";
+      hudCancelButton.addEventListener("click", () => {
+        if (
+          window.protonSearchIndex &&
+          typeof window.protonSearchIndex.cancel === "function"
+        ) {
+          window.protonSearchIndex.cancel("user");
+        }
+      });
+    }
+
+    return {
+      progressRoot: progressRoot,
+      progressBar: progressRoot.querySelector(
+        ".proton-search-index-progress-bar",
+      ),
+      toastRoot: toastRoot,
+      toastTitle: toastRoot.querySelector(".proton-search-index-toast-title"),
+      toastBody: toastRoot.querySelector(".proton-search-index-toast-body"),
+      hudRoot: hudRoot,
+      hudTitle: hudRoot.querySelector(".proton-search-index-hud-title"),
+      hudBody: hudRoot.querySelector(".proton-search-index-hud-body"),
+      hudCancelButton: hudCancelButton,
+    };
+  },
+
+  setSearchIndexFeedbackState(state) {
+    const ui = this.ensureSearchIndexFeedbackUi();
+    const status = state?.status || {};
+    const t = this.translateThemeText.bind(this);
+
+    window.clearTimeout(this._searchIndexProgressHideTimer);
+
+    if (status.inProgress) {
+      const routeCount = Number(status.routeCount) || 0;
+      const indexedRouteCount = Number(status.indexedRouteCount) || 0;
+      const progress =
+        routeCount > 0 ? Math.max(indexedRouteCount / routeCount, 0.06) : 0.08;
+
+      ui.progressRoot.hidden = false;
+      ui.progressRoot.classList.add("is-visible");
+      ui.progressRoot.classList.remove("is-complete");
+      ui.progressBar.style.transform = `scaleX(${Math.min(progress, 0.94)})`;
+
+      if (ui.hudTitle) {
+        ui.hudTitle.textContent = t("Indexing in progress...");
+      }
+      if (ui.hudBody) {
+        ui.hudBody.textContent =
+          routeCount > 0
+            ? `${t("Indexed routes")}: ${indexedRouteCount}/${routeCount}`
+            : t("Search index is ready to be built.");
+      }
+      if (ui.hudCancelButton) {
+        ui.hudCancelButton.textContent = t("Cancel Indexing");
+      }
+      if (ui.hudRoot) {
+        ui.hudRoot.hidden = false;
+        ui.hudRoot.classList.add("is-visible");
+        requestAnimationFrame(() => this.repositionAlerts());
+      }
+      return;
+    }
+
+    if (ui.hudRoot) {
+      ui.hudRoot.classList.remove("is-visible");
+      ui.hudRoot.hidden = true;
+      this.repositionAlerts();
+    }
+
+    if (ui.progressRoot.hidden) {
+      return;
+    }
+
+    ui.progressRoot.classList.add("is-complete");
+    ui.progressBar.style.transform = "scaleX(1)";
+    this._searchIndexProgressHideTimer = window.setTimeout(() => {
+      ui.progressRoot.classList.remove("is-visible", "is-complete");
+      ui.progressRoot.hidden = true;
+      ui.progressBar.style.transform = "scaleX(0)";
+    }, 520);
+  },
+
+  showSearchIndexFeedbackToast(message, isError) {
+    const ui = this.ensureSearchIndexFeedbackUi();
+
+    window.clearTimeout(this._searchIndexToastHideTimer);
+    ui.toastTitle.textContent = this.translateThemeText("Search Page Index");
+    ui.toastBody.textContent = message;
+    ui.toastRoot.hidden = false;
+    ui.toastRoot.classList.toggle("is-error", !!isError);
+
+    window.requestAnimationFrame(() => {
+      ui.toastRoot.classList.add("is-visible");
+      this.repositionAlerts();
+    });
+
+    this._searchIndexToastHideTimer = window.setTimeout(() => {
+      ui.toastRoot.classList.remove("is-visible");
+      this.repositionAlerts();
+      window.setTimeout(() => {
+        if (!ui.toastRoot.classList.contains("is-visible")) {
+          ui.toastRoot.hidden = true;
+        }
+      }, 220);
+    }, 7000);
+  },
+
+  buildSearchIndexToastPayload(state, options) {
+    const status = state?.status || {};
+    const routeCount = Number(status.routeCount) || 0;
+    const indexedRouteCount = Number(status.indexedRouteCount) || routeCount;
+    const errorCount = Number(status.errorCount) || 0;
+    const cachedEntryCount = Number(state?.cachedEntryCount) || 0;
+    const durationMs = Number(options?.durationMs) || 0;
+    const forceError = options?.forceError === true;
+    const t = this.translateThemeText.bind(this);
+
+    if (status.canceled) {
+      const details = [];
+
+      if (routeCount > 0) {
+        details.push(
+          `${t("Indexed routes")}: ${indexedRouteCount}/${routeCount}`,
+        );
+      }
+
+      details.push(t("You can start indexing again at any time."));
+
+      return {
+        key: `canceled:${Number(status.lastIndexedAt) || 0}:${routeCount}:${indexedRouteCount}`,
+        message: `${t("Indexing canceled.")} ${details.join(" · ")}`,
+        isError: false,
+      };
+    }
+
+    if (forceError || errorCount > 0) {
+      return {
+        key: `error:${Number(status.lastIndexedAt) || 0}:${routeCount}:${indexedRouteCount}:${Math.max(errorCount, 1)}`,
+        message:
+          errorCount > 0
+            ? `${t("Index errors")}: ${errorCount}`
+            : t("Index errors"),
+        isError: true,
+      };
+    }
+
+    return {
+      key: `success:${Number(status.lastIndexedAt) || 0}:${routeCount}:${indexedRouteCount}:${Number(state?.cachedEntryCount) || 0}`,
+      message: (() => {
+        const details = [];
+
+        if (routeCount > 0) {
+          details.push(
+            `${t("Indexed routes")}: ${indexedRouteCount}/${routeCount}`,
+          );
+        }
+
+        if (cachedEntryCount > 0) {
+          details.push(`${t("Cached entries")}: ${cachedEntryCount}`);
+        }
+
+        if (durationMs > 0) {
+          details.push(this.formatSearchIndexDuration(durationMs));
+        }
+
+        return details.length
+          ? `${t("Search index updated successfully.")} ${details.join(" · ")}`
+          : t("Search index updated successfully.");
+      })(),
+      isError: false,
+    };
+  },
+
+  formatSearchIndexDuration(durationMs) {
+    const t = this.translateThemeText.bind(this);
+    const totalSeconds = Math.max(
+      Math.round(Number(durationMs || 0) / 1000),
+      0,
+    );
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    if (minutes <= 0) {
+      return `${totalSeconds} ${t("s")}`;
+    }
+
+    if (seconds === 0) {
+      return `${minutes} ${t("min")}`;
+    }
+
+    return `${minutes} ${t("min")} ${seconds} ${t("s")}`;
+  },
+
+  maybeNotifySearchIndexCompletion(previousState, currentState, options) {
+    const previousStatus = previousState?.status || {};
+    const status = currentState?.status || {};
+    const forceError = options?.forceError === true;
+    const completedTransition =
+      !!previousStatus.inProgress && !status.inProgress;
+
+    if (!completedTransition && !forceError) {
+      return;
+    }
+
+    const toastPayload = this.buildSearchIndexToastPayload(
+      currentState,
+      options,
+    );
+    if (!toastPayload) {
+      return;
+    }
+
+    if (!forceError && toastPayload.key === this._lastSearchIndexToastKey) {
+      return;
+    }
+
+    this._lastSearchIndexToastKey = toastPayload.key;
+    this.showSearchIndexFeedbackToast(
+      toastPayload.message,
+      toastPayload.isError,
+    );
+  },
+
+  initSearchIndexFeedback() {
+    if (this._searchIndexFeedbackInit) {
+      return;
+    }
+
+    this._searchIndexFeedbackInit = true;
+    this._searchIndexProgressHideTimer = 0;
+    this._searchIndexToastHideTimer = 0;
+    this._lastSearchIndexToastKey = "";
+    this._lastSearchIndexActivityEventKey = "";
+    this._searchIndexActivityRenderKey = "";
+    this._lastObservedSearchIndexState = null;
+    this._searchIndexRunStartedAt = 0;
+    this.loadSearchIndexActivityEntries();
+
+    window.addEventListener("proton-search-index-state", (event) => {
+      const previousState = this._lastObservedSearchIndexState;
+      const previousStatus = previousState?.status || {};
+      const nextState = event.detail || {};
+      const nextStatus = nextState?.status || {};
+      let durationMs = 0;
+
+      if (nextStatus.inProgress && !previousStatus.inProgress) {
+        this._searchIndexRunStartedAt = Date.now();
+      }
+
+      if (
+        !nextStatus.inProgress &&
+        previousStatus.inProgress &&
+        this._searchIndexRunStartedAt > 0
+      ) {
+        durationMs = Math.max(
+          (Number(nextStatus.lastIndexedAt) || Date.now()) -
+            this._searchIndexRunStartedAt,
+          0,
+        );
+        this._searchIndexRunStartedAt = 0;
+      }
+
+      this.maybeNotifySearchIndexCompletion(
+        previousState,
+        nextState,
+        durationMs > 0 ? { durationMs: durationMs } : undefined,
+      );
+      this.maybeRecordSearchIndexActivity(
+        previousState,
+        nextState,
+        durationMs > 0 ? { durationMs: durationMs } : undefined,
+      );
+      this._lastObservedSearchIndexState = nextState;
+      this.setSearchIndexFeedbackState(nextState);
+      this.renderSearchIndexActivity(nextState);
+    });
   },
 
   updateAssoclistTitles() {
@@ -654,6 +1613,44 @@ return baseclass.extend({
       const wirelessSection = document.querySelector("#cbi-wireless");
       if (!wirelessSection) return;
 
+      const positionDropdown = (toggle, dropdown) => {
+        if (!toggle || !dropdown || !dropdown.classList.contains("open")) {
+          return;
+        }
+
+        dropdown.classList.remove("open-up");
+
+        requestAnimationFrame(() => {
+          const scrollContainer =
+            toggle.closest("#cbi-wireless-wifi-device") ||
+            document.getElementById("maincontent");
+          const toggleRect = toggle.getBoundingClientRect();
+          const containerRect = scrollContainer
+            ? scrollContainer.getBoundingClientRect()
+            : document.documentElement.getBoundingClientRect();
+
+          const visibleTop = Math.max(containerRect.top, 0);
+          const visibleBottom = Math.min(
+            containerRect.bottom,
+            window.innerHeight,
+          );
+          const availableAbove = toggleRect.top - visibleTop;
+          const availableBelow = visibleBottom - toggleRect.bottom;
+          const dropdownHeight = Math.max(
+            dropdown.offsetHeight,
+            dropdown.scrollHeight,
+            dropdown.getBoundingClientRect().height,
+          );
+
+          if (
+            availableBelow < dropdownHeight + 4 &&
+            availableAbove >= dropdownHeight + 4
+          ) {
+            dropdown.classList.add("open-up");
+          }
+        });
+      };
+
       // Find all action cells in wireless table
       const actionCells = wirelessSection.querySelectorAll(
         "td.cbi-section-actions",
@@ -699,9 +1696,16 @@ return baseclass.extend({
           // Close other open dropdowns
           document.querySelectorAll(".actions-dropdown.open").forEach((d) => {
             if (d !== dropdown) d.classList.remove("open");
+            if (d !== dropdown) d.classList.remove("open-up");
           });
 
           dropdown.classList.toggle("open");
+
+          if (dropdown.classList.contains("open")) {
+            positionDropdown(toggle, dropdown);
+          } else {
+            dropdown.classList.remove("open-up");
+          }
         });
 
         // Close dropdown after button click
@@ -709,6 +1713,7 @@ return baseclass.extend({
           if (ev.target.matches("button, input[type='button'], .cbi-button")) {
             setTimeout(() => {
               dropdown.classList.remove("open");
+              dropdown.classList.remove("open-up");
             }, 100);
           }
         });
@@ -975,7 +1980,10 @@ return baseclass.extend({
     this._themeSettingsInit = true;
 
     const tryMount = () => {
-      if (document.getElementById("proton-theme-settings")) return true;
+      if (document.getElementById("proton-theme-settings")) {
+        this.maybeFocusSearchIndexPanelFromHash();
+        return true;
+      }
       const designField = document.querySelector('[data-name="_mediaurlbase"]');
       if (!designField) return false;
 
@@ -994,8 +2002,12 @@ return baseclass.extend({
 
       // Load saved settings
       const defaultZoom = "100";
+      const storedThemeMode = localStorage.getItem("proton-theme-mode");
       const settings = {
-        themeMode: localStorage.getItem("proton-theme-mode") || "dark",
+        themeMode:
+          storedThemeMode === "light" || storedThemeMode === "auto"
+            ? storedThemeMode
+            : "dark",
         accentColor: localStorage.getItem("proton-accent-color") || "blue",
         borderRadius: localStorage.getItem("proton-border-radius") || "default",
         zoom: parseInt(localStorage.getItem("proton-zoom") || defaultZoom),
@@ -1028,6 +2040,9 @@ return baseclass.extend({
             )}</label>
             <div class="cbi-value-field">
               <select id="proton-mode-select" class="cbi-input-select">
+                <option value="auto" ${
+                  settings.themeMode === "auto" ? "selected" : ""
+                }>${t("Auto")} (${t("System")})</option>
                 <option value="dark" ${
                   settings.themeMode === "dark" ? "selected" : ""
                 }>${t("Dark")} (${t("Default")})</option>
@@ -1036,7 +2051,7 @@ return baseclass.extend({
                 }>${t("Light")}</option>
               </select>
               <div class="cbi-value-description">${t(
-                "Choose light or dark theme",
+                "Choose light, dark, or follow system theme",
               )}</div>
             </div>
           </div>
@@ -1280,6 +2295,50 @@ return baseclass.extend({
               )}</div>
             </div>
           </div>
+
+          <div class="cbi-value proton-search-index-setting">
+            <label class="cbi-value-title" for="proton-search-index-run">${t(
+              "Search Page Index",
+            )}</label>
+            <div class="cbi-value-field">
+              <div class="cbi-value-description">${t(
+                "Build or clear the cached LuCI search index manually when menu pages change.",
+              )}</div>
+            </div>
+          </div>
+
+          <div id="proton-search-index-panel" class="proton-search-index-panel">
+            <div class="proton-search-index-toolbar">
+              <button type="button" id="proton-search-index-run" class="cbi-button cbi-button-action proton-search-index-btn proton-search-index-btn-primary">${t(
+                "Index Pages Now",
+              )}</button>
+              <div class="proton-search-index-field proton-search-index-field-size">
+                <div class="proton-search-index-label">${t(
+                  "Indexed Data Size",
+                )}</div>
+                <div id="proton-search-index-size" class="proton-search-index-size">0 B</div>
+              </div>
+              <button type="button" id="proton-search-index-clear" class="cbi-button proton-search-index-btn proton-search-index-btn-secondary proton-search-index-btn-icon" title="${t(
+                "Clear Indexed Data",
+              )}" aria-label="${t("Clear Indexed Data")}">
+                <svg class="proton-search-index-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              </button>
+            </div>
+            <div id="proton-search-index-status" class="cbi-value-description proton-search-index-status" aria-live="polite">${t(
+              "Search index is ready to be built.",
+            )}</div>
+            <div id="proton-search-index-log-root" class="proton-search-index-log">
+              <button type="button" id="proton-search-index-log-toggle" class="proton-search-index-log-toggle" aria-expanded="false" aria-controls="proton-search-index-log-content">
+                <span class="proton-search-index-log-title">Activity Log</span>
+                <svg class="proton-search-index-log-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div id="proton-search-index-log-content" class="proton-search-index-log-content" aria-live="polite" hidden>
+                <div id="proton-search-index-log-live" class="proton-search-index-log-live" hidden></div>
+                <div id="proton-search-index-log-list" class="proton-search-index-log-list"></div>
+                <div id="proton-search-index-log-empty" class="proton-search-index-log-empty">No activity recorded yet.</div>
+              </div>
+            </div>
+          </div>
         </div>
       `;
 
@@ -1344,7 +2403,7 @@ return baseclass.extend({
       modeSelect?.addEventListener("change", (e) => {
         const mode = e.target.value;
         localStorage.setItem("proton-theme-mode", mode);
-        document.documentElement.setAttribute("data-theme", mode);
+        this.applyThemeMode(mode);
       });
 
       accentSelect?.addEventListener("change", (e) => {
@@ -1480,7 +2539,8 @@ return baseclass.extend({
           ? _("Services widget enabled. Visit Status → Overview to see it.")
           : _("Services widget disabled.");
         if (typeof L !== "undefined" && L.ui && L.ui.addNotification) {
-          L.ui.addNotification(null, E("p", msg), "info");
+          const notif = L.ui.addNotification(null, E("p", msg), "info");
+          if (notif) notif.dataset.protonManaged = "true";
         } else {
           alert(msg);
         }
@@ -1497,7 +2557,8 @@ return baseclass.extend({
           ? _("Temperature widget enabled. Visit Status → Overview to see it.")
           : _("Temperature widget disabled.");
         if (typeof L !== "undefined" && L.ui && L.ui.addNotification) {
-          L.ui.addNotification(null, E("p", msg), "info");
+          const notif = L.ui.addNotification(null, E("p", msg), "info");
+          if (notif) notif.dataset.protonManaged = "true";
         } else {
           alert(msg);
         }
@@ -1540,6 +2601,193 @@ return baseclass.extend({
         this.applyCustomFont(enabled);
       });
 
+      const formatBytes = (bytes) => {
+        const value = Number(bytes) || 0;
+        if (value <= 0) return "0 B";
+
+        const units = ["B", "KB", "MB", "GB"];
+        let size = value;
+        let unitIndex = 0;
+
+        while (size >= 1024 && unitIndex < units.length - 1) {
+          size /= 1024;
+          unitIndex += 1;
+        }
+
+        return `${size >= 10 || unitIndex === 0 ? size.toFixed(0) : size.toFixed(1)} ${units[unitIndex]}`;
+      };
+
+      const formatIndexedDate = (timestamp) => {
+        if (!timestamp) return t("Not indexed yet");
+
+        try {
+          const date = new Date(timestamp);
+          if (Number.isNaN(date.getTime())) {
+            return t("Not indexed yet");
+          }
+
+          const locale = document.documentElement?.lang || undefined;
+          return new Intl.DateTimeFormat(locale, {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+          }).format(date);
+        } catch (e) {
+          return t("Not indexed yet");
+        }
+      };
+
+      const getSearchIndexApi = () =>
+        window.protonSearchIndex &&
+        typeof window.protonSearchIndex.getState === "function"
+          ? window.protonSearchIndex
+          : null;
+
+      const searchIndexRunButton = document.getElementById(
+        "proton-search-index-run",
+      );
+      const searchIndexClearButton = document.getElementById(
+        "proton-search-index-clear",
+      );
+      const searchIndexSize = document.getElementById(
+        "proton-search-index-size",
+      );
+      const searchIndexStatus = document.getElementById(
+        "proton-search-index-status",
+      );
+      const searchIndexLogToggle = document.getElementById(
+        "proton-search-index-log-toggle",
+      );
+
+      this.setSearchIndexActivityExpanded(
+        this.loadSearchIndexActivityExpanded(),
+      );
+
+      const updateSearchIndexUi = (state) => {
+        const currentState = state || getSearchIndexApi()?.getState?.() || {};
+        const status = currentState.status || {};
+        const cachedEntryCount = Number(currentState.cachedEntryCount) || 0;
+        const routeCount = Number(status.routeCount) || 0;
+        const indexedRouteCount = Number(status.indexedRouteCount) || 0;
+        const errorCount = Number(status.errorCount) || 0;
+
+        if (searchIndexSize) {
+          searchIndexSize.textContent = formatBytes(
+            currentState.cacheBytes || 0,
+          );
+        }
+
+        if (searchIndexRunButton) {
+          const canCancel = !!status.inProgress && !!status.cancelable;
+          searchIndexRunButton.disabled = !!status.inProgress && !canCancel;
+          searchIndexRunButton.textContent = status.inProgress
+            ? canCancel
+              ? t("Cancel Indexing")
+              : t("Indexing in progress...")
+            : t("Index Pages Now");
+        }
+
+        if (searchIndexClearButton) {
+          searchIndexClearButton.disabled = !!status.inProgress;
+        }
+
+        if (searchIndexStatus) {
+          if (status.inProgress) {
+            searchIndexStatus.textContent =
+              t("Indexed routes") +
+              `: ${indexedRouteCount}/${routeCount || "?"} · ` +
+              t("Cached entries") +
+              `: ${cachedEntryCount}`;
+          } else if (status.canceled) {
+            searchIndexStatus.textContent =
+              t("Indexing canceled") +
+              ` · ${t("Indexed routes")}: ${indexedRouteCount}/${routeCount || "?"}`;
+          } else {
+            searchIndexStatus.textContent =
+              t("Cached entries") +
+              `: ${cachedEntryCount} · ` +
+              t("Last indexed") +
+              `: ${formatIndexedDate(status.lastIndexedAt)}${
+                errorCount > 0 ? ` · ${t("Index errors")}: ${errorCount}` : ""
+              }`;
+          }
+        }
+      };
+
+      searchIndexRunButton?.addEventListener("click", async () => {
+        const api = getSearchIndexApi();
+
+        if (api?.getState?.()?.status?.inProgress) {
+          if (typeof api?.cancel === "function") {
+            api.cancel("user");
+          }
+          return;
+        }
+
+        if (!api?.refresh) return;
+
+        try {
+          await api.refresh(true);
+        } catch (error) {
+          const previousState = this._lastObservedSearchIndexState;
+          const failedState = api.getState();
+          updateSearchIndexUi(failedState);
+          this.maybeRecordSearchIndexActivity(previousState, failedState, {
+            forceError: true,
+            errorMessage:
+              error && typeof error.message === "string"
+                ? error.message
+                : String(error || ""),
+          });
+          this.maybeNotifySearchIndexCompletion(null, failedState, {
+            forceError: true,
+          });
+        }
+      });
+
+      searchIndexClearButton?.addEventListener("click", async () => {
+        if (
+          !confirm(
+            t(
+              "Clear indexed search data? This removes cached search pages on the router until the next indexing run.",
+            ),
+          )
+        ) {
+          return;
+        }
+
+        const api = getSearchIndexApi();
+        if (api?.clear) {
+          await api.clear();
+          this.recordSearchIndexCleared();
+        } else {
+          updateSearchIndexUi({
+            cacheBytes: 0,
+            cachedEntryCount: 0,
+            status: {},
+          });
+          this.recordSearchIndexCleared();
+        }
+      });
+
+      searchIndexLogToggle?.addEventListener("click", () => {
+        this.setSearchIndexActivityExpanded(
+          !this.loadSearchIndexActivityExpanded(),
+        );
+      });
+
+      window.addEventListener("proton-search-index-state", (event) => {
+        updateSearchIndexUi(event.detail || {});
+      });
+
+      const initialSearchIndexState = getSearchIndexApi()?.getState?.() || {};
+      updateSearchIndexUi(initialSearchIndexState);
+      this.renderSearchIndexActivity(initialSearchIndexState);
+
       // --- Backup & Restore ---
       const PROTON_SETTINGS_KEYS = [
         "proton-theme-mode",
@@ -1559,7 +2807,12 @@ return baseclass.extend({
 
       const showBackupStatus = (msg, isError) => {
         if (typeof L !== "undefined" && L.ui && L.ui.addNotification) {
-          L.ui.addNotification(null, E("p", msg), isError ? "danger" : "info");
+          const notif = L.ui.addNotification(
+            null,
+            E("p", msg),
+            isError ? "danger" : "info",
+          );
+          if (notif) notif.dataset.protonManaged = "true";
         } else {
           alert(msg);
         }
@@ -1712,6 +2965,8 @@ return baseclass.extend({
         e.target.value = "";
       });
 
+      this.maybeFocusSearchIndexPanelFromHash();
+
       return true;
     };
 
@@ -1728,7 +2983,78 @@ return baseclass.extend({
     setTimeout(tryMount, 800);
   },
 
+  installThemeModeObserver() {
+    if (this._themeModeObserverInstalled || !window.matchMedia) {
+      return;
+    }
+
+    this._themeModeObserverInstalled = true;
+    this._themeModeMediaQuery = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    );
+
+    const handleThemeModeChange = () => {
+      const storedMode = localStorage.getItem("proton-theme-mode") || "dark";
+      if (storedMode === "auto") {
+        this.applyThemeMode("auto");
+      }
+    };
+
+    if (typeof this._themeModeMediaQuery.addEventListener === "function") {
+      this._themeModeMediaQuery.addEventListener(
+        "change",
+        handleThemeModeChange,
+      );
+    } else if (typeof this._themeModeMediaQuery.addListener === "function") {
+      this._themeModeMediaQuery.addListener(handleThemeModeChange);
+    }
+  },
+
+  getResolvedThemeMode(mode) {
+    if (mode === "auto" && window.matchMedia) {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    }
+
+    return mode === "light" ? "light" : "dark";
+  },
+
+  applyThemeMode(mode) {
+    const resolvedMode = this.getResolvedThemeMode(mode);
+    const root = document.documentElement;
+
+    root.setAttribute("data-theme", resolvedMode);
+    root.setAttribute(
+      "data-darkmode",
+      resolvedMode === "dark" ? "true" : "false",
+    );
+    root.style.setProperty(
+      "background-color",
+      resolvedMode === "light" ? "#ffffff" : "#0f1419",
+    );
+
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute(
+        "content",
+        resolvedMode === "light" ? "#ffffff" : "#0f1419",
+      );
+    }
+
+    const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]');
+    if (colorSchemeMeta) {
+      colorSchemeMeta.setAttribute("content", resolvedMode);
+    }
+
+    return resolvedMode;
+  },
+
   applyThemeSettings(settings) {
+    if (settings.themeMode) {
+      this.applyThemeMode(settings.themeMode);
+    }
+
     this.applyAccentColor(settings.accentColor);
     this.applyBorderRadius(settings.borderRadius);
     this.applyZoom(settings.zoom);
@@ -1896,5 +3222,370 @@ return baseclass.extend({
     } else {
       root.classList.add("proton-system-font");
     }
+  },
+
+  /**
+   * Initialize floating alert messages with close buttons
+   * Improved version with better error handling and memory management
+   */
+  initFloatingAlerts() {
+    // Prevent multiple initializations
+    if (this._alertsInitialized) return;
+
+    const processAlerts = () => {
+      const alerts = document.querySelectorAll(
+        ".alert-message:not([data-floating-init])",
+      );
+      if (!alerts.length) return;
+
+      alerts.forEach((alert, index) => {
+        try {
+          // Mark as initialized
+          alert.dataset.floatingInit = "true";
+
+          // Floating alerts are opt-in. Unmarked LuCI system notifications stay native.
+          if (!this.isManagedAlert(alert)) {
+            alert.classList.remove("proton-alert-floating");
+            alert.classList.add("proton-alert-native");
+            return;
+          }
+
+          alert.classList.remove("proton-alert-native");
+          alert.classList.add("proton-alert-floating");
+
+          // Generate unique ID based on content hash
+          const contentText = alert.textContent?.trim() || "";
+          const alertId = `alert-${this.simpleHash(contentText)}`;
+          alert.dataset.alertId = alertId;
+
+          // Check if alert was dismissed in this session
+          const dismissed = sessionStorage.getItem(
+            `proton-alert-dismissed-${alertId}`,
+          );
+          if (dismissed === "true") {
+            alert.remove();
+            return;
+          }
+
+          // Ensure proper structure before showing
+          this.ensureAlertStructure(alert);
+
+          // Add close button to header if not yet added
+          if (!alert.querySelector(".alert-message-close")) {
+            const closeBtn = this.createCloseButton(alert, alertId);
+            const header = alert.querySelector(".alert-message-header");
+            (
+              header ||
+              alert.querySelector(".alert-message-content") ||
+              alert
+            ).appendChild(closeBtn);
+          }
+
+          // Set initial position: below all already-visible alerts
+          this._positionAlert(alert, index);
+
+          // Show alert with staggered animation, then reposition using real heights
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              alert.classList.add("is-visible");
+              requestAnimationFrame(() => this.repositionAlerts());
+            }, 50 * index);
+          });
+        } catch (error) {
+          console.error("Error initializing alert:", error);
+        }
+      });
+    };
+
+    // Initial processing — only explicitly managed alerts float on first paint.
+    processAlerts();
+
+    // Watch for new alerts (with debouncing)
+    if (!this._alertObserver) {
+      let debounceTimer = null;
+
+      this._alertObserver = new MutationObserver((mutations) => {
+        // Synchronously classify new alerts before the browser paints.
+        // Floating behavior is opt-in via proton-alert-floating, so both paths
+        // are tagged here before the debounce handler does the heavier setup.
+        for (const mutation of mutations) {
+          for (const node of mutation.addedNodes) {
+            if (node.nodeType !== 1) continue;
+            const candidates = node.classList?.contains("alert-message")
+              ? [node]
+              : Array.from(node.querySelectorAll?.(".alert-message") ?? []);
+            for (const alert of candidates) {
+              if (alert.dataset.floatingInit) continue;
+              if (this.isManagedAlert(alert)) {
+                alert.classList.remove("proton-alert-native");
+                alert.classList.add("proton-alert-floating");
+              } else {
+                alert.classList.add("proton-alert-native");
+                alert.classList.remove("proton-alert-floating");
+                alert.dataset.floatingInit = "true";
+              }
+            }
+          }
+        }
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          processAlerts();
+        }, 100);
+      });
+
+      this._alertObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
+    }
+
+    this._alertsInitialized = true;
+  },
+
+  isManagedAlert(alert) {
+    return alert?.dataset?.protonManaged === "true";
+  },
+
+  /**
+   * Ensure alert has proper structure for styling
+   */
+  ensureAlertStructure(alert) {
+    // Already structured — normalise if needed and return
+    if (alert.querySelector(".alert-message-content")) {
+      const content = alert.querySelector(".alert-message-content");
+
+      // Ensure header exists (needed for close button)
+      if (!content.querySelector(".alert-message-header")) {
+        const title = content.querySelector(":scope > h4");
+        this._ensureHeader(content, title);
+      }
+
+      // Move any loose buttons to footer
+      const looseButtons = Array.from(
+        content.querySelectorAll(
+          ":scope > button:not(.alert-message-close), :scope > .cbi-button, :scope > .btn, :scope > a.cbi-button",
+        ),
+      );
+      if (
+        looseButtons.length > 0 &&
+        !content.querySelector(".alert-message-footer")
+      ) {
+        const footer = document.createElement("div");
+        footer.className = "alert-message-footer";
+        looseButtons.forEach((btn) => footer.appendChild(btn));
+        content.appendChild(footer);
+      }
+      return;
+    }
+
+    // Build structure from raw children
+    const title = alert.querySelector(":scope > h4");
+    const childNodes = Array.from(alert.childNodes);
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "alert-message-content";
+
+    // Always create header (close button will be appended here, even without a title)
+    this._ensureHeader(wrapper, title);
+
+    const footerButtons = [];
+
+    childNodes.forEach((node) => {
+      if (node === title) {
+        return;
+      }
+
+      if (node.nodeType === Node.TEXT_NODE) {
+        if (node.textContent?.trim()) {
+          wrapper.appendChild(node);
+        }
+        return;
+      }
+
+      if (node.nodeType !== Node.ELEMENT_NODE) {
+        return;
+      }
+
+      const element = node;
+
+      if (
+        element.matches(
+          "button:not(.alert-message-close), .cbi-button, .btn, a.cbi-button",
+        )
+      ) {
+        footerButtons.push(element);
+        return;
+      }
+
+      if (element.matches(".right")) {
+        const nestedButtons = Array.from(
+          element.querySelectorAll(
+            ":scope > button:not(.alert-message-close), :scope > .cbi-button, :scope > .btn, :scope > a.cbi-button",
+          ),
+        );
+
+        if (
+          nestedButtons.length > 0 &&
+          nestedButtons.length === element.children.length
+        ) {
+          footerButtons.push(...nestedButtons);
+          return;
+        }
+      }
+
+      wrapper.appendChild(element);
+    });
+
+    if (footerButtons.length > 0) {
+      const footer = document.createElement("div");
+      footer.className = "alert-message-footer";
+      footerButtons.forEach((btn) => footer.appendChild(btn));
+      wrapper.appendChild(footer);
+    }
+
+    alert.replaceChildren(wrapper);
+  },
+
+  /**
+   * Always create .alert-message-header (even without a title) so close button
+   * always lands at the top of the card.
+   */
+  _ensureHeader(wrapper, title) {
+    const header = document.createElement("div");
+    header.className = "alert-message-header";
+    if (title) header.appendChild(title);
+    wrapper.insertBefore(header, wrapper.firstChild);
+    return header;
+  },
+
+  /**
+   * Create close button for alert
+   */
+  createCloseButton(alert, alertId) {
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "alert-message-close";
+    closeBtn.innerHTML = "×";
+    closeBtn.setAttribute("type", "button");
+    closeBtn.setAttribute("aria-label", "Close alert");
+    closeBtn.setAttribute("title", "Закрыть уведомление");
+
+    closeBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.dismissAlert(alert, alertId);
+    });
+
+    return closeBtn;
+  },
+
+  /**
+   * Dismiss alert with animation
+   */
+  dismissAlert(alert, alertId) {
+    try {
+      // Mark as dismissed for this session
+      sessionStorage.setItem(`proton-alert-dismissed-${alertId}`, "true");
+
+      // Hide with animation
+      alert.classList.remove("is-visible");
+      alert.classList.add("is-hidden");
+
+      // Remove from DOM after animation
+      setTimeout(() => {
+        if (alert.parentNode) {
+          alert.remove();
+        }
+        // Reposition remaining alerts
+        this.repositionAlerts();
+      }, 300);
+    } catch (error) {
+      console.error("Error dismissing alert:", error);
+      // Fallback: just remove it
+      if (alert.parentNode) {
+        alert.remove();
+      }
+    }
+  },
+
+  /**
+   * Reposition all visible alerts using their real rendered heights.
+   * Includes proton-search-index-hud and -toast in the stack.
+   */
+  repositionAlerts() {
+    const gap = 12;
+    const baseTop = window.matchMedia("(max-width: 800px)").matches ? 72 : 84;
+    let top = baseTop;
+
+    // Unified stack: HUD → toast → alert-messages (in that priority order)
+    const stacked = [
+      document.querySelector(
+        "#proton-search-index-hud.is-visible:not([hidden])",
+      ),
+      document.querySelector(
+        "#proton-search-index-toast.is-visible:not([hidden])",
+      ),
+      ...Array.from(
+        document.querySelectorAll(
+          ".alert-message.proton-alert-floating.is-visible",
+        ),
+      ),
+    ].filter(Boolean);
+
+    stacked.forEach((el) => {
+      el.style.top = top + "px";
+      top += el.offsetHeight + gap;
+    });
+  },
+
+  /**
+   * Set preliminary top position for a not-yet-visible alert.
+   * Uses actual heights of already-visible alerts + a rough estimate
+   * (120px) for each unshown sibling in the current batch.
+   */
+  _positionAlert(alert, batchIndex) {
+    const gap = 12;
+    const baseTop = window.matchMedia("(max-width: 800px)").matches ? 72 : 84;
+    let top = baseTop;
+
+    // Account for HUD and toast already visible above
+    [
+      document.querySelector(
+        "#proton-search-index-hud.is-visible:not([hidden])",
+      ),
+      document.querySelector(
+        "#proton-search-index-toast.is-visible:not([hidden])",
+      ),
+    ]
+      .filter(Boolean)
+      .forEach((el) => {
+        top += el.offsetHeight + gap;
+      });
+
+    Array.from(
+      document.querySelectorAll(
+        ".alert-message.proton-alert-floating.is-visible",
+      ),
+    ).forEach((a) => {
+      top += a.offsetHeight + gap;
+    });
+    top += batchIndex * (120 + gap);
+    alert.style.top = top + "px";
+  },
+
+  /**
+   * Simple hash function for generating alert IDs
+   */
+  simpleHash(str) {
+    let hash = 0;
+    if (!str || str.length === 0) return hash.toString();
+
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+
+    return Math.abs(hash).toString(36);
   },
 });

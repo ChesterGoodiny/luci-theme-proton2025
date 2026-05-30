@@ -8,22 +8,30 @@ An elegant LuCI theme (OpenWrt 23.x+) with a dark design and optional light mode
 
 ## Screenshots
 
-### LuCI Status
+### Desktop
 
 <div align="center">
-  <img src="docs/status.png" alt="LuCI Status" />
+  <img src="docs/status.png" alt="LuCI Status" width="48%" />
+  <img src="docs/widgets-dashboard.png" alt="Services Widget Dashboard" width="48%" />
+  <img src="docs/settings.png" alt="Theme Settings" width="48%" />
+  <img src="docs/wireless.png" alt="Wireless Networks" width="48%" />
+  <img src="docs/interfaces.png" alt="Network Interfaces" width="48%" />
+  <img src="docs/system-log.png" alt="System Log" width="48%" />
+  <img src="docs/temperature.png" alt="Temperature Page" width="48%" />
+  <img src="docs/login.png" alt="Login Page" width="48%" />
 </div>
 
-### Services monitoring widget
+### Mobile
 
 <div align="center">
-  <img src="docs/widgets-dashboard.png" alt="Widgets and Monitoring Dashboard" />
-</div>
-
-### Theme Settings
-
-<div align="center">
-  <img src="docs/settings.png" alt="Theme Settings" />
+  <img src="docs/status-mobile.png" alt="LuCI Status Mobile" width="23%" />
+  <img src="docs/widgets-dashboard-mobile.png" alt="Services Widget Dashboard Mobile" width="23%" />
+  <img src="docs/settings-mobile.png" alt="Theme Settings Mobile" width="23%" />
+  <img src="docs/login-mobile.png" alt="Login Page Mobile" width="23%" />
+  <img src="docs/wireless-mobile.png" alt="Wireless Networks Mobile" width="23%" />
+  <img src="docs/interfaces-mobile.png" alt="Network Interfaces Mobile" width="23%" />
+  <img src="docs/system-log-mobile.png" alt="System Log Mobile" width="23%" />
+  <img src="docs/temperature-mobile.png" alt="Temperature Page Mobile" width="23%" />
 </div>
 
 ## Features
@@ -35,6 +43,7 @@ An elegant LuCI theme (OpenWrt 23.x+) with a dark design and optional light mode
 - 📊 Services monitoring widget on Status → Overview page
 - 🌡️ Temperature monitoring widget with thermal sensors
 - 📈 Elegant Load Average visualization with color-coded progress bars
+- 🔎 Built-in semantic search with pre-indexed LuCI pages, transliteration, and typo-tolerant matching
 - 🔌 Automatic styling for third-party packages and custom pages
 - 🌐 Multi-language support (10 languages: EN, RU, ZH, DE, UK, ES, PT, PL, FR, IT)
 - 🔄 Settings sync across browsers/devices (localStorage + UCI)
@@ -59,6 +68,14 @@ Real-time temperature monitoring on Status → Overview:
 - Auto-refresh every 5 seconds
 - Built-in ucode RPC module (no external dependencies)
 
+## Search
+
+The top bar includes built-in LuCI search:
+
+- Semantic search across pages, tabs, and settings
+- Keyboard layout swap plus basic RU/LAT transliteration
+- Manual page indexing with cached search data stored on the router
+
 ## Theme Settings
 
 Available at **System → System → Language and Style**:
@@ -67,9 +84,13 @@ Available at **System → System → Language and Style**:
 - Accent color (Blue, Purple, Green, Orange, Red)
 - Border radius
 - Interface zoom
+- Page width
 - Animations and transparency
+- Custom font (Inter)
 - Services widget (enable/disable, grouping, log)
 - Temperature widget (enable/disable)
+- Log highlighting
+- Search page index tools (build and clear cached data)
 - Table text wrap (wraps long AP names in Wireless Associated Stations table)
 
 ### Settings Synchronization
@@ -182,28 +203,41 @@ uci commit luci
 
 ```
 luci-theme-proton2025/
+├── docs/
+│   ├── status.png
+│   ├── status-mobile.png
+│   └── ...
 ├── Makefile
 ├── htdocs/luci-static/
 │   ├── proton2025/
 │   │   ├── cascade.css
 │   │   ├── custom-pages.js
+│   │   ├── search-proton2025-data.js
+│   │   ├── search-proton2025.js
 │   │   ├── services-widget.js
 │   │   ├── settings-sync.js
 │   │   ├── translations.js
+│   │   ├── fonts/
 │   │   ├── icons/
 │   │   ├── brand.svg
 │   │   ├── logo.svg
 │   │   └── spinner.svg
-│   └── resources/menu-proton2025.js
+│   └── resources/
+│       ├── menu-proton2025.js
+│       └── view/status/proton-temperature.js
 ├── root/
 │   ├── etc/
 │   │   ├── config/proton2025
 │   │   └── uci-defaults/30_luci-theme-proton2025
-│   └── usr/share/rpcd/
-│       ├── acl.d/luci-theme-proton2025.json
-│       └── ucode/
-│           ├── luci.proton-temp
-│           └── luci.proton-settings
+│   └── usr/share/
+│       ├── luci/menu.d/luci-theme-proton2025.json
+│       └── rpcd/
+│           ├── acl.d/luci-theme-proton2025.json
+│           └── ucode/
+│               ├── luci.proton-search-cache
+│               ├── luci.proton-settings
+│               ├── luci.proton-system
+│               └── luci.proton-temp
 └── ucode/template/themes/proton2025/
     ├── header.ut
     ├── footer.ut
@@ -213,6 +247,12 @@ luci-theme-proton2025/
 ## License
 
 Apache-2.0
+
+Copyright 2025-2026 ChesterGoodiny.
+
+Project icons and bundled SVG assets are original first-party assets covered by Apache-2.0.
+
+See LICENSE and NOTICE for project attribution details.
 
 ### Third-Party Assets
 

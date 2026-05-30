@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Copyright 2025-2026 ChesterGoodiny
+# Licensed under the Apache License, Version 2.0
+# See LICENSE and NOTICE for details.
+
 # Register theme in LuCI
 if [ ! -f /etc/config/luci ]; then
 	touch /etc/config/luci
@@ -18,17 +22,35 @@ fi
 # Create Proton2025 theme settings config if not exists
 if [ ! -f /etc/config/proton2025 ]; then
 	touch /etc/config/proton2025
-	uci set proton2025.settings=theme
-	uci set proton2025.settings.mode='dark'
-	uci set proton2025.settings.accent='blue'
-	uci set proton2025.settings.zoom='100'
-	uci set proton2025.settings.transparency='1'
-	uci set proton2025.settings.border_radius='default'
-	uci set proton2025.settings.animations='1'
-	uci set proton2025.settings.services_widget='1'
-	uci set proton2025.settings.temp_widget='1'
-	uci set proton2025.settings.widgets_log='0'
-	uci commit proton2025
 fi
+
+if ! uci -q get proton2025.settings >/dev/null; then
+	uci set proton2025.settings=theme
+fi
+
+set_proton_default() {
+	option_name="$1"
+	option_value="$2"
+
+	if ! uci -q get "proton2025.settings.$option_name" >/dev/null; then
+		uci set "proton2025.settings.$option_name=$option_value"
+	fi
+}
+
+set_proton_default mode 'dark'
+set_proton_default accent 'blue'
+set_proton_default zoom '100'
+set_proton_default transparency '1'
+set_proton_default border_radius 'default'
+set_proton_default animations '1'
+set_proton_default services_widget '1'
+set_proton_default temp_widget '1'
+set_proton_default services_log '0'
+set_proton_default table_wrap '1'
+set_proton_default log_highlight '1'
+set_proton_default page_width '0'
+set_proton_default custom_font '1'
+
+uci commit proton2025
 
 exit 0

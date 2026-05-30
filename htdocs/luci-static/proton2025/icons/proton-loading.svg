@@ -1,3 +1,7 @@
+<!-- Proton2025 Icon Asset -->
+<!-- Copyright 2025-2026 ChesterGoodiny -->
+<!-- Licensed under the Apache License, Version 2.0 -->
+<!-- See LICENSE and NOTICE for details. -->
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
   <circle cx="12" cy="12" r="9" stroke="#AAB4C4" stroke-width="2" stroke-linecap="round" stroke-dasharray="14 8">
     <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>

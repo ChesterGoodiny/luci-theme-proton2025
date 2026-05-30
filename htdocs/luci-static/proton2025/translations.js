@@ -1,5 +1,8 @@
 /**
  * Proton2025 Theme - Translations
+ * Copyright 2025-2026 ChesterGoodiny
+ * Licensed under the Apache License, Version 2.0
+ * See LICENSE and NOTICE for details.
  * Локализация для JavaScript компонентов темы
  */
 
@@ -78,6 +81,12 @@ window.ProtonTranslations = {
     // Modal - service list
     "Available services": "Доступные сервисы",
     "Selected services": "Выбранные сервисы",
+    "Search...": "Поиск...",
+    "Semantic search...": "Семантический поиск...",
+    "No results found": "Ничего не найдено",
+    "No semantic matches": "Ничего не найдено по смыслу",
+    "Enable semantic search": "Включить семантический поиск",
+    "Disable semantic search": "Выключить семантический поиск",
     "Search services...": "Поиск сервисов...",
     "Search or add custom service...": "Поиск или добавление сервиса...",
     Search: "Поиск",
@@ -134,8 +143,11 @@ window.ProtonTranslations = {
     // Theme Settings
     "Proton2025 Theme Settings": "Настройки темы Proton2025",
     "Theme Mode": "Режим темы",
+    Auto: "Авто",
     Dark: "Тёмный",
     Light: "Светлый",
+    "Choose light, dark, or follow system theme":
+      "Выберите светлую, тёмную тему или следование системной теме",
     "Choose light or dark theme": "Выберите светлую или тёмную тему",
     "Accent Color": "Акцентный цвет",
     "Choose theme accent color": "Выберите акцентный цвет темы",
@@ -185,6 +197,25 @@ window.ProtonTranslations = {
     "Custom Font (Inter)": "Шрифт Inter",
     "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
       "Использовать встроенный шрифт Inter для единообразного отображения текста на всех устройствах. Отключите, чтобы использовать системный шрифт.",
+    "Search Page Index": "Индекс страниц поиска",
+    "Build or clear the cached LuCI search index manually when menu pages change.":
+      "Вручную собирайте или очищайте кэшированный индекс поиска LuCI, когда меняется состав страниц меню.",
+    "Indexed Data Size": "Размер индексированных данных",
+    "Index Pages Now": "Индексировать сейчас",
+    "Clear Indexed Data": "Очистить индексированные данные",
+    "Search index is ready to be built.": "Индекс поиска готов к построению.",
+    "Indexing in progress...": "Идёт индексация...",
+    "Indexing canceled.": "Индексация остановлена.",
+    "You can start indexing again at any time.":
+      "Вы можете запустить индексацию повторно в любой момент.",
+    "Indexed routes": "Индексировано маршрутов",
+    "Cached entries": "Записей в кэше",
+    "Last indexed": "Последняя индексация",
+    "Index errors": "Ошибки индексации",
+    "Not indexed yet": "Ещё не индексировалось",
+    "Search index updated successfully.": "Индекс поиска успешно обновлён.",
+    "Clear indexed search data? This removes cached search pages on the router until the next indexing run.":
+      "Очистить индексированные данные поиска? Это удалит кэш поисковых страниц на роутере до следующего запуска индексации.",
 
     // Log Viewer UI
     lines: "строк",
@@ -252,6 +283,40 @@ window.ProtonTranslations = {
     Sensor: "Датчик",
     Current: "Текущая",
     Peak: "Пик",
+    s: "с",
+    min: "мин",
+    "5 min": "5 мин",
+    "10 min": "10 мин",
+    "15 min": "15 мин",
+    "All sensors": "Все датчики",
+    Sensors: "Датчики",
+    Window: "Окно",
+    Interval: "Интервал",
+    "Data received at": "Данные получены в",
+    "Last update": "Последнее обновление",
+    "Temperature Realtime": "Температура в реальном времени",
+    "Temperature history": "История температуры",
+    "Temperature history chart": "График истории температуры",
+    "Sensor statistics": "Статистика датчиков",
+    "Point value": "Значение точки",
+    "Change vs previous": "Изменение к прошлой точке",
+    Minimum: "Минимум",
+    Average: "Среднее",
+    Status: "Статус",
+    "Current reading": "Текущее значение",
+    "Window average": "Среднее за окно",
+    "Window minimum": "Минимум за окно",
+    "Router peak": "Пик на роутере",
+    "Sensors online": "Датчиков онлайн",
+    "Current maximum": "Текущий максимум",
+    "Average now": "Среднее сейчас",
+    "Sensors above warm": "Датчиков выше нормы",
+    "Select a sensor to view a clean temperature history. The chart keeps a rolling local buffer, while peak values come from the current rpcd session on the router.":
+      "Выберите датчик, чтобы смотреть понятную историю температуры. График хранит локальное скользящее окно, а пиковые значения приходят из текущей сессии rpcd на роутере.",
+    "RPC is temporarily unavailable. Showing the last successful sample.":
+      "RPC временно недоступен. Показан последний успешно полученный снимок.",
+    "RPC is temporarily unavailable. Waiting for temperature data...":
+      "RPC временно недоступен. Ожидание данных температуры...",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Мониторинг термодатчиков. Цвета означают: зелёный — норма, жёлтый — тепло, оранжевый — горячо, красный — критично.",
 
@@ -270,6 +335,7 @@ window.ProtonTranslations = {
     "Invalid backup file": "Неверный файл резервной копии",
     "No settings found in file": "В файле не найдено настроек",
     "Failed to read backup file": "Ошибка чтения файла резервной копии",
+    "Open package repository": "Открыть репозиторий пакетов",
   },
 
   zh: {
@@ -345,6 +411,12 @@ window.ProtonTranslations = {
     // Modal - service list
     "Available services": "可用服务",
     "Selected services": "已选服务",
+    "Search...": "搜索...",
+    "Semantic search...": "语义搜索...",
+    "No results found": "未找到结果",
+    "No semantic matches": "未找到语义匹配",
+    "Enable semantic search": "启用语义搜索",
+    "Disable semantic search": "禁用语义搜索",
     "Search services...": "搜索服务...",
     "Search or add custom service...": "搜索或添加自定义服务...",
     Search: "搜索",
@@ -444,6 +516,20 @@ window.ProtonTranslations = {
     "Custom Font (Inter)": "自定义字体 (Inter)",
     "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
       "使用内置 Inter 字体在所有设备上保持一致的排版。禁用则使用默认系统字体。",
+    "Search Page Index": "搜索页面索引",
+    "Indexed Data Size": "已索引数据大小",
+    "Index Pages Now": "立即索引页面",
+    "Clear Indexed Data": "清除已索引数据",
+    "Search index is ready to be built.": "搜索索引已准备好构建。",
+    "Indexing in progress...": "正在索引...",
+    "Indexed routes": "已索引路由",
+    "Cached entries": "缓存条目",
+    "Last indexed": "上次索引时间",
+    "Index errors": "索引错误",
+    "Not indexed yet": "尚未索引",
+    "Search index updated successfully.": "搜索索引已成功更新。",
+    "Clear indexed search data? This removes cached search pages on the router until the next indexing run.":
+      "要清除已索引的搜索数据吗？这将删除路由器上的缓存搜索页面，直到下次重新索引。",
 
     // Log Viewer UI
     lines: "行",
@@ -511,6 +597,41 @@ window.ProtonTranslations = {
     Sensor: "传感器",
     Current: "当前",
     Peak: "峰值",
+    s: "秒",
+    min: "分",
+    "1 min": "1 分",
+    "5 min": "5 分",
+    "10 min": "10 分",
+    "15 min": "15 分",
+    "All sensors": "全部传感器",
+    Sensors: "传感器数量",
+    Window: "时间窗口",
+    Interval: "刷新间隔",
+    "Data received at": "数据获取于",
+    "Last update": "最后更新",
+    "Temperature Realtime": "实时温度",
+    "Temperature history": "温度历史",
+    "Temperature history chart": "温度历史图表",
+    "Sensor statistics": "传感器统计",
+    "Point value": "该点数值",
+    "Change vs previous": "相对上一点变化",
+    Minimum: "最低值",
+    Average: "平均值",
+    Status: "状态",
+    "Current reading": "当前读数",
+    "Window average": "窗口平均值",
+    "Window minimum": "窗口最低值",
+    "Router peak": "路由器峰值",
+    "Sensors online": "在线传感器",
+    "Current maximum": "当前最高值",
+    "Average now": "当前平均值",
+    "Sensors above warm": "高于温热阈值的传感器",
+    "Select a sensor to view a clean temperature history. The chart keeps a rolling local buffer, while peak values come from the current rpcd session on the router.":
+      "选择一个传感器以查看更清晰的温度历史。图表使用本地滚动缓冲区，而峰值来自路由器当前的 rpcd 会话。",
+    "RPC is temporarily unavailable. Showing the last successful sample.":
+      "RPC 暂时不可用。正在显示上一次成功获取的数据。",
+    "RPC is temporarily unavailable. Waiting for temperature data...":
+      "RPC 暂时不可用。正在等待温度数据...",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "热传感器监控。颜色表示：绿色 - 正常，黄色 - 温暖，橙色 - 过热，红色 - 危险。",
 
@@ -528,6 +649,7 @@ window.ProtonTranslations = {
     "Invalid backup file": "无效的备份文件",
     "No settings found in file": "文件中未找到设置",
     "Failed to read backup file": "读取备份文件失败",
+    "Open package repository": "打开软件包仓库",
   },
 
   de: {
@@ -604,6 +726,12 @@ window.ProtonTranslations = {
     // Modal - service list
     "Available services": "Verfügbare Dienste",
     "Selected services": "Ausgewählte Dienste",
+    "Search...": "Suchen...",
+    "Semantic search...": "Semantische Suche...",
+    "No results found": "Keine Ergebnisse gefunden",
+    "No semantic matches": "Keine semantischen Treffer gefunden",
+    "Enable semantic search": "Semantische Suche aktivieren",
+    "Disable semantic search": "Semantische Suche deaktivieren",
     "Search services...": "Dienste suchen...",
     "Search or add custom service...":
       "Suchen oder benutzerdefinierten Dienst hinzufügen...",
@@ -712,6 +840,20 @@ window.ProtonTranslations = {
     "Custom Font (Inter)": "Schriftart Inter",
     "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
       "Verwenden Sie die integrierte Inter-Schriftart für einheitliche Typografie auf allen Geräten. Deaktivieren, um die Standard-Systemschrift zu verwenden.",
+    "Search Page Index": "Suchseiten-Index",
+    "Indexed Data Size": "Größe der indexierten Daten",
+    "Index Pages Now": "Seiten jetzt indexieren",
+    "Clear Indexed Data": "Indexierte Daten löschen",
+    "Search index is ready to be built.": "Der Suchindex kann erstellt werden.",
+    "Indexing in progress...": "Indexierung läuft...",
+    "Indexed routes": "Indexierte Routen",
+    "Cached entries": "Zwischengespeicherte Einträge",
+    "Last indexed": "Zuletzt indexiert",
+    "Index errors": "Indexierungsfehler",
+    "Not indexed yet": "Noch nicht indexiert",
+    "Search index updated successfully.": "Suchindex erfolgreich aktualisiert.",
+    "Clear indexed search data? This removes cached search pages on the router until the next indexing run.":
+      "Indexierte Suchdaten löschen? Dadurch werden die zwischengespeicherten Suchseiten auf dem Router bis zum nächsten Indexierungslauf entfernt.",
 
     // Log Viewer UI
     lines: "Zeilen",
@@ -779,6 +921,38 @@ window.ProtonTranslations = {
     Sensor: "Sensor",
     Current: "Aktuell",
     Peak: "Spitze",
+    s: "s",
+    min: "Min",
+    "10 min": "10 Min",
+    "All sensors": "Alle Sensoren",
+    Sensors: "Sensoren",
+    Window: "Zeitfenster",
+    Interval: "Intervall",
+    "Data received at": "Daten empfangen um",
+    "Last update": "Letzte Aktualisierung",
+    "Temperature Realtime": "Echtzeit-Temperatur",
+    "Temperature history": "Temperaturverlauf",
+    "Temperature history chart": "Temperaturverlauf-Diagramm",
+    "Sensor statistics": "Sensorstatistiken",
+    "Point value": "Punktwert",
+    "Change vs previous": "Änderung zum Vorherigen",
+    Minimum: "Minimum",
+    Average: "Durchschnitt",
+    Status: "Status",
+    "Current reading": "Aktueller Messwert",
+    "Window average": "Fensterdurchschnitt",
+    "Window minimum": "Fensterminimum",
+    "Router peak": "Router-Spitzenwert",
+    "Sensors online": "Sensoren online",
+    "Current maximum": "Aktuelles Maximum",
+    "Average now": "Aktueller Schnitt",
+    "Sensors above warm": "Sensoren über Warm",
+    "Select a sensor to view a clean temperature history. The chart keeps a rolling local buffer, while peak values come from the current rpcd session on the router.":
+      "Wählen Sie einen Sensor für einen übersichtlichen Temperaturverlauf. Das Diagramm speichert einen lokalen Rollpuffer, Spitzenwerte stammen aus der aktuellen rpcd-Sitzung des Routers.",
+    "RPC is temporarily unavailable. Showing the last successful sample.":
+      "RPC vorübergehend nicht verfügbar. Zeige letzte erfolgreiche Messung.",
+    "RPC is temporarily unavailable. Waiting for temperature data...":
+      "RPC vorübergehend nicht verfügbar. Warte auf Temperaturdaten...",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Thermosensor-Überwachung. Farben bedeuten: grün - normal, gelb - warm, orange - heiß, rot - kritisch.",
 
@@ -788,11 +962,15 @@ window.ProtonTranslations = {
       "Exportieren Sie Ihre Theme-Einstellungen in eine Datei oder importieren Sie aus einer zuvor gespeicherten Sicherung.",
     "Export Settings": "Einstellungen exportieren",
     "Import Settings": "Einstellungen importieren",
+    "Reset to Defaults": "Auf Standard zurücksetzen",
+    "Are you sure you want to reset all theme settings to defaults? This action cannot be undone.":
+      "Sind Sie sicher, dass Sie alle Theme-Einstellungen zurücksetzen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "Settings exported successfully": "Einstellungen erfolgreich exportiert",
     "Settings imported successfully": "Einstellungen erfolgreich importiert",
     "Invalid backup file": "Ungültige Sicherungsdatei",
     "No settings found in file": "Keine Einstellungen in der Datei gefunden",
     "Failed to read backup file": "Sicherungsdatei konnte nicht gelesen werden",
+    "Open package repository": "Paket-Repository öffnen",
   },
 
   uk: {
@@ -869,6 +1047,12 @@ window.ProtonTranslations = {
     // Modal - service list
     "Available services": "Доступні сервіси",
     "Selected services": "Вибрані сервіси",
+    "Search...": "Пошук...",
+    "Semantic search...": "Семантичний пошук...",
+    "No results found": "Нічого не знайдено",
+    "No semantic matches": "Нічого не знайдено за змістом",
+    "Enable semantic search": "Увімкнути семантичний пошук",
+    "Disable semantic search": "Вимкнути семантичний пошук",
     "Search services...": "Пошук сервісів...",
     "Search or add custom service...": "Пошук або додавання сервісу...",
     Search: "Пошук",
@@ -976,6 +1160,20 @@ window.ProtonTranslations = {
     "Custom Font (Inter)": "Шрифт Inter",
     "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
       "Використовувати вбудований шрифт Inter для однакового відображення тексту на всіх пристроях. Вимкніть, щоб використовувати системний шрифт.",
+    "Search Page Index": "Індекс сторінок пошуку",
+    "Indexed Data Size": "Розмір індексованих даних",
+    "Index Pages Now": "Індексувати зараз",
+    "Clear Indexed Data": "Очистити індексовані дані",
+    "Search index is ready to be built.": "Індекс пошуку готовий до побудови.",
+    "Indexing in progress...": "Триває індексація...",
+    "Indexed routes": "Індексовано маршрутів",
+    "Cached entries": "Записів у кеші",
+    "Last indexed": "Остання індексація",
+    "Index errors": "Помилки індексації",
+    "Not indexed yet": "Ще не індексувалося",
+    "Search index updated successfully.": "Індекс пошуку успішно оновлено.",
+    "Clear indexed search data? This removes cached search pages on the router until the next indexing run.":
+      "Очистити індексовані дані пошуку? Це видалить кеш пошукових сторінок на роутері до наступного запуску індексації.",
 
     // Log Viewer UI
     lines: "рядків",
@@ -1043,6 +1241,38 @@ window.ProtonTranslations = {
     Sensor: "Датчик",
     Current: "Поточна",
     Peak: "Пік",
+    s: "с",
+    min: "хв",
+    "10 min": "10 хв",
+    "All sensors": "Всі датчики",
+    Sensors: "Датчики",
+    Window: "Вікно",
+    Interval: "Інтервал",
+    "Data received at": "Дані отримано о",
+    "Last update": "Останнє оновлення",
+    "Temperature Realtime": "Температура в реальному часі",
+    "Temperature history": "Історія температури",
+    "Temperature history chart": "Графік історії температури",
+    "Sensor statistics": "Статистика датчиків",
+    "Point value": "Значення точки",
+    "Change vs previous": "Зміна до попередньої точки",
+    Minimum: "Мінімум",
+    Average: "Середнє",
+    Status: "Статус",
+    "Current reading": "Поточний показник",
+    "Window average": "Середнє за вікно",
+    "Window minimum": "Мінімум за вікно",
+    "Router peak": "Пік на роутері",
+    "Sensors online": "Датчиків онлайн",
+    "Current maximum": "Поточний максимум",
+    "Average now": "Середнє зараз",
+    "Sensors above warm": "Датчиків вище норми",
+    "Select a sensor to view a clean temperature history. The chart keeps a rolling local buffer, while peak values come from the current rpcd session on the router.":
+      "Виберіть датчик для перегляду зрозумілої історії температури. Графік зберігає локальне ковзне вікно, а пікові значення надходять із поточної сесії rpcd роутера.",
+    "RPC is temporarily unavailable. Showing the last successful sample.":
+      "RPC тимчасово недоступний. Показано останній успішно отриманий знімок.",
+    "RPC is temporarily unavailable. Waiting for temperature data...":
+      "RPC тимчасово недоступний. Очікування даних температури...",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Моніторинг термодатчиків. Кольори означають: зелений — норма, жовтий — тепло, помаранчевий — гаряче, червоний — критично.",
 
@@ -1052,11 +1282,15 @@ window.ProtonTranslations = {
       "Експортуйте налаштування теми у файл або імпортуйте з раніше збереженої копії.",
     "Export Settings": "Експорт налаштувань",
     "Import Settings": "Імпорт налаштувань",
+    "Reset to Defaults": "Скинути до стандартних",
+    "Are you sure you want to reset all theme settings to defaults? This action cannot be undone.":
+      "Ви впевнені, що хочете скинути всі налаштування теми? Цю дію не можна скасувати.",
     "Settings exported successfully": "Налаштування успішно експортовано",
     "Settings imported successfully": "Налаштування успішно імпортовано",
     "Invalid backup file": "Невірний файл резервної копії",
     "No settings found in file": "У файлі не знайдено налаштувань",
     "Failed to read backup file": "Помилка читання файлу резервної копії",
+    "Open package repository": "Відкрити репозиторій пакетів",
   },
 
   es: {
@@ -1133,6 +1367,12 @@ window.ProtonTranslations = {
     // Modal - service list
     "Available services": "Servicios disponibles",
     "Selected services": "Servicios seleccionados",
+    "Search...": "Buscar...",
+    "Semantic search...": "Búsqueda semántica...",
+    "No results found": "No se encontraron resultados",
+    "No semantic matches": "No se encontraron coincidencias semánticas",
+    "Enable semantic search": "Activar búsqueda semántica",
+    "Disable semantic search": "Desactivar búsqueda semántica",
     "Search services...": "Buscar servicios...",
     "Search or add custom service...":
       "Buscar o añadir servicio personalizado...",
@@ -1242,6 +1482,22 @@ window.ProtonTranslations = {
     "Custom Font (Inter)": "Fuente Inter",
     "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
       "Usar la fuente Inter integrada para una tipografía consistente en todos los dispositivos. Desactivar para usar la fuente del sistema.",
+    "Search Page Index": "Índice de páginas de búsqueda",
+    "Indexed Data Size": "Tamaño de los datos indexados",
+    "Index Pages Now": "Indexar páginas ahora",
+    "Clear Indexed Data": "Borrar datos indexados",
+    "Search index is ready to be built.":
+      "El índice de búsqueda está listo para generarse.",
+    "Indexing in progress...": "Indexando...",
+    "Indexed routes": "Rutas indexadas",
+    "Cached entries": "Entradas en caché",
+    "Last indexed": "Última indexación",
+    "Index errors": "Errores de indexación",
+    "Not indexed yet": "Aún no se ha indexado",
+    "Search index updated successfully.":
+      "Índice de búsqueda actualizado correctamente.",
+    "Clear indexed search data? This removes cached search pages on the router until the next indexing run.":
+      "¿Borrar los datos de búsqueda indexados? Esto eliminará las páginas de búsqueda en caché en el router hasta la próxima indexación.",
 
     // Log Viewer UI
     lines: "líneas",
@@ -1309,6 +1565,38 @@ window.ProtonTranslations = {
     Sensor: "Sensor",
     Current: "Actual",
     Peak: "Pico",
+    s: "s",
+    min: "min",
+    "10 min": "10 min",
+    "All sensors": "Todos los sensores",
+    Sensors: "Sensores",
+    Window: "Ventana",
+    Interval: "Intervalo",
+    "Data received at": "Datos recibidos a las",
+    "Last update": "Última actualización",
+    "Temperature Realtime": "Temperatura en tiempo real",
+    "Temperature history": "Historial de temperatura",
+    "Temperature history chart": "Gráfico del historial de temperatura",
+    "Sensor statistics": "Estadísticas del sensor",
+    "Point value": "Valor del punto",
+    "Change vs previous": "Cambio respecto al anterior",
+    Minimum: "Mínimo",
+    Average: "Promedio",
+    Status: "Estado",
+    "Current reading": "Lectura actual",
+    "Window average": "Promedio de ventana",
+    "Window minimum": "Mínimo de ventana",
+    "Router peak": "Pico del router",
+    "Sensors online": "Sensores en línea",
+    "Current maximum": "Máximo actual",
+    "Average now": "Promedio actual",
+    "Sensors above warm": "Sensores por encima de cálido",
+    "Select a sensor to view a clean temperature history. The chart keeps a rolling local buffer, while peak values come from the current rpcd session on the router.":
+      "Seleccione un sensor para ver el historial de temperatura limpio. El gráfico mantiene un búfer local rotativo, mientras que los valores pico provienen de la sesión rpcd actual del router.",
+    "RPC is temporarily unavailable. Showing the last successful sample.":
+      "RPC no disponible temporalmente. Mostrando la última muestra exitosa.",
+    "RPC is temporarily unavailable. Waiting for temperature data...":
+      "RPC no disponible temporalmente. Esperando datos de temperatura...",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Monitoreo de sensores térmicos. Los colores indican: verde - normal, amarillo - cálido, naranja - caliente, rojo - crítico.",
 
@@ -1318,12 +1606,16 @@ window.ProtonTranslations = {
       "Exporte la configuración del tema a un archivo o importe desde una copia de seguridad guardada anteriormente.",
     "Export Settings": "Exportar configuración",
     "Import Settings": "Importar configuración",
+    "Reset to Defaults": "Restablecer valores predeterminados",
+    "Are you sure you want to reset all theme settings to defaults? This action cannot be undone.":
+      "¿Está seguro de que desea restablecer toda la configuración del tema? Esta acción no se puede deshacer.",
     "Settings exported successfully": "Configuración exportada con éxito",
     "Settings imported successfully": "Configuración importada con éxito",
     "Invalid backup file": "Archivo de copia de seguridad no válido",
     "No settings found in file": "No se encontró configuración en el archivo",
     "Failed to read backup file":
       "Error al leer el archivo de copia de seguridad",
+    "Open package repository": "Abrir repositorio de paquetes",
   },
 
   pt: {
@@ -1400,6 +1692,12 @@ window.ProtonTranslations = {
     // Modal - service list
     "Available services": "Serviços disponíveis",
     "Selected services": "Serviços selecionados",
+    "Search...": "Pesquisar...",
+    "Semantic search...": "Pesquisa semântica...",
+    "No results found": "Nenhum resultado encontrado",
+    "No semantic matches": "Nenhuma correspondência semântica encontrada",
+    "Enable semantic search": "Ativar pesquisa semântica",
+    "Disable semantic search": "Desativar pesquisa semântica",
     "Search services...": "Pesquisar serviços...",
     "Search or add custom service...":
       "Pesquisar ou adicionar serviço personalizado...",
@@ -1508,6 +1806,22 @@ window.ProtonTranslations = {
     "Custom Font (Inter)": "Fonte Inter",
     "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
       "Usar a fonte Inter integrada para tipografia consistente em todos os dispositivos. Desativar para usar a fonte padrão do sistema.",
+    "Search Page Index": "Índice de páginas de pesquisa",
+    "Indexed Data Size": "Tamanho dos dados indexados",
+    "Index Pages Now": "Indexar páginas agora",
+    "Clear Indexed Data": "Limpar dados indexados",
+    "Search index is ready to be built.":
+      "O índice de pesquisa está pronto para ser criado.",
+    "Indexing in progress...": "Indexação em andamento...",
+    "Indexed routes": "Rotas indexadas",
+    "Cached entries": "Entradas em cache",
+    "Last indexed": "Última indexação",
+    "Index errors": "Erros de indexação",
+    "Not indexed yet": "Ainda não indexado",
+    "Search index updated successfully.":
+      "Índice de pesquisa atualizado com sucesso.",
+    "Clear indexed search data? This removes cached search pages on the router until the next indexing run.":
+      "Limpar os dados de pesquisa indexados? Isso removerá as páginas de pesquisa em cache no roteador até a próxima indexação.",
 
     // Log Viewer UI
     lines: "linhas",
@@ -1575,6 +1889,38 @@ window.ProtonTranslations = {
     Sensor: "Sensor",
     Current: "Atual",
     Peak: "Pico",
+    s: "s",
+    min: "min",
+    "10 min": "10 min",
+    "All sensors": "Todos os sensores",
+    Sensors: "Sensores",
+    Window: "Janela",
+    Interval: "Intervalo",
+    "Data received at": "Dados recebidos às",
+    "Last update": "Última atualização",
+    "Temperature Realtime": "Temperatura em tempo real",
+    "Temperature history": "Histórico de temperatura",
+    "Temperature history chart": "Gráfico do histórico de temperatura",
+    "Sensor statistics": "Estatísticas do sensor",
+    "Point value": "Valor do ponto",
+    "Change vs previous": "Variação em relação ao anterior",
+    Minimum: "Mínimo",
+    Average: "Média",
+    Status: "Status",
+    "Current reading": "Leitura atual",
+    "Window average": "Média da janela",
+    "Window minimum": "Mínimo da janela",
+    "Router peak": "Pico do roteador",
+    "Sensors online": "Sensores online",
+    "Current maximum": "Máximo atual",
+    "Average now": "Média atual",
+    "Sensors above warm": "Sensores acima de morno",
+    "Select a sensor to view a clean temperature history. The chart keeps a rolling local buffer, while peak values come from the current rpcd session on the router.":
+      "Selecione um sensor para visualizar o histórico de temperatura limpo. O gráfico mantém um buffer local rotativo, enquanto os valores de pico vêm da sessão rpcd atual do roteador.",
+    "RPC is temporarily unavailable. Showing the last successful sample.":
+      "RPC temporariamente indisponível. Exibindo a última amostra bem-sucedida.",
+    "RPC is temporarily unavailable. Waiting for temperature data...":
+      "RPC temporariamente indisponível. Aguardando dados de temperatura...",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Monitoramento de sensores térmicos. As cores indicam: verde - normal, amarelo - morno, laranja - quente, vermelho - crítico.",
 
@@ -1584,11 +1930,15 @@ window.ProtonTranslations = {
       "Exporte as configurações do tema para um arquivo ou importe de um backup salvo anteriormente.",
     "Export Settings": "Exportar configurações",
     "Import Settings": "Importar configurações",
+    "Reset to Defaults": "Restaurar padrões",
+    "Are you sure you want to reset all theme settings to defaults? This action cannot be undone.":
+      "Tem certeza de que deseja redefinir todas as configurações do tema? Esta ação não pode ser desfeita.",
     "Settings exported successfully": "Configurações exportadas com sucesso",
     "Settings imported successfully": "Configurações importadas com sucesso",
     "Invalid backup file": "Arquivo de backup inválido",
     "No settings found in file": "Nenhuma configuração encontrada no arquivo",
     "Failed to read backup file": "Falha ao ler o arquivo de backup",
+    "Open package repository": "Abrir repositório de pacotes",
   },
 
   pl: {
@@ -1665,6 +2015,12 @@ window.ProtonTranslations = {
     // Modal - service list
     "Available services": "Dostępne usługi",
     "Selected services": "Wybrane usługi",
+    "Search...": "Szukaj...",
+    "Semantic search...": "Wyszukiwanie semantyczne...",
+    "No results found": "Nie znaleziono wyników",
+    "No semantic matches": "Nie znaleziono dopasowań semantycznych",
+    "Enable semantic search": "Włącz wyszukiwanie semantyczne",
+    "Disable semantic search": "Wyłącz wyszukiwanie semantyczne",
     "Search services...": "Szukaj usług...",
     "Search or add custom service...": "Szukaj lub dodaj własną usługę...",
     Search: "Szukaj",
@@ -1771,6 +2127,22 @@ window.ProtonTranslations = {
     "Custom Font (Inter)": "Czcionka Inter",
     "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
       "Użyj wbudowanej czcionki Inter dla spójnej typografii na wszystkich urządzeniach. Wyłącz, aby użyć domyślnej czcionki systemowej.",
+    "Search Page Index": "Indeks stron wyszukiwania",
+    "Indexed Data Size": "Rozmiar zindeksowanych danych",
+    "Index Pages Now": "Indeksuj strony teraz",
+    "Clear Indexed Data": "Wyczyść zindeksowane dane",
+    "Search index is ready to be built.":
+      "Indeks wyszukiwania jest gotowy do utworzenia.",
+    "Indexing in progress...": "Trwa indeksowanie...",
+    "Indexed routes": "Zindeksowane trasy",
+    "Cached entries": "Wpisy w pamięci podręcznej",
+    "Last indexed": "Ostatnie indeksowanie",
+    "Index errors": "Błędy indeksowania",
+    "Not indexed yet": "Jeszcze nie zindeksowano",
+    "Search index updated successfully.":
+      "Indeks wyszukiwania został pomyślnie zaktualizowany.",
+    "Clear indexed search data? This removes cached search pages on the router until the next indexing run.":
+      "Czy wyczyścić zindeksowane dane wyszukiwania? To usunie zapisane w pamięci podręcznej strony wyszukiwania na routerze do następnego uruchomienia indeksowania.",
 
     // Log Viewer UI
     lines: "wierszy",
@@ -1838,6 +2210,38 @@ window.ProtonTranslations = {
     Sensor: "Czujnik",
     Current: "Aktualna",
     Peak: "Szczyt",
+    s: "s",
+    min: "min",
+    "10 min": "10 min",
+    "All sensors": "Wszystkie czujniki",
+    Sensors: "Czujniki",
+    Window: "Okno",
+    Interval: "Interwał",
+    "Data received at": "Dane odebrane o",
+    "Last update": "Ostatnia aktualizacja",
+    "Temperature Realtime": "Temperatura w czasie rzeczywistym",
+    "Temperature history": "Historia temperatury",
+    "Temperature history chart": "Wykres historii temperatury",
+    "Sensor statistics": "Statystyki czujnika",
+    "Point value": "Wartość punktu",
+    "Change vs previous": "Zmiana względem poprzedniego",
+    Minimum: "Minimum",
+    Average: "Średnia",
+    Status: "Status",
+    "Current reading": "Bieżący odczyt",
+    "Window average": "Średnia okna",
+    "Window minimum": "Minimum okna",
+    "Router peak": "Szczyt routera",
+    "Sensors online": "Czujniki online",
+    "Current maximum": "Bieżące maksimum",
+    "Average now": "Bieżąca średnia",
+    "Sensors above warm": "Czujniki powyżej ciepłej",
+    "Select a sensor to view a clean temperature history. The chart keeps a rolling local buffer, while peak values come from the current rpcd session on the router.":
+      "Wybierz czujnik, aby wyświetlić czytelną historię temperatury. Wykres przechowuje lokalny bufor kroczący, a wartości szczytowe pochodzą z bieżącej sesji rpcd routera.",
+    "RPC is temporarily unavailable. Showing the last successful sample.":
+      "RPC tymczasowo niedostępny. Pokazuję ostatnią pomyślną próbkę.",
+    "RPC is temporarily unavailable. Waiting for temperature data...":
+      "RPC tymczasowo niedostępny. Oczekiwanie na dane temperatury...",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Monitorowanie czujników termicznych. Kolory oznaczają: zielony - normalna, żółty - ciepła, pomarańczowy - gorąca, czerwony - krytyczna.",
 
@@ -1847,12 +2251,16 @@ window.ProtonTranslations = {
       "Wyeksportuj ustawienia motywu do pliku lub zaimportuj z wcześniej zapisanej kopii zapasowej.",
     "Export Settings": "Eksportuj ustawienia",
     "Import Settings": "Importuj ustawienia",
+    "Reset to Defaults": "Przywróć domyślne",
+    "Are you sure you want to reset all theme settings to defaults? This action cannot be undone.":
+      "Czy na pewno chcesz zresetować wszystkie ustawienia motywu? Tej operacji nie można cofnąć.",
     "Settings exported successfully": "Ustawienia wyeksportowane pomyślnie",
     "Settings imported successfully": "Ustawienia zaimportowane pomyślnie",
     "Invalid backup file": "Nieprawidłowy plik kopii zapasowej",
     "No settings found in file": "Nie znaleziono ustawień w pliku",
     "Failed to read backup file":
       "Nie udało się odczytać pliku kopii zapasowej",
+    "Open package repository": "Otwórz repozytorium pakietów",
   },
 
   fr: {
@@ -1929,6 +2337,12 @@ window.ProtonTranslations = {
     // Modal - service list
     "Available services": "Services disponibles",
     "Selected services": "Services sélectionnés",
+    "Search...": "Rechercher...",
+    "Semantic search...": "Recherche sémantique...",
+    "No results found": "Aucun résultat trouvé",
+    "No semantic matches": "Aucune correspondance sémantique trouvée",
+    "Enable semantic search": "Activer la recherche sémantique",
+    "Disable semantic search": "Désactiver la recherche sémantique",
     "Search services...": "Rechercher des services...",
     "Search or add custom service...":
       "Rechercher ou ajouter un service personnalisé...",
@@ -2037,6 +2451,22 @@ window.ProtonTranslations = {
     "Custom Font (Inter)": "Police Inter",
     "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
       "Utiliser la police Inter intégrée pour une typographie cohérente sur tous les appareils. Désactiver pour utiliser la police système par défaut.",
+    "Search Page Index": "Index des pages de recherche",
+    "Indexed Data Size": "Taille des données indexées",
+    "Index Pages Now": "Indexer les pages maintenant",
+    "Clear Indexed Data": "Effacer les données indexées",
+    "Search index is ready to be built.":
+      "L'index de recherche est prêt à être créé.",
+    "Indexing in progress...": "Indexation en cours...",
+    "Indexed routes": "Routes indexées",
+    "Cached entries": "Entrées en cache",
+    "Last indexed": "Dernière indexation",
+    "Index errors": "Erreurs d'indexation",
+    "Not indexed yet": "Pas encore indexé",
+    "Search index updated successfully.":
+      "Index de recherche mis à jour avec succès.",
+    "Clear indexed search data? This removes cached search pages on the router until the next indexing run.":
+      "Effacer les données de recherche indexées ? Cela supprimera les pages de recherche mises en cache sur le routeur jusqu'à la prochaine indexation.",
 
     // Log Viewer UI
     lines: "lignes",
@@ -2104,6 +2534,38 @@ window.ProtonTranslations = {
     Sensor: "Capteur",
     Current: "Actuelle",
     Peak: "Pic",
+    s: "s",
+    min: "min",
+    "10 min": "10 min",
+    "All sensors": "Tous les capteurs",
+    Sensors: "Capteurs",
+    Window: "Fenêtre",
+    Interval: "Intervalle",
+    "Data received at": "Données reçues à",
+    "Last update": "Dernière mise à jour",
+    "Temperature Realtime": "Température en temps réel",
+    "Temperature history": "Historique de température",
+    "Temperature history chart": "Graphique de l'historique de température",
+    "Sensor statistics": "Statistiques des capteurs",
+    "Point value": "Valeur du point",
+    "Change vs previous": "Variation par rapport au précédent",
+    Minimum: "Minimum",
+    Average: "Moyenne",
+    Status: "État",
+    "Current reading": "Lecture actuelle",
+    "Window average": "Moyenne de la fenêtre",
+    "Window minimum": "Minimum de la fenêtre",
+    "Router peak": "Pic du routeur",
+    "Sensors online": "Capteurs en ligne",
+    "Current maximum": "Maximum actuel",
+    "Average now": "Moyenne actuelle",
+    "Sensors above warm": "Capteurs au-dessus de chaud",
+    "Select a sensor to view a clean temperature history. The chart keeps a rolling local buffer, while peak values come from the current rpcd session on the router.":
+      "Sélectionnez un capteur pour afficher un historique de température clair. Le graphique maintient un tampon local glissant, les valeurs de pic proviennent de la session rpcd actuelle du routeur.",
+    "RPC is temporarily unavailable. Showing the last successful sample.":
+      "RPC temporairement indisponible. Affichage du dernier échantillon réussi.",
+    "RPC is temporarily unavailable. Waiting for temperature data...":
+      "RPC temporairement indisponible. En attente des données de température...",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Surveillance des capteurs thermiques. Les couleurs indiquent : vert - normal, jaune - chaud, orange - très chaud, rouge - critique.",
 
@@ -2113,12 +2575,16 @@ window.ProtonTranslations = {
       "Exportez les paramètres du thème dans un fichier ou importez depuis une sauvegarde précédemment enregistrée.",
     "Export Settings": "Exporter les paramètres",
     "Import Settings": "Importer les paramètres",
+    "Reset to Defaults": "Réinitialiser les paramètres",
+    "Are you sure you want to reset all theme settings to defaults? This action cannot be undone.":
+      "Êtes-vous sûr de vouloir réinitialiser tous les paramètres du thème ? Cette action ne peut pas être annulée.",
     "Settings exported successfully": "Paramètres exportés avec succès",
     "Settings imported successfully": "Paramètres importés avec succès",
     "Invalid backup file": "Fichier de sauvegarde invalide",
     "No settings found in file": "Aucun paramètre trouvé dans le fichier",
     "Failed to read backup file":
       "Échec de la lecture du fichier de sauvegarde",
+    "Open package repository": "Ouvrir le dépôt de paquets",
   },
 
   it: {
@@ -2195,6 +2661,12 @@ window.ProtonTranslations = {
     // Modal - service list
     "Available services": "Servizi disponibili",
     "Selected services": "Servizi selezionati",
+    "Search...": "Cerca...",
+    "Semantic search...": "Ricerca semantica...",
+    "No results found": "Nessun risultato trovato",
+    "No semantic matches": "Nessuna corrispondenza semantica trovata",
+    "Enable semantic search": "Abilita ricerca semantica",
+    "Disable semantic search": "Disabilita ricerca semantica",
     "Search services...": "Cerca servizi...",
     "Search or add custom service...":
       "Cerca o aggiungi servizio personalizzato...",
@@ -2303,6 +2775,22 @@ window.ProtonTranslations = {
     "Custom Font (Inter)": "Font Inter",
     "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.":
       "Usa il font Inter integrato per una tipografia uniforme su tutti i dispositivi. Disattiva per usare il font di sistema predefinito.",
+    "Search Page Index": "Indice delle pagine di ricerca",
+    "Indexed Data Size": "Dimensione dei dati indicizzati",
+    "Index Pages Now": "Indicizza le pagine ora",
+    "Clear Indexed Data": "Cancella dati indicizzati",
+    "Search index is ready to be built.":
+      "L'indice di ricerca è pronto per essere creato.",
+    "Indexing in progress...": "Indicizzazione in corso...",
+    "Indexed routes": "Percorsi indicizzati",
+    "Cached entries": "Voci in cache",
+    "Last indexed": "Ultima indicizzazione",
+    "Index errors": "Errori di indicizzazione",
+    "Not indexed yet": "Non ancora indicizzato",
+    "Search index updated successfully.":
+      "Indice di ricerca aggiornato correttamente.",
+    "Clear indexed search data? This removes cached search pages on the router until the next indexing run.":
+      "Cancellare i dati di ricerca indicizzati? Questo rimuoverà le pagine di ricerca memorizzate nella cache sul router fino alla prossima indicizzazione.",
 
     // Log Viewer UI
     lines: "righe",
@@ -2370,6 +2858,38 @@ window.ProtonTranslations = {
     Sensor: "Sensore",
     Current: "Attuale",
     Peak: "Picco",
+    s: "s",
+    min: "min",
+    "10 min": "10 min",
+    "All sensors": "Tutti i sensori",
+    Sensors: "Sensori",
+    Window: "Finestra",
+    Interval: "Intervallo",
+    "Data received at": "Dati ricevuti alle",
+    "Last update": "Ultimo aggiornamento",
+    "Temperature Realtime": "Temperatura in tempo reale",
+    "Temperature history": "Cronologia temperatura",
+    "Temperature history chart": "Grafico cronologia temperatura",
+    "Sensor statistics": "Statistiche sensore",
+    "Point value": "Valore del punto",
+    "Change vs previous": "Variazione rispetto al precedente",
+    Minimum: "Minimo",
+    Average: "Media",
+    Status: "Stato",
+    "Current reading": "Lettura attuale",
+    "Window average": "Media della finestra",
+    "Window minimum": "Minimo della finestra",
+    "Router peak": "Picco del router",
+    "Sensors online": "Sensori online",
+    "Current maximum": "Massimo attuale",
+    "Average now": "Media attuale",
+    "Sensors above warm": "Sensori sopra caldo",
+    "Select a sensor to view a clean temperature history. The chart keeps a rolling local buffer, while peak values come from the current rpcd session on the router.":
+      "Seleziona un sensore per visualizzare una cronologia della temperatura chiara. Il grafico mantiene un buffer locale scorrevole, i valori di picco provengono dalla sessione rpcd attuale del router.",
+    "RPC is temporarily unavailable. Showing the last successful sample.":
+      "RPC temporaneamente non disponibile. Visualizzazione dell'ultimo campione riuscito.",
+    "RPC is temporarily unavailable. Waiting for temperature data...":
+      "RPC temporaneamente non disponibile. In attesa dei dati di temperatura...",
     "Thermal sensors monitoring. Colors indicate: green - normal, yellow - warm, orange - hot, red - critical.":
       "Monitoraggio sensori termici. I colori indicano: verde - normale, giallo - caldo, arancione - molto caldo, rosso - critico.",
 
@@ -2379,37 +2899,891 @@ window.ProtonTranslations = {
       "Esporta le impostazioni del tema in un file o importa da un backup salvato in precedenza.",
     "Export Settings": "Esporta impostazioni",
     "Import Settings": "Importa impostazioni",
+    "Reset to Defaults": "Ripristina predefiniti",
+    "Are you sure you want to reset all theme settings to defaults? This action cannot be undone.":
+      "Sei sicuro di voler ripristinare tutte le impostazioni del tema? Questa azione non può essere annullata.",
     "Settings exported successfully": "Impostazioni esportate con successo",
     "Settings imported successfully": "Impostazioni importate con successo",
     "Invalid backup file": "File di backup non valido",
     "No settings found in file": "Nessuna impostazione trovata nel file",
     "Failed to read backup file": "Impossibile leggere il file di backup",
+    "Open package repository": "Apri repository pacchetti",
   },
 };
 
-/**
- * Функция перевода для использования в любом JS
- * @param {string} key - Ключ перевода (английский текст)
- * @returns {string} - Переведённый текст или оригинал
- */
-window.protonT = function (key) {
-  // Кэшируем определение языка для производительности
+window.ProtonSearchSemanticTranslations = {
+  base: {
+    "status-overview": {
+      title: "Status › Overview",
+      category: "Status",
+      description: "Dashboard, uptime, CPU, memory and router summary",
+      keywords: [
+        "dashboard",
+        "home",
+        "router",
+        "overview",
+        "status",
+        "uptime",
+        "cpu",
+        "memory",
+        "ram",
+        "load",
+      ],
+    },
+    "status-temperature": {
+      title: "Status › Temperature",
+      category: "Status",
+      description: "Thermal sensors, chip temperature and peak values",
+      keywords: [
+        "temperature",
+        "thermal",
+        "sensor",
+        "sensors",
+        "chip temp",
+        "cpu temp",
+        "heat",
+        "temp",
+      ],
+    },
+    "network-interfaces": {
+      title: "Network › Interfaces",
+      category: "Network",
+      description: "LAN, WAN, bridges, IP addressing and gateways",
+      keywords: [
+        "lan",
+        "wan",
+        "bridge",
+        "pppoe",
+        "gateway",
+        "dhcp client",
+        "ip address",
+        "interface",
+        "interfaces",
+      ],
+    },
+    "network-wireless": {
+      title: "Network › Wireless",
+      category: "Network",
+      description: "Wi-Fi radios, SSID, channels, encryption and guests",
+      keywords: [
+        "wifi",
+        "wi-fi",
+        "wireless",
+        "wlan",
+        "ssid",
+        "radio",
+        "channel",
+        "guest",
+        "encryption",
+        "2.4g",
+        "5g",
+      ],
+    },
+    "network-firewall": {
+      title: "Network › Firewall",
+      category: "Network",
+      description: "Zones, NAT, forwarding, port forwards and traffic rules",
+      keywords: [
+        "firewall",
+        "nat",
+        "port forward",
+        "forwarding",
+        "zone",
+        "traffic rule",
+        "open port",
+        "masquerade",
+      ],
+    },
+    "network-dhcp": {
+      title: "Network › DHCP and DNS",
+      category: "Network",
+      description: "DHCP leases, DNS, static hosts and name resolution",
+      keywords: [
+        "dhcp",
+        "dns",
+        "lease",
+        "leases",
+        "static host",
+        "resolver",
+        "hostname",
+      ],
+    },
+    "system-system": {
+      title: "System › System",
+      category: "System",
+      description: "Hostname, timezone, NTP, language, logging and password",
+      keywords: [
+        "system",
+        "hostname",
+        "timezone",
+        "ntp",
+        "password",
+        "logging",
+        "language",
+      ],
+    },
+    "system-startup": {
+      title: "System › Startup",
+      category: "System",
+      description: "Init scripts, services, autostart and boot sequence",
+      keywords: [
+        "startup",
+        "services",
+        "service",
+        "boot",
+        "autostart",
+        "daemon",
+        "init",
+        "service manager",
+      ],
+    },
+    "system-software": {
+      title: "System › Software",
+      category: "System",
+      description: "Package manager, repositories, install and updates",
+      keywords: [
+        "software",
+        "packages",
+        "package",
+        "opkg",
+        "apk",
+        "repository",
+        "install",
+        "update",
+        "plugin",
+      ],
+    },
+  },
+  ru: {
+    "status-overview": {
+      title: "Статус › Обзор",
+      category: "Статус",
+      description:
+        "Панель состояния, аптайм, процессор, память и сводка роутера",
+      keywords: ["главная", "обзор", "статус", "аптайм", "память", "нагрузка"],
+    },
+    "status-temperature": {
+      title: "Статус › Температура",
+      category: "Статус",
+      description: "Термодатчики, температура чипа и пиковые значения",
+      keywords: ["температура", "темп", "датчик", "датчики", "нагрев", "термо"],
+    },
+    "network-interfaces": {
+      title: "Сеть › Интерфейсы",
+      category: "Сеть",
+      description: "LAN, WAN, мосты, IP-адресация и шлюзы",
+      keywords: ["интерфейс", "интерфейсы", "шлюз", "адрес", "бридж", "мост"],
+    },
+    "network-wireless": {
+      title: "Сеть › Wi-Fi",
+      category: "Сеть",
+      description:
+        "Радиомодули Wi-Fi, SSID, каналы, шифрование и гостевые сети",
+      keywords: [
+        "вайфай",
+        "wi fi",
+        "беспроводная",
+        "сеть",
+        "гостевая",
+        "канал",
+      ],
+    },
+    "network-firewall": {
+      title: "Сеть › Межсетевой экран",
+      category: "Сеть",
+      description: "Зоны, NAT, проброс портов, переадресация и правила трафика",
+      keywords: ["фаервол", "fire wall", "проброс", "порт", "правило", "зона"],
+    },
+    "network-dhcp": {
+      title: "Сеть › DHCP и DNS",
+      category: "Сеть",
+      description: "Аренды DHCP, DNS, статические хосты и разрешение имён",
+      keywords: ["днс", "аренда", "хост", "хостнейм", "имя узла"],
+    },
+    "system-system": {
+      title: "Система › Система",
+      category: "Система",
+      description: "Имя хоста, часовой пояс, NTP, язык, логирование и пароль",
+      keywords: [
+        "система",
+        "хостнейм",
+        "часовой пояс",
+        "пароль",
+        "лог",
+        "язык",
+      ],
+    },
+    "system-startup": {
+      title: "Система › Автозагрузка",
+      category: "Система",
+      description: "Скрипты init, сервисы, автозапуск и загрузка системы",
+      keywords: ["автозагрузка", "сервисы", "службы", "запуск", "демон"],
+    },
+    "system-software": {
+      title: "Система › ПО",
+      category: "Система",
+      description: "Менеджер пакетов, репозитории, установка и обновления",
+      keywords: [
+        "пакеты",
+        "пакет",
+        "репозиторий",
+        "установить",
+        "обновить",
+        "плагин",
+      ],
+    },
+  },
+  zh: {
+    "status-overview": {
+      title: "状态 › 概览",
+      category: "状态",
+      description: "状态面板、运行时间、处理器、内存和路由器摘要",
+      keywords: ["概览", "状态", "主页", "运行时间", "内存", "负载"],
+    },
+    "status-temperature": {
+      title: "状态 › 温度",
+      category: "状态",
+      description: "热传感器、芯片温度和峰值记录",
+      keywords: ["温度", "热量", "传感器", "芯片温度", "处理器温度"],
+    },
+    "network-interfaces": {
+      title: "网络 › 接口",
+      category: "网络",
+      description: "LAN、WAN、网桥、IP 地址和网关",
+      keywords: ["接口", "网关", "地址", "网桥", "内网", "外网"],
+    },
+    "network-wireless": {
+      title: "网络 › 无线",
+      category: "网络",
+      description: "Wi-Fi 射频、SSID、信道、加密和访客网络",
+      keywords: ["无线", "WiFi", "SSID", "信道", "加密", "访客网络"],
+    },
+    "network-firewall": {
+      title: "网络 › 防火墙",
+      category: "网络",
+      description: "区域、NAT、转发、端口转发和流量规则",
+      keywords: ["防火墙", "端口转发", "规则", "区域", "NAT", "伪装"],
+    },
+    "network-dhcp": {
+      title: "网络 › DHCP 和 DNS",
+      category: "网络",
+      description: "DHCP 租约、DNS、静态主机和名称解析",
+      keywords: ["租约", "静态主机", "主机名", "解析", "域名"],
+    },
+    "system-system": {
+      title: "系统 › 系统",
+      category: "系统",
+      description: "主机名、时区、NTP、语言、日志和密码",
+      keywords: ["系统", "主机名", "时区", "密码", "日志", "语言"],
+    },
+    "system-startup": {
+      title: "系统 › 启动项",
+      category: "系统",
+      description: "init 脚本、服务、自启动和引导顺序",
+      keywords: ["启动", "服务", "自启动", "守护进程", "引导"],
+    },
+    "system-software": {
+      title: "系统 › 软件",
+      category: "系统",
+      description: "软件包管理、软件源、安装和更新",
+      keywords: ["软件", "软件包", "仓库", "安装", "更新", "插件"],
+    },
+  },
+  de: {
+    "status-overview": {
+      title: "Status › Übersicht",
+      category: "Status",
+      description: "Dashboard, Laufzeit, CPU, Speicher und Routerübersicht",
+      keywords: [
+        "übersicht",
+        "startseite",
+        "status",
+        "laufzeit",
+        "speicher",
+        "last",
+      ],
+    },
+    "status-temperature": {
+      title: "Status › Temperatur",
+      category: "Status",
+      description: "Temperatursensoren, Chiptemperatur und Spitzenwerte",
+      keywords: ["temperatur", "sensor", "sensoren", "chiptemperatur", "wärme"],
+    },
+    "network-interfaces": {
+      title: "Netzwerk › Schnittstellen",
+      category: "Netzwerk",
+      description: "LAN, WAN, Bridges, IP-Adressierung und Gateways",
+      keywords: [
+        "schnittstelle",
+        "schnittstellen",
+        "gateway",
+        "adresse",
+        "bridge",
+      ],
+    },
+    "network-wireless": {
+      title: "Netzwerk › WLAN",
+      category: "Netzwerk",
+      description: "WLAN-Funkmodule, SSID, Kanäle, Verschlüsselung und Gäste",
+      keywords: ["wlan", "funk", "kanal", "verschlüsselung", "gastnetz"],
+    },
+    "network-firewall": {
+      title: "Netzwerk › Firewall",
+      category: "Netzwerk",
+      description:
+        "Zonen, NAT, Weiterleitungen, Portfreigaben und Verkehrsregeln",
+      keywords: ["firewall", "portfreigabe", "weiterleitung", "regel", "zone"],
+    },
+    "network-dhcp": {
+      title: "Netzwerk › DHCP und DNS",
+      category: "Netzwerk",
+      description: "DHCP-Leases, DNS, statische Hosts und Namensauflösung",
+      keywords: [
+        "lease",
+        "leases",
+        "statischer host",
+        "hostname",
+        "namensauflösung",
+      ],
+    },
+    "system-system": {
+      title: "System › System",
+      category: "System",
+      description:
+        "Hostname, Zeitzone, NTP, Sprache, Protokollierung und Passwort",
+      keywords: [
+        "system",
+        "hostname",
+        "zeitzone",
+        "passwort",
+        "protokoll",
+        "sprache",
+      ],
+    },
+    "system-startup": {
+      title: "System › Autostart",
+      category: "System",
+      description: "Init-Skripte, Dienste, Autostart und Boot-Reihenfolge",
+      keywords: ["autostart", "dienste", "dienst", "start", "daemon"],
+    },
+    "system-software": {
+      title: "System › Software",
+      category: "System",
+      description: "Paketmanager, Repositories, Installation und Updates",
+      keywords: [
+        "software",
+        "pakete",
+        "paket",
+        "repository",
+        "installieren",
+        "aktualisieren",
+      ],
+    },
+  },
+  uk: {
+    "status-overview": {
+      title: "Статус › Огляд",
+      category: "Статус",
+      description: "Панель стану, аптайм, процесор, пам'ять і зведення роутера",
+      keywords: [
+        "огляд",
+        "статус",
+        "головна",
+        "аптайм",
+        "пам'ять",
+        "навантаження",
+      ],
+    },
+    "status-temperature": {
+      title: "Статус › Температура",
+      category: "Статус",
+      description: "Термодатчики, температура чипа та пікові значення",
+      keywords: ["температура", "датчик", "датчики", "нагрів", "термо"],
+    },
+    "network-interfaces": {
+      title: "Мережа › Інтерфейси",
+      category: "Мережа",
+      description: "LAN, WAN, мости, IP-адресація та шлюзи",
+      keywords: ["інтерфейс", "інтерфейси", "шлюз", "адреса", "міст"],
+    },
+    "network-wireless": {
+      title: "Мережа › Wi-Fi",
+      category: "Мережа",
+      description:
+        "Wi-Fi радіомодулі, SSID, канали, шифрування та гостьові мережі",
+      keywords: ["вайфай", "бездротова", "мережа", "гостьова", "канал"],
+    },
+    "network-firewall": {
+      title: "Мережа › Брандмауер",
+      category: "Мережа",
+      description: "Зони, NAT, переадресація, проброс портів і правила трафіку",
+      keywords: ["брандмауер", "порт", "правило", "зона", "проброс"],
+    },
+    "network-dhcp": {
+      title: "Мережа › DHCP і DNS",
+      category: "Мережа",
+      description: "Оренди DHCP, DNS, статичні хости та розв'язання імен",
+      keywords: ["оренда", "хост", "ім'я вузла", "резолвер", "днс"],
+    },
+    "system-system": {
+      title: "Система › Система",
+      category: "Система",
+      description: "Ім'я хоста, часовий пояс, NTP, мова, логи та пароль",
+      keywords: [
+        "система",
+        "хостнейм",
+        "часовий пояс",
+        "пароль",
+        "лог",
+        "мова",
+      ],
+    },
+    "system-startup": {
+      title: "Система › Автозапуск",
+      category: "Система",
+      description: "init-скрипти, сервіси, автозапуск і порядок завантаження",
+      keywords: ["автозапуск", "сервіси", "служби", "запуск", "демон"],
+    },
+    "system-software": {
+      title: "Система › ПЗ",
+      category: "Система",
+      description: "Менеджер пакунків, репозиторії, встановлення й оновлення",
+      keywords: [
+        "пакунки",
+        "пакунок",
+        "репозиторій",
+        "встановити",
+        "оновити",
+        "плагін",
+      ],
+    },
+  },
+  es: {
+    "status-overview": {
+      title: "Estado › Resumen",
+      category: "Estado",
+      description:
+        "Panel principal, tiempo activo, CPU, memoria y resumen del router",
+      keywords: [
+        "resumen",
+        "inicio",
+        "estado",
+        "tiempo activo",
+        "memoria",
+        "carga",
+      ],
+    },
+    "status-temperature": {
+      title: "Estado › Temperatura",
+      category: "Estado",
+      description: "Sensores térmicos, temperatura del chip y valores máximos",
+      keywords: ["temperatura", "sensor", "sensores", "calor", "cpu"],
+    },
+    "network-interfaces": {
+      title: "Red › Interfaces",
+      category: "Red",
+      description: "LAN, WAN, puentes, direccionamiento IP y puertas de enlace",
+      keywords: [
+        "interfaz",
+        "interfaces",
+        "puerta de enlace",
+        "dirección",
+        "puente",
+      ],
+    },
+    "network-wireless": {
+      title: "Red › Wi-Fi",
+      category: "Red",
+      description: "Radios Wi-Fi, SSID, canales, cifrado e invitados",
+      keywords: ["inalámbrico", "wifi", "canal", "cifrado", "invitados"],
+    },
+    "network-firewall": {
+      title: "Red › Cortafuegos",
+      category: "Red",
+      description: "Zonas, NAT, reenvíos, puertos y reglas de tráfico",
+      keywords: ["cortafuegos", "puerto", "reenvío", "regla", "zona"],
+    },
+    "network-dhcp": {
+      title: "Red › DHCP y DNS",
+      category: "Red",
+      description:
+        "Concesiones DHCP, DNS, hosts estáticos y resolución de nombres",
+      keywords: [
+        "concesión",
+        "host estático",
+        "nombre de host",
+        "resolución",
+        "dns",
+      ],
+    },
+    "system-system": {
+      title: "Sistema › Sistema",
+      category: "Sistema",
+      description:
+        "Nombre del host, zona horaria, NTP, idioma, registros y contraseña",
+      keywords: [
+        "sistema",
+        "hostname",
+        "zona horaria",
+        "contraseña",
+        "registro",
+        "idioma",
+      ],
+    },
+    "system-startup": {
+      title: "Sistema › Inicio",
+      category: "Sistema",
+      description:
+        "Scripts init, servicios, arranque automático y secuencia de inicio",
+      keywords: ["inicio", "arranque", "servicios", "autoinicio", "demonio"],
+    },
+    "system-software": {
+      title: "Sistema › Software",
+      category: "Sistema",
+      description:
+        "Gestor de paquetes, repositorios, instalación y actualizaciones",
+      keywords: [
+        "software",
+        "paquetes",
+        "repositorio",
+        "instalar",
+        "actualizar",
+        "plugin",
+      ],
+    },
+  },
+  pt: {
+    "status-overview": {
+      title: "Estado › Visão geral",
+      category: "Estado",
+      description: "Painel inicial, uptime, CPU, memória e resumo do roteador",
+      keywords: [
+        "visão geral",
+        "início",
+        "estado",
+        "uptime",
+        "memória",
+        "carga",
+      ],
+    },
+    "status-temperature": {
+      title: "Estado › Temperatura",
+      category: "Estado",
+      description: "Sensores térmicos, temperatura do chip e picos registrados",
+      keywords: ["temperatura", "sensor", "sensores", "calor", "cpu"],
+    },
+    "network-interfaces": {
+      title: "Rede › Interfaces",
+      category: "Rede",
+      description: "LAN, WAN, bridges, endereçamento IP e gateways",
+      keywords: ["interface", "interfaces", "gateway", "endereço", "bridge"],
+    },
+    "network-wireless": {
+      title: "Rede › Wi-Fi",
+      category: "Rede",
+      description:
+        "Rádios Wi-Fi, SSID, canais, criptografia e redes de convidados",
+      keywords: ["wifi", "sem fio", "canal", "criptografia", "convidado"],
+    },
+    "network-firewall": {
+      title: "Rede › Firewall",
+      category: "Rede",
+      description: "Zonas, NAT, encaminhamento, portas e regras de tráfego",
+      keywords: ["firewall", "porta", "encaminhamento", "regra", "zona"],
+    },
+    "network-dhcp": {
+      title: "Rede › DHCP e DNS",
+      category: "Rede",
+      description: "Leases DHCP, DNS, hosts estáticos e resolução de nomes",
+      keywords: ["lease", "host estático", "nome do host", "resolução", "dns"],
+    },
+    "system-system": {
+      title: "Sistema › Sistema",
+      category: "Sistema",
+      description: "Hostname, fuso horário, NTP, idioma, logs e senha",
+      keywords: [
+        "sistema",
+        "hostname",
+        "fuso horário",
+        "senha",
+        "log",
+        "idioma",
+      ],
+    },
+    "system-startup": {
+      title: "Sistema › Inicialização",
+      category: "Sistema",
+      description:
+        "Scripts init, serviços, inicialização automática e sequência de boot",
+      keywords: ["inicialização", "serviços", "autostart", "boot", "daemon"],
+    },
+    "system-software": {
+      title: "Sistema › Software",
+      category: "Sistema",
+      description:
+        "Gerenciador de pacotes, repositórios, instalação e atualizações",
+      keywords: [
+        "software",
+        "pacotes",
+        "repositório",
+        "instalar",
+        "atualizar",
+        "plugin",
+      ],
+    },
+  },
+  pl: {
+    "status-overview": {
+      title: "Status › Przegląd",
+      category: "Status",
+      description:
+        "Panel główny, czas pracy, CPU, pamięć i podsumowanie routera",
+      keywords: [
+        "przegląd",
+        "start",
+        "status",
+        "czas pracy",
+        "pamięć",
+        "obciążenie",
+      ],
+    },
+    "status-temperature": {
+      title: "Status › Temperatura",
+      category: "Status",
+      description:
+        "Czujniki temperatury, temperatura układu i wartości szczytowe",
+      keywords: ["temperatura", "czujnik", "czujniki", "ciepło", "cpu"],
+    },
+    "network-interfaces": {
+      title: "Sieć › Interfejsy",
+      category: "Sieć",
+      description: "LAN, WAN, mosty, adresacja IP i bramy",
+      keywords: ["interfejs", "interfejsy", "brama", "adres", "most"],
+    },
+    "network-wireless": {
+      title: "Sieć › Wi-Fi",
+      category: "Sieć",
+      description: "Radia Wi-Fi, SSID, kanały, szyfrowanie i sieci gościnne",
+      keywords: ["wifi", "bezprzewodowa", "kanał", "szyfrowanie", "gościnna"],
+    },
+    "network-firewall": {
+      title: "Sieć › Zapora",
+      category: "Sieć",
+      description: "Strefy, NAT, przekierowania, porty i reguły ruchu",
+      keywords: ["zapora", "port", "przekierowanie", "reguła", "strefa"],
+    },
+    "network-dhcp": {
+      title: "Sieć › DHCP i DNS",
+      category: "Sieć",
+      description: "Dzierżawy DHCP, DNS, statyczne hosty i rozwiązywanie nazw",
+      keywords: [
+        "dzierżawa",
+        "host statyczny",
+        "nazwa hosta",
+        "rozwiązywanie",
+        "dns",
+      ],
+    },
+    "system-system": {
+      title: "System › System",
+      category: "System",
+      description: "Nazwa hosta, strefa czasowa, NTP, język, logi i hasło",
+      keywords: [
+        "system",
+        "hostname",
+        "strefa czasowa",
+        "hasło",
+        "log",
+        "język",
+      ],
+    },
+    "system-startup": {
+      title: "System › Autostart",
+      category: "System",
+      description: "Skrypty init, usługi, autostart i sekwencja rozruchu",
+      keywords: ["autostart", "usługi", "start", "boot", "demon"],
+    },
+    "system-software": {
+      title: "System › Oprogramowanie",
+      category: "System",
+      description: "Menedżer pakietów, repozytoria, instalacja i aktualizacje",
+      keywords: [
+        "oprogramowanie",
+        "pakiety",
+        "repozytorium",
+        "instalacja",
+        "aktualizacja",
+        "wtyczka",
+      ],
+    },
+  },
+  fr: {
+    "status-overview": {
+      title: "Statut › Vue d'ensemble",
+      category: "Statut",
+      description:
+        "Tableau de bord, disponibilité, CPU, mémoire et résumé du routeur",
+      keywords: [
+        "vue d'ensemble",
+        "accueil",
+        "statut",
+        "uptime",
+        "mémoire",
+        "charge",
+      ],
+    },
+    "status-temperature": {
+      title: "Statut › Température",
+      category: "Statut",
+      description:
+        "Capteurs thermiques, température de la puce et pics enregistrés",
+      keywords: ["température", "capteur", "capteurs", "chaleur", "cpu"],
+    },
+    "network-interfaces": {
+      title: "Réseau › Interfaces",
+      category: "Réseau",
+      description: "LAN, WAN, ponts, adressage IP et passerelles",
+      keywords: ["interface", "interfaces", "passerelle", "adresse", "pont"],
+    },
+    "network-wireless": {
+      title: "Réseau › Wi-Fi",
+      category: "Réseau",
+      description: "Radios Wi-Fi, SSID, canaux, chiffrement et réseaux invités",
+      keywords: ["wifi", "sans fil", "canal", "chiffrement", "invité"],
+    },
+    "network-firewall": {
+      title: "Réseau › Pare-feu",
+      category: "Réseau",
+      description: "Zones, NAT, redirections, ports et règles de trafic",
+      keywords: ["pare-feu", "port", "redirection", "règle", "zone"],
+    },
+    "network-dhcp": {
+      title: "Réseau › DHCP et DNS",
+      category: "Réseau",
+      description: "Baux DHCP, DNS, hôtes statiques et résolution de noms",
+      keywords: ["bail", "hôte statique", "nom d'hôte", "résolution", "dns"],
+    },
+    "system-system": {
+      title: "Système › Système",
+      category: "Système",
+      description:
+        "Nom d'hôte, fuseau horaire, NTP, langue, journaux et mot de passe",
+      keywords: [
+        "système",
+        "hostname",
+        "fuseau horaire",
+        "mot de passe",
+        "journal",
+        "langue",
+      ],
+    },
+    "system-startup": {
+      title: "Système › Démarrage",
+      category: "Système",
+      description:
+        "Scripts init, services, démarrage automatique et séquence de boot",
+      keywords: ["démarrage", "services", "autostart", "boot", "daemon"],
+    },
+    "system-software": {
+      title: "Système › Logiciels",
+      category: "Système",
+      description:
+        "Gestionnaire de paquets, dépôts, installation et mises à jour",
+      keywords: [
+        "logiciels",
+        "paquets",
+        "dépôt",
+        "installer",
+        "mettre à jour",
+        "plugin",
+      ],
+    },
+  },
+  it: {
+    "status-overview": {
+      title: "Stato › Panoramica",
+      category: "Stato",
+      description: "Dashboard, uptime, CPU, memoria e riepilogo del router",
+      keywords: ["panoramica", "home", "stato", "uptime", "memoria", "carico"],
+    },
+    "status-temperature": {
+      title: "Stato › Temperatura",
+      category: "Stato",
+      description: "Sensori termici, temperatura del chip e valori di picco",
+      keywords: ["temperatura", "sensore", "sensori", "calore", "cpu"],
+    },
+    "network-interfaces": {
+      title: "Rete › Interfacce",
+      category: "Rete",
+      description: "LAN, WAN, bridge, indirizzamento IP e gateway",
+      keywords: ["interfaccia", "interfacce", "gateway", "indirizzo", "bridge"],
+    },
+    "network-wireless": {
+      title: "Rete › Wi-Fi",
+      category: "Rete",
+      description: "Radio Wi-Fi, SSID, canali, crittografia e reti ospiti",
+      keywords: ["wifi", "wireless", "canale", "crittografia", "ospite"],
+    },
+    "network-firewall": {
+      title: "Rete › Firewall",
+      category: "Rete",
+      description: "Zone, NAT, inoltro, port forwarding e regole di traffico",
+      keywords: ["firewall", "porta", "inoltro", "regola", "zona"],
+    },
+    "network-dhcp": {
+      title: "Rete › DHCP e DNS",
+      category: "Rete",
+      description: "Lease DHCP, DNS, host statici e risoluzione dei nomi",
+      keywords: ["lease", "host statico", "nome host", "risoluzione", "dns"],
+    },
+    "system-system": {
+      title: "Sistema › Sistema",
+      category: "Sistema",
+      description: "Hostname, fuso orario, NTP, lingua, log e password",
+      keywords: [
+        "sistema",
+        "hostname",
+        "fuso orario",
+        "password",
+        "log",
+        "lingua",
+      ],
+    },
+    "system-startup": {
+      title: "Sistema › Avvio",
+      category: "Sistema",
+      description: "Script init, servizi, avvio automatico e sequenza di boot",
+      keywords: ["avvio", "servizi", "autostart", "boot", "demone"],
+    },
+    "system-software": {
+      title: "Sistema › Software",
+      category: "Sistema",
+      description:
+        "Gestore pacchetti, repository, installazione e aggiornamenti",
+      keywords: [
+        "software",
+        "pacchetti",
+        "repository",
+        "installare",
+        "aggiornare",
+        "plugin",
+      ],
+    },
+  },
+};
+
+window.protonGetLang = function () {
   if (!window._protonLangCache) {
     let lang = "en";
 
-    // 1. Проверяем data-lang атрибут body (самый надёжный способ!)
     if (document.body && document.body.dataset && document.body.dataset.lang) {
       lang = document.body.dataset.lang;
-    }
-    // 2. Проверяем класс body lang_XX
-    else if (document.body && document.body.className) {
+    } else if (document.body && document.body.className) {
       const langMatch = document.body.className.match(/\blang_([a-z]{2})\b/i);
       if (langMatch) {
         lang = langMatch[1];
       }
-    }
-    // 3. HTML атрибут lang
-    else if (document.documentElement) {
+    } else if (document.documentElement) {
       const htmlLang =
         document.documentElement.lang ||
         document.documentElement.getAttribute("lang");
@@ -2417,8 +3791,7 @@ window.protonT = function (key) {
         lang = htmlLang;
       }
     }
-    // 4. Ищем скрипт переводов LuCI
-    // LuCI загружает /cgi-bin/luci/admin/translations/ru
+
     if (lang === "en") {
       const scripts = document.querySelectorAll(
         'script[src*="/translations/"]',
@@ -2431,7 +3804,7 @@ window.protonT = function (key) {
         }
       }
     }
-    // 5. Проверяем LuCI L.tr - если есть русский перевод стандартной строки
+
     if (lang === "en" && window.L && typeof window.L.tr === "function") {
       try {
         const testTranslation = window.L.tr("Save");
@@ -2442,18 +3815,35 @@ window.protonT = function (key) {
         // Игнорируем ошибки
       }
     }
-    // 6. Meta тег
+
     if (lang === "en") {
       const metaLang = document.querySelector('meta[name="language"]')?.content;
       if (metaLang) lang = metaLang;
     }
 
-    // Нормализуем язык (ru-RU -> ru, ru_RU -> ru)
-    const langBase = lang.split("-")[0].split("_")[0].toLowerCase();
-    window._protonLangCache = langBase;
+    window._protonLangCache = lang.split("-")[0].split("_")[0].toLowerCase();
   }
 
-  const langBase = window._protonLangCache;
+  return window._protonLangCache;
+};
+
+window.protonGetSemanticTranslations = function () {
+  const langBase = window.protonGetLang();
+
+  return {
+    lang: langBase,
+    base: window.ProtonSearchSemanticTranslations?.base || {},
+    locale: window.ProtonSearchSemanticTranslations?.[langBase] || {},
+  };
+};
+
+/**
+ * Функция перевода для использования в любом JS
+ * @param {string} key - Ключ перевода (английский текст)
+ * @returns {string} - Переведённый текст или оригинал
+ */
+window.protonT = function (key) {
+  const langBase = window.protonGetLang();
 
   if (
     window.ProtonTranslations &&

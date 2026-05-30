@@ -1,4 +1,7 @@
 // Proton2025 Theme - Temperature Sensor RPC Module
+// Copyright 2025-2026 ChesterGoodiny
+// Licensed under the Apache License, Version 2.0
+// See LICENSE and NOTICE for details.
 // Reads thermal sensors from /sys/class/thermal and /sys/class/hwmon
 
 'use strict';

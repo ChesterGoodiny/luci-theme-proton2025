@@ -1,6 +1,8 @@
 {#
  Proton2025 Theme - Login Template
+ Copyright 2025-2026 ChesterGoodiny
  Licensed under Apache License 2.0
+ See LICENSE and NOTICE for details.
 -#}
 
 {%
@@ -16,10 +18,22 @@
 <script>
 // Apply all theme settings from localStorage (same as header.ut)
 (function() {
-	// Theme mode (dark/light)
-	var themeMode = localStorage.getItem('proton-theme-mode') || 'dark';
+	function resolveThemeMode(mode) {
+		if (mode === 'auto' && window.matchMedia) {
+			return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+		}
+
+		return mode === 'light' ? 'light' : 'dark';
+	}
+
+	// Theme mode (dark/light/auto)
+	var themeMode = resolveThemeMode(localStorage.getItem('proton-theme-mode') || 'dark');
 	if (themeMode === 'light') {
 		document.documentElement.setAttribute('data-theme', 'light');
+		document.documentElement.setAttribute('data-darkmode', 'false');
+	} else {
+		document.documentElement.setAttribute('data-theme', 'dark');
+		document.documentElement.setAttribute('data-darkmode', 'true');
 	}
 	
 	// Zoom
@@ -54,6 +68,17 @@
 	
 	// Animations
 	if (localStorage.getItem('proton-animations') === 'false') document.documentElement.classList.add('proton-no-animations');
+
+	// Login page means a new auth session is starting soon, so restore any
+	// alerts that were only dismissed for the previous authenticated session.
+	try {
+		for (var i = sessionStorage.length - 1; i >= 0; i--) {
+			var key = sessionStorage.key(i);
+			if (key && key.indexOf('proton-alert-dismissed-') === 0) {
+				sessionStorage.removeItem(key);
+			}
+		}
+	} catch (e) {}
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />

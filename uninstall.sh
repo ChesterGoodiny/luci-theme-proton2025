@@ -1,4 +1,18 @@
 #!/bin/sh
+# Copyright 2025-2026 ChesterGoodiny
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 # ============================================================
 # Proton2025 Theme Uninstaller for OpenWrt/LuCI
 # ============================================================
@@ -55,6 +69,7 @@ ok "Removed static files"
 
 # Remove JS
 rm -f "/www/luci-static/resources/menu-proton2025.js"
+rm -f "/www/luci-static/resources/view/status/proton-temperature.js"
 ok "Removed JavaScript"
 
 # Remove templates
@@ -73,8 +88,11 @@ ok "Removed uci-defaults"
 
 # Remove RPC module and ACL
 rm -f "/usr/share/rpcd/ucode/luci.proton-temp"
+rm -f "/usr/share/rpcd/ucode/luci.proton-system"
 rm -f "/usr/share/rpcd/ucode/luci.proton-settings"
+rm -f "/usr/share/rpcd/ucode/luci.proton-search-cache"
 rm -f "/usr/share/rpcd/acl.d/luci-theme-proton2025.json"
+rm -f "/usr/share/luci/menu.d/luci-theme-proton2025.json"
 ok "Removed RPC modules"
 
 # Remove config (optional - keep user settings)
@@ -84,6 +102,8 @@ ok "Removed RPC modules"
 
 # Clear cache
 info "Clearing cache..."
+rm -f /tmp/proton-search-prefetch-cache.json /tmp/proton-search-prefetch-cache-meta.json 2>/dev/null || true
+rm -rf /tmp/proton-search-cache /tmp/proton-search-cache-meta 2>/dev/null || true
 rm -rf /tmp/luci-modulecache 2>/dev/null || true
 rm -rf /tmp/luci-indexcache* 2>/dev/null || true
 ok "Cache cleared"

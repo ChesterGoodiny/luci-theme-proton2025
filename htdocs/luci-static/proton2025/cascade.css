@@ -1,6 +1,8 @@
 /*
  * Proton2025 - Elegant Dark Theme for LuCI
+ * Copyright 2025-2026 ChesterGoodiny
  * Licensed under Apache License 2.0
+ * See LICENSE and NOTICE for details.
  */
 
 /* =====================================================
@@ -88,6 +90,11 @@
     --proton-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
     --proton-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
     --proton-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --proton-tooltip-bg: rgba(18, 22, 30, 0.94);
+    --proton-tooltip-border: rgba(255, 255, 255, 0.09);
+    --proton-tooltip-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+    --proton-chart-guide: rgba(255, 255, 255, 0.28);
+    --proton-chart-point-ring: rgba(255, 255, 255, 0.82);
 
     /* Radius & Transitions */
     --proton-radius: 12px;
@@ -209,6 +216,11 @@
     --proton-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
     --proton-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
     --proton-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --proton-tooltip-bg: rgba(255, 255, 255, 0.96);
+    --proton-tooltip-border: rgba(26, 29, 41, 0.12);
+    --proton-tooltip-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+    --proton-chart-guide: rgba(26, 29, 41, 0.22);
+    --proton-chart-point-ring: rgba(255, 255, 255, 0.96);
 
     /* Legacy compatibility */
     --main-bright-color: #4b5563;
@@ -442,6 +454,13 @@ a:hover {
     transform: translateY(-1px);
 }
 
+/* Отключаем прыжок для ссылок внутри списков параметров и таблиц данных главной страницы */
+.cbi-value a:hover,
+.table a:hover,
+td a:hover {
+    transform: none;
+}
+
 a:active {
     transform: translateY(0);
 }
@@ -481,6 +500,313 @@ a:active {
     flex: 0 0 auto;
 }
 
+/* =====================================================
+   Search Bar (Proton) — стиль: свёрнутая иконка → разворот при наведении
+   ===================================================== */
+#proton-search-container {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    position: relative;
+}
+
+/* Wrapper = кликабельная область. Начинает с 34px, растягивается при click/focus */
+.proton-search-wrapper {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: visible;
+    /* чтобы dropdown не обрезался */
+}
+
+.proton-search-wrapper:focus-within,
+.proton-search-wrapper.active {
+    width: 280px;
+}
+
+/* label-обёртка занимает весь wrapper */
+.proton-search-icon {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+/* Иконка: по центру в свёрнутом, слева — в развёрнутом */
+.proton-search-icon svg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--proton-text-secondary);
+    pointer-events: none;
+    z-index: 2;
+    transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.proton-search-wrapper:focus-within .proton-search-icon svg,
+.proton-search-wrapper.active .proton-search-icon svg {
+    left: 11px;
+    transform: translateY(-50%);
+    color: var(--proton-accent);
+}
+
+/* Поле: занимает весь wrapper, визуально скрыто (без бордера, прозрачный фон) */
+.proton-search-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    font-size: 0.875rem;
+    color: transparent;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid transparent;
+    border-radius: var(--proton-radius);
+    outline: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition:
+        padding 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        color 0.15s ease,
+        /* Без задержки при закрытии, чтобы текст исчезал сразу */
+        background 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        border-radius 0.25s ease;
+}
+
+:root[data-theme="light"] .proton-search-input {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.proton-search-input::placeholder {
+    color: transparent;
+    transition: color 0.15s ease;
+}
+
+/* Развёрнутое состояние — wrapper расширен, поле становится видимым */
+.proton-search-wrapper:focus-within .proton-search-input,
+.proton-search-wrapper.active .proton-search-input {
+    padding: 0 12px 0 34px !important;
+    color: var(--proton-text-primary) !important;
+    background: var(--proton-bg-primary) !important;
+    border-color: var(--proton-border) !important;
+    border-radius: var(--proton-radius) !important;
+    cursor: text;
+    transition:
+        padding 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        color 0.2s ease 0.15s,
+        /* Задержка цвета при открытии: текст появляется после растяжения */
+        background 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        border-radius 0.25s ease !important;
+}
+
+.proton-search-input:focus {
+    border-color: var(--proton-accent) !important;
+    box-shadow: 0 0 0 3px rgba(var(--proton-accent-rgb, 94, 158, 255), 0.15) !important;
+}
+
+.proton-search-wrapper:focus-within .proton-search-input::placeholder,
+.proton-search-wrapper.active .proton-search-input::placeholder {
+    color: var(--proton-text-secondary);
+    transition: color 0.2s ease 0.15s;
+}
+
+/* Выпадающий список результатов */
+.proton-search-results {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 100%;
+    min-width: 100%;
+    background: rgba(20, 25, 35, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--proton-border);
+    border-top: 2px solid var(--proton-accent);
+    border-radius: var(--proton-radius);
+    box-shadow: var(--proton-shadow-md);
+    z-index: 1001;
+    overflow: hidden;
+    animation: proton-search-drop 0.18s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+:root[data-theme="light"] .proton-search-results {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes proton-search-drop {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.proton-search-result-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+    color: var(--proton-text-primary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--proton-border);
+    transition: background-color 0.15s ease, padding-left 0.15s ease;
+    cursor: pointer;
+}
+
+.proton-search-result-item:last-child {
+    border-bottom: none;
+}
+
+.proton-search-result-item:hover,
+.proton-search-result-item.selected {
+    background: rgba(var(--proton-accent-rgb, 94, 158, 255), 0.08);
+    /* Светлый ховер */
+    padding-left: 18px;
+    color: var(--proton-text-primary) !important;
+    transform: none;
+    outline: none !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid var(--proton-border);
+}
+
+.proton-search-result-item:last-child:hover,
+.proton-search-result-item:last-child.selected {
+    border-bottom: none;
+}
+
+.proton-search-result-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.proton-search-result-title {
+    display: block;
+    min-width: 0;
+    line-height: 1.35;
+}
+
+.proton-search-result-meta {
+    display: block;
+    font-size: 0.73rem;
+    line-height: 1.35;
+    color: var(--proton-text-secondary);
+}
+
+.proton-search-result-item:hover .proton-search-result-meta,
+.proton-search-result-item.selected .proton-search-result-meta {
+    color: var(--proton-text-secondary);
+}
+
+.proton-search-result-item b {
+    color: var(--proton-accent);
+    font-weight: 600;
+}
+
+.proton-search-empty {
+    padding: 14px;
+    font-size: 0.83rem;
+    color: var(--proton-text-secondary);
+    text-align: center;
+}
+
+.proton-search-empty-text {
+    margin-bottom: 0.4rem;
+}
+
+.proton-search-empty-prompt {
+    margin-bottom: 0.45rem;
+    font-size: 0.78rem;
+    opacity: 0.85;
+}
+
+.proton-search-empty-action {
+    display: inline-block;
+    padding: 0.2rem 0.1rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--proton-accent);
+    font-size: 0.77rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    transition: color 0.16s ease, opacity 0.16s ease, text-decoration-color 0.16s ease;
+}
+
+.proton-search-empty-action:hover,
+.proton-search-empty-action:focus-visible {
+    color: var(--proton-text-primary);
+    opacity: 0.95;
+    text-decoration-color: var(--proton-text-primary);
+    outline: none;
+}
+
+/* Медиа-запрос для поиска перенесен в основной мобильный блок @media (max-width: 800px) */
+/*
+@media (max-width: 768px) {
+    #proton-search-container {
+        display: flex;
+        flex: 1;
+        margin-right: 12px;
+        justify-content: flex-end;
+        max-width: 100%;
+    }
+
+    .proton-search-wrapper {
+        width: 34px;
+        max-width: 100%;
+    }
+
+    .proton-search-wrapper:focus-within,
+    .proton-search-wrapper.active {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    #menubar-inner:has(.proton-search-wrapper:focus-within) .hostname,
+    #menubar-inner:has(.proton-search-wrapper:focus-within) #indicators,
+    #menubar-inner:has(.proton-search-wrapper.active) .hostname,
+    #menubar-inner:has(.proton-search-wrapper.active) #indicators {
+        display: none;
+    }
+
+    .proton-search-results {
+        position: fixed;
+        top: 68px;
+        left: 16px;
+        right: 16px;
+        width: auto;
+        min-width: 0;
+        max-width: calc(100vw - 32px);
+    }
+}
+*/
+
 #menubar-inner>h2,
 #menubar-inner>.navigation,
 .skiplink {
@@ -510,11 +836,11 @@ a:active {
 }
 
 :root[data-theme="light"] #menubar-inner .hostname a:hover {
-    color: #f47c1f;
+    color: var(--proton-accent);
 }
 
 #menubar-inner .hostname a:focus-visible {
-    outline: 2px solid #f47c1f;
+    outline: 2px solid var(--proton-accent);
     outline-offset: 3px;
     border-radius: 6px;
 }
@@ -529,6 +855,18 @@ a:active {
     margin-left: auto;
     display: flex;
     gap: 8px;
+    justify-content: flex-end;
+    overflow: hidden;
+    max-width: 0;
+    opacity: 0;
+    /* слот открывается сразу, кнопка появляется когда слот уже открыт */
+    transition: max-width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.25s ease 0.28s;
+}
+
+#indicators:has(> *) {
+    max-width: 160px;
+    opacity: 1;
 }
 
 #indicators>* {
@@ -542,8 +880,8 @@ a:active {
     cursor: pointer;
     white-space: nowrap;
     padding: 6px 12px;
-    transition: var(--proton-transition);
     font-weight: 500;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 #indicators>*:hover {
@@ -1145,6 +1483,16 @@ textarea {
     font-family: inherit;
 }
 
+/* Сброс глобальных input-стилей для строки поиска в шапке */
+.proton-search-input {
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    color: transparent !important;
+}
+
 input:hover,
 select:hover,
 textarea:hover {
@@ -1584,6 +1932,46 @@ tr:hover td {
     border-radius: 0 var(--proton-radius-sm) 0 0;
 }
 
+/* LuCI named tables render the first "Name" column as a pseudo-cell. */
+@media only screen and (min-width: 801px) {
+
+    .cbi-section-table .cbi-section-table-titles.named::before,
+    .cbi-section-table .cbi-section-table-descr.named::before {
+        content: attr(data-title);
+        display: table-cell;
+        padding: 14px 16px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--proton-muted);
+        border-bottom: 2px solid var(--proton-border);
+        text-align: left;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .cbi-section-table .cbi-section-table-row[data-title]::before {
+        content: attr(data-title);
+        display: table-cell;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--proton-border-light);
+        vertical-align: top;
+        font-weight: 600;
+        color: var(--proton-fg);
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .cbi-section-table .cbi-section-table-row:hover::before {
+        background: var(--proton-bg-tertiary);
+    }
+
+    .cbi-section-table .cbi-section-table-row:last-child::before {
+        border-bottom: none;
+    }
+}
+
 /* Table cells with inputs and control-groups */
 td input:not([type]),
 td input[type="text"],
@@ -1684,6 +2072,12 @@ table.assoclist td.cbi-section-actions button {
    ===================================================== */
 
 /* #status_leases / #status_leases6 - DHCP & DHCPv6 Leases Table Desktop */
+#status_leases,
+#status_leases6 {
+    table-layout: fixed;
+    width: 100%;
+}
+
 #status_leases td:nth-child(1),
 #status_leases6 td:nth-child(1) {
     font-weight: 600;
@@ -1705,6 +2099,19 @@ table.assoclist td.cbi-section-actions button {
 #status_leases td:nth-child(4),
 #status_leases6 td:nth-child(4) {
     color: var(--proton-success);
+}
+
+/* Desktop DHCPv6 leases can contain long hostnames, IPv6 values, and DUIDs. */
+#status_leases6 th:nth-child(1),
+#status_leases6 th:nth-child(2),
+#status_leases6 th:nth-child(3),
+#status_leases6 td:nth-child(1),
+#status_leases6 td:nth-child(2),
+#status_leases6 td:nth-child(3) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    vertical-align: top;
 }
 
 /* #wifi_assoclist_table - WiFi Associated Stations Desktop */
@@ -2280,6 +2687,13 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 /* Открытый dropdown */
 #cbi-wireless .cbi-section-actions .actions-dropdown.open {
     display: block;
+}
+
+#cbi-wireless .cbi-section-actions .actions-dropdown.open-up {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: 4px;
 }
 
 /* Кнопки внутри dropdown */
@@ -3308,79 +3722,288 @@ body[data-page="admin-network-diagnostics"] .td {
 }
 
 /* =====================================================
-   Alerts & Messages
+   Alerts & Messages - Floating Toast Style (Elegant)
    ===================================================== */
 .alert-message {
-    padding: 16px 20px;
-    border-radius: var(--proton-radius);
-    margin-bottom: 20px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-left: 3px solid transparent;
-    box-shadow: var(--proton-shadow-sm);
-    transition: var(--proton-transition);
+    display: flex;
+    align-items: stretch;
+    gap: 0.85rem;
+    padding: 0.95rem 1rem;
+    border-radius: calc(var(--proton-radius) + 4px);
+    margin-bottom: 1rem;
+    background: rgba(24, 27, 34, 0.96);
+    border: 1px solid var(--proton-border);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.alert-message.proton-alert-floating {
+    position: fixed;
+    top: 84px;
+    right: 24px;
+    z-index: 2200;
+    width: min(420px, calc(100vw - 48px));
+    margin-bottom: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease, box-shadow 0.2s ease;
+}
+
+.alert-message.proton-alert-floating.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.alert-message.proton-alert-floating.is-hidden {
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+}
+
+/* LuCI system alerts (Save & Apply, No changes, rollback confirmation) — inline in #maincontent, not floating */
+.alert-message.proton-alert-native {
+    position: relative;
+    top: auto;
+    right: auto;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    z-index: 1;
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+}
+
+/* Stacking is handled dynamically via JS (style.top) */
+
+.alert-message::before {
+    content: "";
+    width: 4px;
+    min-width: 4px;
+    border-radius: 999px;
+    flex-shrink: 0;
 }
 
 .alert-message:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--proton-shadow-md);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+}
+
+/* Close button — inline inside .alert-message-header */
+.alert-message-close {
+    flex-shrink: 0;
+    margin-left: auto;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--proton-fg-secondary);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.alert-message-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--proton-fg);
+}
+
+.alert-message-close:active {
+    transform: scale(0.95);
+}
+
+.alert-message-close:focus-visible {
+    outline: 2px solid var(--proton-accent);
+    outline-offset: 2px;
+}
+
+/* Warning - желтый */
+.alert-message.warning::before {
+    background: #fbbf24;
+    box-shadow: 0 0 14px rgba(251, 191, 36, 0.4);
 }
 
 .alert-message.warning {
-    background: rgba(255, 217, 61, 0.08);
-    border: 1px solid rgba(255, 217, 61, 0.2);
-    border-left-color: var(--proton-warning);
-    color: #ffeb99;
+    color: var(--proton-fg);
 }
 
-:root[data-theme="light"] .alert-message.warning {
-    background: rgba(192, 86, 33, 0.1);
-    border-color: rgba(192, 86, 33, 0.3);
-    color: #9c4221;
+.alert-message.warning h4 {
+    color: #fbbf24;
+}
+
+/* Danger - красный */
+.alert-message.danger::before {
+    background: #f87171;
+    box-shadow: 0 0 14px rgba(248, 113, 113, 0.4);
 }
 
 .alert-message.danger {
-    background: rgba(255, 107, 107, 0.08);
-    border: 1px solid rgba(255, 107, 107, 0.2);
-    border-left-color: var(--proton-danger);
-    color: #ffa5a5;
+    color: var(--proton-fg);
 }
 
-:root[data-theme="light"] .alert-message.danger {
-    background: rgba(197, 48, 48, 0.1);
-    border-color: rgba(197, 48, 48, 0.3);
-    color: #c53030;
+.alert-message.danger h4 {
+    color: #f87171;
+}
+
+/* Success - зеленый */
+.alert-message.success::before {
+    background: #22c55e;
+    box-shadow: 0 0 14px rgba(34, 197, 94, 0.4);
 }
 
 .alert-message.success {
-    background: rgba(107, 207, 127, 0.08);
-    border: 1px solid rgba(107, 207, 127, 0.2);
-    border-left-color: var(--proton-success);
-    color: #a3e7b5;
+    color: var(--proton-fg);
 }
 
-:root[data-theme="light"] .alert-message.success {
-    background: rgba(39, 103, 73, 0.1);
-    border-color: rgba(39, 103, 73, 0.3);
-    color: #276749;
+.alert-message.success h4 {
+    color: #22c55e;
+}
+
+/* Info - синий */
+.alert-message.info::before {
+    background: var(--proton-accent);
+    box-shadow: 0 0 14px rgba(var(--proton-accent-rgb), 0.4);
 }
 
 .alert-message.info {
-    background: var(--proton-accent-glow);
-    border: 1px solid var(--proton-accent-glow);
+    color: var(--proton-fg);
+}
+
+.alert-message.info h4 {
     color: var(--proton-accent);
 }
 
+/* Light theme */
+:root[data-theme="light"] .alert-message {
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="light"] .alert-message:hover {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme="light"] .alert-message-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+:root[data-theme="light"] .alert-message.warning h4 {
+    color: #d97706;
+}
+
+:root[data-theme="light"] .alert-message.danger h4 {
+    color: #dc2626;
+}
+
+:root[data-theme="light"] .alert-message.success h4 {
+    color: #16a34a;
+}
+
+:root[data-theme="light"] .alert-message.info h4 {
+    color: var(--proton-accent);
+}
+
+/* Content wrapper */
+.alert-message>.alert-message-content {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+/* Header row: title + close button */
+.alert-message-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 24px;
+}
+
 .alert-message h4 {
-    margin: 0 0 8px 0;
-    font-size: 15px;
+    margin: 0;
+    font-size: 0.95rem;
     font-weight: 600;
+    line-height: 1.3;
+    flex: 1;
+    min-width: 0;
 }
 
 .alert-message p {
     margin: 0;
-    line-height: 1.6;
+    line-height: 1.45;
+    font-size: 0.84rem;
+    color: var(--proton-fg-secondary);
     opacity: 0.95;
+}
+
+/* Buttons inside alerts - elegant compact style */
+.alert-message .cbi-button,
+.alert-message button:not(.alert-message-close),
+.alert-message .btn,
+.alert-message a.cbi-button {
+    margin: 0;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    min-height: 28px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+
+/* Footer with action buttons */
+.alert-message-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.2rem;
+}
+
+.alert-message-footer .cbi-button,
+.alert-message-footer .btn,
+.alert-message-footer a.cbi-button {
+    margin: 0;
+}
+
+/* Mobile responsive */
+@media (max-width: 800px) {
+    .alert-message {
+        padding: 0.85rem 0.9rem;
+    }
+
+    .alert-message.proton-alert-floating {
+        top: 72px;
+        right: 12px;
+        width: calc(100vw - 24px);
+    }
+
+    .alert-message h4 {
+        font-size: 0.9rem;
+    }
+
+    .alert-message p {
+        font-size: 0.8rem;
+    }
+
+    .alert-message .cbi-button,
+    .alert-message button:not(.alert-message-close),
+    .alert-message .btn,
+    .alert-message a.cbi-button {
+        font-size: 0.72rem;
+        padding: 0.3rem 0.65rem;
+        min-height: 26px;
+    }
 }
 
 /* =====================================================
@@ -3548,6 +4171,20 @@ body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifa
 
 .cbi-tooltip-container:hover .cbi-tooltip:not(:empty) {
     opacity: 1;
+}
+
+body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox .cbi-tooltip-container {
+    position: relative;
+}
+
+body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox .cbi-tooltip {
+    left: 50%;
+    right: auto;
+    top: calc(100% + 8px);
+    bottom: auto;
+    transform: translateX(-50%);
+    max-width: min(300px, calc(100vw - 32px));
+    box-sizing: border-box;
 }
 
 /* =====================================================
@@ -4059,7 +4696,7 @@ body.modal-overlay-active #modal_overlay {
         min-height: 64px;
         width: 100%;
         max-width: 100vw;
-        overflow: hidden;
+        overflow: visible;
     }
 
     #menubar-inner {
@@ -4070,7 +4707,7 @@ body.modal-overlay-active #modal_overlay {
         padding-right: 12px;
         height: 64px;
         box-sizing: border-box;
-        overflow: hidden;
+        overflow: visible;
     }
 
     /* Hamburger Button */
@@ -4146,6 +4783,56 @@ body.modal-overlay-active #modal_overlay {
 
     #menubar .distversion {
         display: none;
+    }
+
+    /* Поиск: скрыт по умолчанию на мобильных, чтобы не обрезать hostname */
+    #proton-search-container {
+        display: none;
+    }
+
+    /* Показываем поиск только когда бургер-меню открыто */
+    #menubar-inner:has(h2.active) #proton-search-container,
+    #menubar-inner:has(.navigation.active) #proton-search-container {
+        display: flex;
+        flex: 1;
+        margin-right: 12px;
+        justify-content: flex-end;
+        max-width: 100%;
+    }
+
+    /* Wrapper поиска на мобильных */
+    #menubar-inner:has(h2.active) .proton-search-wrapper,
+    #menubar-inner:has(.navigation.active) .proton-search-wrapper {
+        width: 34px;
+        max-width: 100%;
+    }
+
+    /* Раскрытие поиска на всю ширину */
+    #menubar-inner:has(h2.active) .proton-search-wrapper:focus-within,
+    #menubar-inner:has(h2.active) .proton-search-wrapper.active,
+    #menubar-inner:has(.navigation.active) .proton-search-wrapper:focus-within,
+    #menubar-inner:has(.navigation.active) .proton-search-wrapper.active {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Скрываем hostname и индикаторы при развернутом поиске */
+    #menubar-inner:has(.proton-search-wrapper:focus-within) .hostname,
+    #menubar-inner:has(.proton-search-wrapper:focus-within) #indicators,
+    #menubar-inner:has(.proton-search-wrapper.active) .hostname,
+    #menubar-inner:has(.proton-search-wrapper.active) #indicators {
+        display: none;
+    }
+
+    /* Выпадающий список результатов поиска */
+    .proton-search-results {
+        position: fixed;
+        top: 68px;
+        left: 16px;
+        right: 16px;
+        width: auto;
+        min-width: 0;
+        max-width: calc(100vw - 32px);
     }
 
     /* Sidebar as slide-out panel - position:fixed pulls it out of menubar flow */
@@ -5242,11 +5929,55 @@ body.modal-overlay-active #modal_overlay {
         margin: 0;
         overflow: visible;
         background: transparent;
+        transition: opacity 0.25s ease;
     }
 
     #mainmenu>div {
         position: static;
         top: auto;
+    }
+
+    /* Search open / closing: убираем #mainmenu из потока и прячем */
+    #menubar-inner:has(.proton-search-wrapper:focus-within) #mainmenu,
+    #menubar-inner:has(.proton-search-wrapper.active) #mainmenu,
+    #menubar-inner:has(.proton-search-wrapper.closing) #mainmenu {
+        flex: 0 0 0px;
+        min-width: 0;
+        overflow: hidden;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    /* #indicators всегда виден — отдельных правил для поиска не нужно */
+
+    /* Контейнер поиска занимает освобождённое пространство меню */
+    #menubar-inner:has(.proton-search-wrapper:focus-within) #proton-search-container,
+    #menubar-inner:has(.proton-search-wrapper.active) #proton-search-container {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: flex-end;
+    }
+
+    #menubar-inner:has(.proton-search-wrapper.closing) #proton-search-container,
+    #proton-search-container.search-closing {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: flex-end;
+    }
+
+    /* Обёртка растягивается на весь контейнер */
+    #menubar-inner:has(.proton-search-wrapper:focus-within) #proton-search-container .proton-search-wrapper,
+    #menubar-inner:has(.proton-search-wrapper.active) #proton-search-container .proton-search-wrapper {
+        width: 100%;
+        max-width: none;
+    }
+
+    /* При закрытии обёртка анимированно схлопывается */
+    #menubar-inner:has(.proton-search-wrapper.closing) #proton-search-container .proton-search-wrapper,
+    #proton-search-container.search-closing .proton-search-wrapper {
+        width: 34px;
+        max-width: none;
     }
 
     #mainmenu .mainmenu.l1 {
@@ -7935,6 +8666,39 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
     padding-left: 24px;
 }
 
+body[data-page="admin-status-overview"] .proton-package-arch {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--proton-accent-rgb, 94, 158, 255), 0.22);
+    background: rgba(var(--proton-accent-rgb, 94, 158, 255), 0.08);
+    color: var(--proton-accent);
+    font-size: 0.78rem;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    vertical-align: middle;
+    font-family: Consolas, "SFMono-Regular", Menlo, Monaco, "Liberation Mono", monospace;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+body[data-page="admin-status-overview"] a.proton-package-arch:hover {
+    border-color: rgba(var(--proton-accent-rgb, 94, 158, 255), 0.4);
+    background: rgba(var(--proton-accent-rgb, 94, 158, 255), 0.14);
+}
+
+body[data-page="admin-status-overview"] a.proton-package-arch:focus-visible {
+    outline: 2px solid rgba(var(--proton-accent-rgb, 94, 158, 255), 0.35);
+    outline-offset: 2px;
+}
+
+:root[data-theme="light"] body[data-page="admin-status-overview"] .proton-package-arch {
+    background: rgba(var(--proton-accent-rgb, 75, 85, 99), 0.08);
+}
+
 /* Zebra striping для улучшенной читаемости */
 body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table tr:nth-child(even) {
     background: var(--proton-bg-secondary);
@@ -8053,6 +8817,32 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
     color: var(--proton-fg-secondary);
     font-size: 0.85rem;
     line-height: 1.5;
+}
+
+@keyframes proton-anchor-highlight-pulse {
+    0% {
+        outline-color: rgba(79, 141, 255, 0);
+        background-color: rgba(79, 141, 255, 0);
+        box-shadow: 0 0 0 0 rgba(79, 141, 255, 0);
+    }
+
+    18% {
+        outline-color: rgba(79, 141, 255, 0.92);
+        background-color: rgba(79, 141, 255, 0.16);
+        box-shadow: 0 0 0 8px rgba(79, 141, 255, 0.14);
+    }
+
+    100% {
+        outline-color: rgba(79, 141, 255, 0);
+        background-color: rgba(79, 141, 255, 0);
+        box-shadow: 0 0 0 0 rgba(79, 141, 255, 0);
+    }
+}
+
+.proton-anchor-highlight-target {
+    outline: 2px solid transparent;
+    outline-offset: 3px;
+    animation: proton-anchor-highlight-pulse 1.6s ease-out;
 }
 
 .proton-load-tooltip-legend {
@@ -8382,6 +9172,522 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
 }
 
 /* =====================================================
+   Theme Settings - Search Page Index
+   ===================================================== */
+.proton-search-index-setting {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--proton-border);
+}
+
+.proton-search-index-panel {
+    margin: 0.6rem 0 0 0;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.proton-search-index-panel-focus {
+    border-color: color-mix(in srgb, var(--proton-accent) 65%, var(--proton-border));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--proton-accent) 18%, transparent);
+}
+
+[data-theme="light"] .proton-search-index-panel {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.proton-search-index-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.proton-search-index-field {
+    min-width: 0;
+}
+
+.proton-search-index-field-size {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.proton-search-index-label {
+    display: inline;
+    font-size: 0.8rem;
+    font-weight: 400;
+    opacity: 0.65;
+    white-space: nowrap;
+}
+
+.proton-search-index-input {
+    width: 100%;
+    min-height: 46px;
+    padding: 0.55rem 0.85rem;
+    border-radius: var(--proton-radius);
+}
+
+.proton-search-index-size {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--proton-fg);
+}
+
+.proton-search-index-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 46px;
+    padding: 0.65rem 1.1rem;
+    border-radius: var(--proton-radius);
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.proton-search-index-btn-secondary {
+    border-color: var(--proton-border);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="light"] .proton-search-index-btn-secondary {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.proton-search-index-btn-icon {
+    width: 46px;
+    min-width: 46px;
+    padding: 0;
+}
+
+.proton-search-index-icon {
+    flex-shrink: 0;
+}
+
+.proton-search-index-status {
+    margin-top: 0.5rem;
+    padding: 0;
+    border: none;
+    background: none;
+    line-height: 1.4;
+    font-size: 0.82rem;
+    opacity: 0.7;
+}
+
+.proton-search-index-log {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="light"] .proton-search-index-log {
+    border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.proton-search-index-log-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.proton-search-index-log-toggle:hover {
+    opacity: 0.92;
+}
+
+.proton-search-index-log-toggle:focus-visible {
+    outline: 2px solid rgba(var(--proton-accent-rgb, 94, 158, 255), 0.42);
+    outline-offset: 6px;
+    border-radius: 8px;
+}
+
+.proton-search-index-log-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.58;
+}
+
+.proton-search-index-log-chevron {
+    flex: 0 0 auto;
+    opacity: 0.68;
+    transform: rotate(0deg);
+    transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.proton-search-index-log.is-expanded .proton-search-index-log-chevron {
+    opacity: 0.98;
+    transform: rotate(180deg);
+}
+
+.proton-search-index-log-content {
+    padding-top: 0.6rem;
+}
+
+.proton-search-index-log-content[hidden],
+.proton-search-index-log-live[hidden] {
+    display: none !important;
+}
+
+.proton-search-index-log-live {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    margin-top: 0.55rem;
+    padding: 0.58rem 0.72rem;
+    border: 1px solid rgba(var(--proton-accent-rgb, 94, 158, 255), 0.18);
+    border-radius: calc(var(--proton-radius) - 2px);
+    background: rgba(var(--proton-accent-rgb, 94, 158, 255), 0.09);
+    color: var(--proton-text);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.proton-search-index-log-live::before {
+    content: "";
+    flex: 0 0 8px;
+    width: 8px;
+    height: 8px;
+    margin-top: 0.28rem;
+    border-radius: 999px;
+    background: var(--proton-accent);
+    box-shadow: 0 0 0 5px rgba(var(--proton-accent-rgb, 94, 158, 255), 0.14);
+}
+
+.proton-search-index-log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.48rem;
+    margin-top: 0.6rem;
+}
+
+.proton-search-index-log-empty {
+    margin-top: 0.58rem;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    opacity: 0.52;
+}
+
+.proton-search-index-log-entry {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 0.7rem;
+    align-items: start;
+    padding: 0.58rem 0.68rem;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.025);
+    box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] .proton-search-index-log-entry {
+    border-color: rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.018);
+    box-shadow: inset 2px 0 0 rgba(0, 0, 0, 0.08);
+}
+
+.proton-search-index-log-entry-info {
+    box-shadow: inset 2px 0 0 rgba(var(--proton-accent-rgb, 94, 158, 255), 0.58);
+}
+
+.proton-search-index-log-entry-success {
+    box-shadow: inset 2px 0 0 rgba(34, 197, 94, 0.72);
+}
+
+.proton-search-index-log-entry-warning {
+    box-shadow: inset 2px 0 0 rgba(245, 158, 11, 0.78);
+}
+
+.proton-search-index-log-entry-error {
+    box-shadow: inset 2px 0 0 rgba(248, 113, 113, 0.78);
+}
+
+.proton-search-index-log-entry-muted {
+    box-shadow: inset 2px 0 0 rgba(148, 163, 184, 0.52);
+}
+
+.proton-search-index-log-time {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--proton-text-secondary);
+    opacity: 0.78;
+}
+
+.proton-search-index-log-message {
+    min-width: 0;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--proton-text);
+}
+
+.proton-search-index-log-entry-body {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.42rem;
+}
+
+.proton-search-index-log-entry-details {
+    min-width: 0;
+}
+
+.proton-search-index-log-entry-details-toggle {
+    cursor: pointer;
+    font-size: 0.74rem;
+    line-height: 1.35;
+    color: var(--proton-text-secondary);
+    opacity: 0.86;
+}
+
+.proton-search-index-log-entry-details[open] .proton-search-index-log-entry-details-toggle {
+    color: var(--proton-text);
+    opacity: 1;
+}
+
+.proton-search-index-log-entry-details-list {
+    margin: 0.42rem 0 0;
+    padding-left: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.34rem;
+}
+
+.proton-search-index-log-entry-detail {
+    min-width: 0;
+    color: var(--proton-text-secondary);
+    font-size: 0.76rem;
+    line-height: 1.42;
+    word-break: break-word;
+}
+
+.proton-search-index-progress {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 3px;
+    z-index: 2200;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.proton-search-index-progress.is-visible {
+    opacity: 1;
+}
+
+.proton-search-index-progress-bar {
+    width: 100%;
+    height: 100%;
+    transform: scaleX(0);
+    transform-origin: left center;
+    background: linear-gradient(90deg, var(--proton-accent) 0%, rgba(var(--proton-accent-rgb, 94, 158, 255), 0.65) 100%);
+    box-shadow: 0 0 14px rgba(var(--proton-accent-rgb, 94, 158, 255), 0.45);
+    transition: transform 0.18s linear, opacity 0.2s ease;
+}
+
+.proton-search-index-progress.is-complete .proton-search-index-progress-bar {
+    transition: transform 0.16s ease-out, opacity 0.26s ease;
+}
+
+.proton-search-index-toast {
+    position: fixed;
+    top: 84px;
+    /* fallback; JS overrides via style.top */
+    right: 24px;
+    z-index: 2201;
+    display: flex;
+    align-items: stretch;
+    gap: 0.85rem;
+    width: min(420px, calc(100vw - 32px));
+    padding: 0.95rem 1rem;
+    border: 1px solid var(--proton-border);
+    border-radius: calc(var(--proton-radius) + 4px);
+    background: rgba(24, 27, 34, 0.96);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.proton-search-index-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.proton-search-index-toast::before {
+    content: "";
+    width: 4px;
+    min-width: 4px;
+    border-radius: 999px;
+    background: #22c55e;
+    box-shadow: 0 0 14px rgba(34, 197, 94, 0.35);
+}
+
+.proton-search-index-toast.is-error::before {
+    background: #f87171;
+    box-shadow: 0 0 14px rgba(248, 113, 113, 0.35);
+}
+
+.proton-search-index-toast-content {
+    min-width: 0;
+}
+
+.proton-search-index-toast-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--proton-text);
+}
+
+.proton-search-index-toast-body {
+    margin-top: 0.2rem;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: var(--proton-text-secondary);
+}
+
+.proton-search-index-hud {
+    position: fixed;
+    top: 84px;
+    /* fallback; JS overrides via style.top */
+    right: 24px;
+    transform: translateY(-10px);
+    z-index: 2202;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: min(420px, calc(100vw - 32px));
+    padding: 0.72rem 0.85rem;
+    border: 1px solid var(--proton-border);
+    border-radius: calc(var(--proton-radius) + 6px);
+    background: rgba(24, 27, 34, 0.94);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.proton-search-index-hud.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.proton-search-index-hud-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.proton-search-index-hud-title {
+    font-size: 0.87rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--proton-text);
+}
+
+.proton-search-index-hud-body {
+    margin-top: 0.14rem;
+    font-size: 0.77rem;
+    line-height: 1.4;
+    color: var(--proton-text-secondary);
+}
+
+.proton-search-index-hud-cancel {
+    min-height: 34px;
+    padding: 0.35rem 0.7rem;
+    white-space: nowrap;
+}
+
+[data-theme="light"] .proton-search-index-toast {
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="light"] .proton-search-index-hud {
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.11);
+}
+
+@media (max-width: 860px) {
+    /* flex layout — no grid overrides needed */
+}
+
+@media (max-width: 560px) {
+    .proton-search-index-toolbar {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .proton-search-index-log-entry {
+        grid-template-columns: 1fr;
+        gap: 0.28rem;
+    }
+
+    .proton-search-index-btn-primary {
+        width: 100%;
+        order: 1;
+    }
+
+    .proton-search-index-field-size {
+        margin-left: 0;
+        flex: 1;
+        order: 2;
+    }
+
+    .proton-search-index-btn-icon {
+        order: 3;
+    }
+
+    .proton-search-index-toast {
+        top: 72px;
+        /* fallback */
+        right: 12px;
+        width: calc(100vw - 24px);
+    }
+
+    .proton-search-index-hud {
+        top: 72px;
+        /* fallback */
+        right: 12px;
+        width: calc(100vw - 24px);
+        padding: 0.62rem 0.68rem;
+        gap: 0.55rem;
+    }
+
+    .proton-search-index-hud-title {
+        font-size: 0.82rem;
+    }
+
+    .proton-search-index-hud-body {
+        font-size: 0.74rem;
+    }
+
+    .proton-search-index-hud-cancel {
+        min-height: 32px;
+        padding: 0.3rem 0.58rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* =====================================================
    Theme Settings - Backup & Restore
    ===================================================== */
 .proton-backup-section {
@@ -8499,8 +9805,14 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
     border: 1px solid var(--proton-border);
     border-radius: var(--proton-radius);
     padding: 14px 16px;
+    cursor: pointer;
     /*backdrop-filter: blur(10px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);*/
+}
+
+.proton-temp-widget:focus-visible {
+    outline: 2px solid var(--proton-accent);
+    outline-offset: 2px;
 }
 
 /* Если виджеты в контейнере - объединяем их в единый блок */
@@ -8552,6 +9864,19 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
     letter-spacing: -0.01em;
 }
 
+.proton-temp-title-link {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: var(--proton-transition);
+}
+
+.proton-temp-title-link:hover,
+.proton-temp-title-link:focus-visible {
+    color: var(--proton-accent);
+    border-bottom-color: var(--proton-accent);
+}
+
 .proton-temp-info {
     display: inline-flex;
     align-items: center;
@@ -8564,6 +9889,7 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
     font-size: 12px;
     font-weight: 600;
     cursor: help;
+    z-index: 2;
     transition: var(--proton-transition);
     position: relative;
 }
@@ -9004,6 +10330,7 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
 
 .proton-temp-empty,
 .proton-temp-loading {
+    grid-column: 1 / -1;
     text-align: center;
     padding: 24px;
     color: var(--proton-muted);
@@ -9388,6 +10715,7 @@ body[data-page="admin-status-overview"] .cbi-section:first-of-type table.table t
 .proton-service-status {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     flex-shrink: 0;
 }
@@ -10177,7 +11505,8 @@ body.login-page {
 body[data-page="admin-status-realtime-load"] .cbi-section>div[style*="background:#fff"],
 body[data-page="admin-status-realtime-bandwidth"] .cbi-section>div[style*="background:#fff"],
 body[data-page="admin-status-realtime-wireless"] .cbi-section>div[style*="background:#fff"],
-body[data-page="admin-status-realtime-connections"] .cbi-section>div[style*="background:#fff"] {
+body[data-page="admin-status-realtime-connections"] .cbi-section>div[style*="background:#fff"],
+body[data-page="admin-status-realtime-temperature"] .cbi-section>div[style*="background:#fff"] {
     background: var(--proton-bg-secondary) !important;
 }
 
@@ -10185,7 +11514,8 @@ body[data-page="admin-status-realtime-connections"] .cbi-section>div[style*="bac
 :root[data-theme="light"] body[data-page="admin-status-realtime-load"] .cbi-section>div[style*="background:#fff"],
 :root[data-theme="light"] body[data-page="admin-status-realtime-bandwidth"] .cbi-section>div[style*="background:#fff"],
 :root[data-theme="light"] body[data-page="admin-status-realtime-wireless"] .cbi-section>div[style*="background:#fff"],
-:root[data-theme="light"] body[data-page="admin-status-realtime-connections"] .cbi-section>div[style*="background:#fff"] {
+:root[data-theme="light"] body[data-page="admin-status-realtime-connections"] .cbi-section>div[style*="background:#fff"],
+:root[data-theme="light"] body[data-page="admin-status-realtime-temperature"] .cbi-section>div[style*="background:#fff"] {
     background: #ffffff !important;
 }
 
@@ -10204,6 +11534,721 @@ body[data-page^="admin-status-realtime"] .cbi-section svg text {
 
 :root[data-theme="light"] body[data-page^="admin-status-realtime"] .cbi-section svg text {
     fill: #4a5568 !important;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-realtime-page {
+    display: grid;
+    gap: 18px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-window-selector {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-window-btn {
+    appearance: none;
+    border: 1px solid var(--proton-border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--proton-bg-tertiary) 88%, transparent);
+    color: var(--proton-fg-secondary);
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--proton-transition);
+    white-space: nowrap;
+    line-height: 1.4;
+    text-align: center;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-window-btn:hover {
+    border-color: var(--proton-fg-secondary);
+    color: var(--proton-fg);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-window-btn[data-active="true"] {
+    border-color: var(--proton-accent);
+    color: var(--proton-accent);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-section,
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table-section {
+    background: var(--proton-bg-secondary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius);
+    padding: 16px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-title-wrap {
+    min-width: 0;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-toolbar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 6px 8px 6px 12px;
+    border: 1px solid var(--proton-border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--proton-bg-tertiary) 76%, transparent);
+    flex: 0 0 auto;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-toolbar-label {
+    color: var(--proton-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip {
+    --sensor-color: var(--proton-accent);
+    appearance: none;
+    border: 1px solid var(--proton-border);
+    border-radius: 999px;
+    background: var(--proton-bg-tertiary);
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: var(--proton-transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: inset 0 0 0 1px transparent;
+    max-width: 100%;
+    min-height: 34px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--sensor-color);
+    flex: 0 0 auto;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip:hover,
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip:focus-visible,
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip[data-active="true"] {
+    border-color: var(--sensor-color);
+    background: var(--proton-bg-hover);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip[data-active="true"] {
+    color: var(--proton-fg);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+        0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-label {
+    color: var(--proton-fg);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-meta {
+    color: var(--proton-fg-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-summary-card {
+    background: var(--proton-bg-tertiary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-summary-card.is-status .proton-temp-summary-value {
+    font-size: 1rem;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-summary-label {
+    color: var(--proton-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-summary-value {
+    color: var(--proton-fg);
+    font-size: 1.08rem;
+    font-variant-numeric: tabular-nums;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-title {
+    margin: 0;
+    font-size: 1.06rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-realtime-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-legend-item {
+    --sensor-color: var(--proton-accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border: 1px solid var(--proton-border);
+    border-radius: 999px;
+    background: var(--proton-bg-tertiary);
+    font-size: 12px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--sensor-color);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-legend-name {
+    color: var(--proton-fg-secondary);
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-legend-value {
+    color: var(--proton-fg);
+    font-variant-numeric: tabular-nums;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-wrap {
+    position: relative;
+    min-height: 340px;
+    border-radius: var(--proton-radius-sm);
+    overflow: hidden;
+    background:
+        radial-gradient(circle at top left, rgba(107, 207, 127, 0.12), transparent 28%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+    border: 1px solid var(--proton-border);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-svg {
+    display: block;
+    width: 100%;
+    height: 340px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-bg {
+    fill: transparent;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-grid-line {
+    stroke: rgba(255, 255, 255, 0.12);
+    stroke-dasharray: 4 6;
+    stroke-width: 1;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-axis-label {
+    font-size: 12px;
+    fill: var(--proton-fg-secondary);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-threshold-label {
+    font-size: 11px;
+    font-weight: 600;
+    fill: var(--proton-fg);
+    paint-order: stroke fill;
+    stroke: var(--proton-bg-secondary);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-series-label {
+    font-size: 11px;
+    fill: var(--proton-fg);
+    opacity: 0.85;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-threshold {
+    stroke-width: 1.5;
+    stroke-dasharray: 8 8;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-threshold-warm {
+    stroke: rgba(251, 191, 36, 0.8);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-threshold-hot {
+    stroke: rgba(249, 115, 22, 0.8);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-threshold-critical {
+    stroke: rgba(239, 68, 68, 0.8);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-average-line {
+    stroke: rgba(255, 255, 255, 0.24);
+    stroke-dasharray: 6 6;
+    stroke-width: 1.5;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-average-label {
+    font-size: 12px;
+    fill: var(--proton-fg-secondary);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-area {
+    opacity: 0.18;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-line {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-point {
+    stroke: rgba(255, 255, 255, 0.6);
+    stroke-width: 1.5;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-hover-layer {
+    fill: transparent;
+    pointer-events: all;
+    touch-action: none;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-hover-guide {
+    stroke: var(--proton-chart-guide);
+    stroke-dasharray: 4 6;
+    stroke-width: 1;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-hover-point {
+    stroke: var(--proton-chart-point-ring);
+    stroke-width: 1.8;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-tooltip {
+    position: absolute;
+    z-index: 2;
+    min-width: 176px;
+    max-width: min(280px, calc(100% - 16px));
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--proton-tooltip-border);
+    background: var(--proton-tooltip-bg);
+    box-shadow: var(--proton-tooltip-shadow);
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-tooltip[data-placement="top"] {
+    transform: translateY(-100%);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-title {
+    color: var(--proton-fg);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-time {
+    color: var(--proton-muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-body {
+    display: grid;
+    gap: 6px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-key {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-swatch {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--sensor-color);
+    flex: 0 0 auto;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-label {
+    color: var(--proton-fg-secondary);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-value {
+    color: var(--proton-fg);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--proton-muted);
+    font-size: 14px;
+    backdrop-filter: blur(4px);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-realtime-status {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: var(--proton-radius-sm);
+    font-size: 13px;
+    display: none;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-realtime-status[data-state="warning"] {
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.18);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table-title {
+    margin: 0 0 12px;
+    font-size: 1.02rem;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--proton-radius-sm);
+    overflow: hidden;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table thead th {
+    background: rgba(255, 255, 255, 0.035);
+    color: var(--proton-fg-secondary);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table th,
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table td {
+    padding: 10px 12px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table tbody tr {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-sensor-cell {
+    min-width: 180px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-sensor-chip {
+    --sensor-color: var(--proton-accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--proton-fg);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-sensor-chip::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--sensor-color);
+    flex: 0 0 auto;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-sensor-path {
+    margin-top: 4px;
+    color: var(--proton-muted);
+    font-size: 12px;
+    word-break: break-all;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-metric-value {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-state-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 76px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-state-badge[data-level="normal"] {
+    color: var(--proton-success);
+    background: rgba(107, 207, 127, 0.1);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-state-badge[data-level="warm"] {
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.12);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-state-badge[data-level="hot"] {
+    color: #f97316;
+    background: rgba(249, 115, 22, 0.12);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-state-badge[data-level="critical"] {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.12);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table-empty {
+    text-align: center;
+    color: var(--proton-muted);
+    padding: 24px 12px;
+}
+
+@media (max-width: 900px) {
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-toolbar {
+        width: fit-content;
+        max-width: 100%;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    body[data-page="admin-status-realtime-temperature"] .cbi-map>h2 {
+        font-size: 1.9rem;
+        line-height: 1.08;
+        margin-bottom: 14px;
+        overflow-wrap: anywhere;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .cbi-map>.cbi-map-descr {
+        font-size: 14px;
+        line-height: 1.55;
+        margin-bottom: 14px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-section,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table-section {
+        padding: 12px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-toolbar {
+        width: 100%;
+        justify-content: space-between;
+        padding: 8px 10px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-window-selector {
+        justify-content: flex-end;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-selector {
+        gap: 8px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip {
+        width: 100%;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 8px 10px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-label {
+        flex: 1 1 auto;
+        white-space: normal;
+        line-height: 1.25;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-meta {
+        flex: 0 0 auto;
+        padding-left: 10px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-summary {
+        grid-template-columns: 1fr;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-wrap,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-svg {
+        min-height: 260px;
+        height: 260px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-axis-label,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-threshold-label {
+        font-size: 10px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-series-label {
+        display: none;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-tooltip {
+        min-width: 160px;
+        max-width: calc(100% - 12px);
+        padding: 9px 10px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-head {
+        gap: 8px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table table,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table tbody,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table tr,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table td {
+        display: block;
+        width: 100%;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table thead {
+        display: none;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table tbody {
+        display: grid;
+        gap: 12px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table tbody tr {
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: var(--proton-radius-sm);
+        background: var(--proton-bg-tertiary);
+        padding: 12px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table td {
+        padding: 0;
+        border: 0;
+        background: transparent;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-sensor-cell {
+        min-width: 0;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-metric-value,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-status-cell {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 7px 0;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-metric-value::before,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-status-cell::before {
+        content: attr(data-label);
+        color: var(--proton-muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-status-cell {
+        padding-top: 10px;
+        margin-top: 4px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-state-badge {
+        min-width: 0;
+    }
 }
 
 

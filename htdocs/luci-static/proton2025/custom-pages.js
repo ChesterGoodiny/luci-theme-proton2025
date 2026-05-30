@@ -1,5 +1,8 @@
 /**
  * Proton2025 - Custom Pages Detection
+ * Copyright 2025-2026 ChesterGoodiny
+ * Licensed under the Apache License, Version 2.0
+ * See LICENSE and NOTICE for details.
  * Применяет класс proton-custom-page для страниц сторонних пакетов
  * и динамически расширяет контейнер вправо если контент шире
  */
@@ -50,6 +53,11 @@
     "admin-network-diagnostics",
   ];
 
+  // Некоторые встроенные LuCI страницы всё же нуждаются в wide-layout логике
+  // из proton-custom-page, несмотря на стандартный префикс data-page.
+  const forcedCustomPages = ["admin-system-leds"];
+  const forcedCustomUrlPatterns = ["/admin/system/leds"];
+
   // Debounce утилита
   let adjustDebounceTimer = null;
   const DEBOUNCE_DELAY = 150;
@@ -68,10 +76,18 @@
 
     // Если есть data-page - используем его
     if (dataPage) {
+      if (forcedCustomPages.includes(dataPage)) {
+        return true;
+      }
+
       const isStandard = standardPagePrefixes.some((prefix) =>
         dataPage.startsWith(prefix),
       );
       return !isStandard;
+    }
+
+    if (forcedCustomUrlPatterns.some((pattern) => path.includes(pattern))) {
+      return true;
     }
 
     // Fallback: проверяем URL

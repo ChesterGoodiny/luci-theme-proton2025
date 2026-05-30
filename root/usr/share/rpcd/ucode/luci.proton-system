@@ -1,0 +1,150 @@
+// Proton2025 Theme - System Info RPC Module
+// Copyright 2025-2026 ChesterGoodiny
+// Licensed under the Apache License, Version 2.0
+// See LICENSE and NOTICE for details.
+// Reads lightweight system metadata for Overview enhancements
+
+'use strict';
+
+import { readfile, lsdir } from 'fs';
+
+function readFileContent(path) {
+	let content = readfile(path);
+	return content ? trim(content) : null;
+}
+
+function parseReleaseValue(content, key) {
+	if (!content || !key) return null;
+
+	let pattern = key + "='";
+	let start = index(content, pattern);
+	if (start < 0) return null;
+
+	let valueStart = start + length(pattern);
+	let tail = substr(content, valueStart);
+	let valueEnd = index(tail, "'");
+	if (valueEnd < 0) return null;
+
+	return substr(tail, 0, valueEnd);
+}
+
+function extractUrl(line) {
+	if (!line) return null;
+
+	let httpsStart = index(line, 'https://');
+	let httpStart = index(line, 'http://');
+	let start = httpsStart;
+
+	if (start < 0 || (httpStart >= 0 && httpStart < start))
+		start = httpStart;
+
+	if (start < 0) return null;
+
+	let tail = substr(line, start);
+	let end = length(tail);
+
+	for (let i = 0; i < length(tail); i++) {
+		let ch = substr(tail, i, 1);
+		if (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n' || ch == '"' || ch == '\'' || ch == '#') {
+			end = i;
+			break;
+		}
+	}
+
+	return substr(tail, 0, end);
+}
+
+function isCommentOrEmptyLine(line) {
+	let normalized = trim(line || '');
+	if (!normalized) return true;
+
+	return index(normalized, '#') == 0;
+}
+
+function normalizePackageFeedUrl(url, packageArch) {
+	if (!url || !packageArch) return null;
+
+	let marker = '/packages/' + packageArch;
+	let markerPos = index(url, marker);
+	if (markerPos < 0) return null;
+
+	return substr(url, 0, markerPos + length(marker)) + '/';
+}
+
+function findPackageFeedUrlInContent(content, packageArch) {
+	if (!content || !packageArch) return null;
+
+	for (let line in split(content, "\n")) {
+		if (isCommentOrEmptyLine(line))
+			continue;
+
+		let url = extractUrl(line);
+		let normalized = normalizePackageFeedUrl(url, packageArch);
+		if (normalized) return normalized;
+	}
+
+	return null;
+}
+
+function buildFallbackPackageFeedUrl(packageArch, releaseVersion) {
+	let normalizedRelease = trim(releaseVersion || '');
+	if (!normalizedRelease || !packageArch) return null;
+
+	if (normalizedRelease == 'SNAPSHOT' || normalizedRelease == 'snapshot')
+		return 'https://downloads.openwrt.org/snapshots/packages/' + packageArch + '/';
+
+	let firstChar = substr(normalizedRelease, 0, 1);
+	if (index('0123456789', firstChar) == 0 || index('0123456789', firstChar) > 0)
+		return 'https://downloads.openwrt.org/releases/' + normalizedRelease + '/packages/' + packageArch + '/';
+
+	return null;
+}
+
+function findPackageFeedUrl(packageArch, releaseVersion) {
+	let directFiles = [
+		'/etc/opkg/distfeeds.conf',
+		'/etc/opkg/customfeeds.conf',
+		'/etc/apk/repositories',
+		'/etc/apk/distfeeds.list',
+		'/etc/apk/repositories.d/distfeeds.list'
+	];
+
+	for (let path in directFiles) {
+		let content = readFileContent(path);
+		let url = findPackageFeedUrlInContent(content, packageArch);
+		if (url) return url;
+	}
+
+	let repoFiles = lsdir('/etc/apk/repositories.d');
+	if (repoFiles) {
+		for (let name in repoFiles) {
+			let content = readFileContent('/etc/apk/repositories.d/' + name);
+			let url = findPackageFeedUrlInContent(content, packageArch);
+			if (url) return url;
+		}
+	}
+
+	return buildFallbackPackageFeedUrl(packageArch, releaseVersion);
+}
+
+function getSystemInfo() {
+	let release = readFileContent('/etc/openwrt_release') || '';
+	let packageArch = parseReleaseValue(release, 'DISTRIB_ARCH');
+	let releaseVersion = parseReleaseValue(release, 'DISTRIB_RELEASE');
+
+	return {
+		package_arch: packageArch,
+		target: parseReleaseValue(release, 'DISTRIB_TARGET'),
+		package_feed_url: findPackageFeedUrl(packageArch, releaseVersion)
+	};
+}
+
+const methods = {
+	getSystemInfo: {
+		call: function() {
+			return getSystemInfo();
+		}
+	}
+};
+
+return { 'luci.proton-system': methods };

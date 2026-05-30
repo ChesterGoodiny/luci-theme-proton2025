@@ -1,5 +1,8 @@
 /**
  * Proton2025 - Services Widget
+ * Copyright 2025-2026 ChesterGoodiny
+ * Licensed under the Apache License, Version 2.0
+ * See LICENSE and NOTICE for details.
  * Мониторинг сервисов с группировкой и поиском
  */
 
@@ -607,6 +610,9 @@
     createServiceCard(info) {
       const card = document.createElement("div");
       card.className = "proton-service-card";
+      card.id = `proton-service-${String(info.serviceName || "")
+        .trim()
+        .replace(/[^a-zA-Z0-9_-]+/g, "-")}`;
       card.dataset.service = info.serviceName;
       card.dataset.category = info.category;
 
@@ -1869,6 +1875,14 @@
       }
     }
 
+    _getRealtimeTemperatureUrl() {
+      if (window.L && typeof L.url === "function") {
+        return L.url("admin", "status", "realtime", "temperature");
+      }
+
+      return "/cgi-bin/luci/admin/status/realtime/temperature";
+    }
+
     // Локализация
     _t(key) {
       if (window.protonT) {
@@ -2103,11 +2117,17 @@
       const widget = document.createElement("div");
       widget.className = "proton-temp-widget";
       widget.id = "proton-temp-widget";
+      widget.setAttribute("role", "link");
+      widget.setAttribute("tabindex", "0");
+
+      const realtimeUrl = this._getRealtimeTemperatureUrl();
 
       widget.innerHTML = `
         <div class="proton-temp-header">
           <h3 class="proton-temp-title">
-            ${this._t("Temperature")}
+            <a class="proton-temp-title-link" href="${realtimeUrl}">
+              ${this._t("Temperature")}
+            </a>
           </h3>
           <div class="proton-temp-info">?
             <div class="proton-temp-tooltip">
@@ -2154,6 +2174,27 @@
           </div>
         </div>
       `;
+
+      const shouldIgnoreNavigation = (target) => {
+        return !!(
+          target &&
+          target.closest(
+            ".proton-temp-info, .proton-temp-tooltip, .proton-temp-title-link, a, button",
+          )
+        );
+      };
+
+      widget.addEventListener("click", (event) => {
+        if (shouldIgnoreNavigation(event.target)) return;
+        window.location.href = realtimeUrl;
+      });
+
+      widget.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        if (shouldIgnoreNavigation(event.target)) return;
+        event.preventDefault();
+        window.location.href = realtimeUrl;
+      });
 
       // Если referenceElement - это контейнер виджетов, добавляем в него
       if (referenceElement.id === "proton-widgets-container") {
@@ -2651,6 +2692,218 @@
   // Позиция строки Load Average в таблице System (9-я строка, индекс 8)
   const LOAD_AVERAGE_ROW_INDEX = 8;
 
+  let overviewSystemInfo = null;
+  let overviewSystemInfoPromise = null;
+  let overviewBoardInfo = null;
+  let overviewBoardInfoPromise = null;
+  let overviewSystemInfoUnavailable = false;
+  let overviewArchitectureObserver = null;
+  let overviewArchitectureInFlight = false;
+
+  function normalizeOverviewText(text) {
+    return String(text || "")
+      .replace(/[:\s]+$/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+  }
+
+  function getOverviewSystemInfoMethod() {
+    if (!(window.L && L.rpc)) return null;
+
+    if (!getOverviewSystemInfoMethod._method) {
+      getOverviewSystemInfoMethod._method = L.rpc.declare({
+        object: "luci.proton-system",
+        method: "getSystemInfo",
+      });
+    }
+
+    return getOverviewSystemInfoMethod._method;
+  }
+
+  function getOverviewBoardInfoMethod() {
+    if (!(window.L && L.rpc)) return null;
+
+    if (!getOverviewBoardInfoMethod._method) {
+      getOverviewBoardInfoMethod._method = L.rpc.declare({
+        object: "system",
+        method: "board",
+      });
+    }
+
+    return getOverviewBoardInfoMethod._method;
+  }
+
+  async function fetchOverviewBoardInfo() {
+    if (overviewBoardInfo) return overviewBoardInfo;
+    if (overviewBoardInfoPromise) return overviewBoardInfoPromise;
+
+    const method = getOverviewBoardInfoMethod();
+    if (!method || !(window.L && L.resolveDefault)) return null;
+
+    overviewBoardInfoPromise = (async () => {
+      try {
+        const result = await L.resolveDefault(method(), null);
+        overviewBoardInfo = result && typeof result === "object" ? result : {};
+        return overviewBoardInfo;
+      } finally {
+        overviewBoardInfoPromise = null;
+      }
+    })();
+
+    return overviewBoardInfoPromise;
+  }
+
+  async function fetchOverviewSystemInfo() {
+    if (overviewSystemInfoUnavailable) return null;
+    if (overviewSystemInfo) return overviewSystemInfo;
+    if (overviewSystemInfoPromise) return overviewSystemInfoPromise;
+
+    const method = getOverviewSystemInfoMethod();
+    if (!method || !(window.L && L.resolveDefault)) return null;
+
+    overviewSystemInfoPromise = (async () => {
+      try {
+        const result = await L.resolveDefault(method(), null);
+        overviewSystemInfo = result && typeof result === "object" ? result : {};
+        return overviewSystemInfo;
+      } catch (e) {
+        overviewSystemInfoUnavailable = true;
+        return null;
+      } finally {
+        overviewSystemInfoPromise = null;
+      }
+    })();
+
+    return overviewSystemInfoPromise;
+  }
+
+  function findArchitectureRow(table, boardInfo) {
+    const rows = Array.from(table.querySelectorAll("tr"));
+    const architectureValue = normalizeOverviewText(
+      boardInfo && boardInfo.system,
+    );
+
+    if (!architectureValue) return null;
+
+    for (let index = 0; index < rows.length; index++) {
+      const secondCell = rows[index].querySelector("td:last-child");
+      if (!secondCell) continue;
+
+      const value = normalizeOverviewText(secondCell.textContent);
+      if (value === architectureValue || value.includes(architectureValue)) {
+        return rows[index];
+      }
+    }
+
+    return null;
+  }
+
+  async function enhancePackageArchitecture() {
+    const table = getOverviewSystemTable();
+    if (!table) return;
+
+    const [systemInfo, boardInfo] = await Promise.all([
+      fetchOverviewSystemInfo(),
+      fetchOverviewBoardInfo(),
+    ]);
+
+    if (!systemInfo || !boardInfo) return;
+
+    const row = findArchitectureRow(table, boardInfo);
+    if (!row) return;
+
+    const secondCell = row.querySelector("td:last-child");
+    if (!secondCell || secondCell.querySelector(".proton-package-arch")) return;
+
+    const packageArch =
+      systemInfo && typeof systemInfo.package_arch === "string"
+        ? systemInfo.package_arch.trim()
+        : "";
+
+    if (!packageArch) return;
+
+    const currentText = secondCell.textContent.replace(/\s+/g, " ").trim();
+    if (currentText.toLowerCase().includes(packageArch.toLowerCase())) return;
+
+    const feedUrl =
+      systemInfo && typeof systemInfo.package_feed_url === "string"
+        ? systemInfo.package_feed_url.trim()
+        : "";
+
+    const badge = document.createElement(feedUrl ? "a" : "span");
+    badge.className = "proton-package-arch";
+    badge.textContent = packageArch;
+    badge.title = feedUrl
+      ? `${packageArch} - ${window.protonT ? window.protonT("Open package repository") : "Open package repository"}`
+      : packageArch;
+
+    if (feedUrl) {
+      badge.href = feedUrl;
+      badge.target = "_blank";
+      badge.rel = "noopener noreferrer";
+    }
+
+    secondCell.appendChild(document.createTextNode(" "));
+    secondCell.appendChild(badge);
+  }
+
+  function stopOverviewArchitectureObserver() {
+    if (overviewArchitectureObserver) {
+      overviewArchitectureObserver.disconnect();
+      overviewArchitectureObserver = null;
+    }
+  }
+
+  function initOverviewArchitectureEnhancement() {
+    if (!isOverviewPage()) {
+      stopOverviewArchitectureObserver();
+      return;
+    }
+
+    if (overviewSystemInfoUnavailable) return;
+
+    const tryEnhance = async () => {
+      if (overviewArchitectureInFlight) return;
+      overviewArchitectureInFlight = true;
+
+      try {
+        await enhancePackageArchitecture();
+
+        if (overviewSystemInfoUnavailable || !isOverviewPage()) {
+          stopOverviewArchitectureObserver();
+        }
+      } finally {
+        overviewArchitectureInFlight = false;
+      }
+    };
+
+    void tryEnhance();
+
+    if (overviewArchitectureObserver || overviewSystemInfoUnavailable) return;
+
+    const maincontent =
+      document.getElementById("maincontent") || document.getElementById("view");
+    if (!maincontent) return;
+
+    overviewArchitectureObserver = new MutationObserver(() => {
+      if (!isOverviewPage()) {
+        stopOverviewArchitectureObserver();
+        return;
+      }
+
+      if (document.querySelector(".proton-package-arch")) return;
+
+      void tryEnhance();
+    });
+
+    overviewArchitectureObserver.observe(maincontent, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+  }
+
   function isOverviewPage() {
     if (document.body.dataset.page === "admin-status-overview") return true;
     if (window.location.pathname.includes("/admin/status/overview"))
@@ -2932,12 +3185,16 @@
       const initCheck = setInterval(() => {
         const table = getOverviewSystemTable();
         if (table && table.querySelectorAll("tr").length > 0) {
-          enhanceLoadAverage();
+          throttledEnhance();
           clearInterval(initCheck);
           setupObserver();
 
           // Подписываемся на LuCI poll события для повторного применения enhancement
-          if (typeof L !== "undefined" && L.poll) {
+          if (
+            typeof L !== "undefined" &&
+            L.poll &&
+            typeof L.poll.add === "function"
+          ) {
             L.poll.add(() => {
               // Небольшая задержка чтобы LuCI успел обновить DOM
               setTimeout(throttledEnhance, 100);
@@ -2971,6 +3228,7 @@
   function initAllWidgets() {
     initWidget();
     initTemperatureWidget();
+    initOverviewArchitectureEnhancement();
     initLoadAverageEnhancement();
     initChannelAnalysisEnhancements();
     // Отложенно проверяем видимость секции (после инжекта виджетов)

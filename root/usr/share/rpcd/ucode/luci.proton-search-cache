@@ -1,0 +1,137 @@
+// Proton2025 Theme - Search Cache RPC Module
+// Persists the search prefetch cache in /tmp for reuse across browsers.
+
+'use strict';
+
+import { readfile, rename, unlink, writefile } from 'fs';
+
+const CACHE_PATH = '/tmp/proton-search-prefetch-cache.json';
+const META_PATH = '/tmp/proton-search-prefetch-cache-meta.json';
+const CACHE_TMP_PATH = '/tmp/proton-search-prefetch-cache.json.tmp';
+const META_TMP_PATH = '/tmp/proton-search-prefetch-cache-meta.json.tmp';
+
+function normalizeString(value) {
+	if (type(value) == 'string') {
+		return value;
+	}
+
+	if (value == null) {
+		return '';
+	}
+
+	return '' + value;
+}
+
+function removeFile(path) {
+	if (readfile(path) == null) {
+		return true;
+	}
+
+	const removed = unlink(path);
+	return removed !== null && removed !== false;
+}
+
+function replaceFileAtomically(path, tmpPath, contents) {
+	removeFile(tmpPath);
+
+	const written = writefile(tmpPath, contents);
+	if (written == null || written === false) {
+		removeFile(tmpPath);
+		return false;
+	}
+
+	const renamed = rename(tmpPath, path);
+	if (renamed == null || renamed === false) {
+		removeFile(tmpPath);
+		return false;
+	}
+
+	return true;
+}
+
+function loadCache() {
+	try {
+		const cache = normalizeString(readfile(CACHE_PATH));
+		const meta = normalizeString(readfile(META_PATH));
+
+		return {
+			success: true,
+			cache: cache,
+			meta: meta,
+			cacheBytes: length(cache) + length(meta)
+		};
+	} catch (error) {
+		return { error: 'Failed to load cache' };
+	}
+}
+
+function saveCache(req) {
+	try {
+		const cache = normalizeString(req.args?.cache);
+		const meta = normalizeString(req.args?.meta);
+
+		if (!length(cache)) {
+			return clearCache();
+		}
+
+		const cacheSaved = replaceFileAtomically(CACHE_PATH, CACHE_TMP_PATH, cache);
+		const metaSaved = replaceFileAtomically(META_PATH, META_TMP_PATH, meta);
+
+		if (
+			cacheSaved == null ||
+			cacheSaved === false ||
+			metaSaved == null ||
+			metaSaved === false
+		) {
+			removeFile(CACHE_TMP_PATH);
+			removeFile(META_TMP_PATH);
+			return { error: 'Failed to save cache' };
+		}
+
+		return {
+			success: true,
+			cacheBytes: length(cache) + length(meta)
+		};
+	} catch (error) {
+		return { error: 'Failed to save cache' };
+	}
+}
+
+function clearCache() {
+	try {
+		removeFile(CACHE_TMP_PATH);
+		removeFile(META_TMP_PATH);
+
+		const cacheCleared = removeFile(CACHE_PATH);
+		const metaCleared = removeFile(META_PATH);
+
+		if (!cacheCleared || !metaCleared) {
+			return { error: 'Failed to clear cache' };
+		}
+
+		return { success: true, cacheBytes: 0 };
+	} catch (error) {
+		return { error: 'Failed to clear cache' };
+	}
+}
+
+const methods = {
+	loadCache: {
+		call: function() {
+			return loadCache();
+		}
+	},
+	saveCache: {
+		args: { cache: 'cache', meta: 'meta' },
+		call: function(req) {
+			return saveCache(req);
+		}
+	},
+	clearCache: {
+		call: function() {
+			return clearCache();
+		}
+	}
+};
+
+return { 'luci.proton-search-cache': methods };
