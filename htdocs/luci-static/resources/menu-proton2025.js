@@ -2296,6 +2296,32 @@ return baseclass.extend({
             </div>
           </div>
 
+          <div class="cbi-value proton-update-setting">
+            <label class="cbi-value-title" for="proton-update-check">${t(
+              "Proton2025 Update",
+            )}</label>
+            <div class="cbi-value-field">
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px;">
+                <button type="button" id="proton-update-check" class="cbi-button cbi-button-action">${t(
+                  "Check for Updates",
+                )}</button>
+                <button type="button" id="proton-update-install" class="cbi-button cbi-button-positive" style="display: none;">${t(
+                  "Install Update",
+                )}</button>
+                <a id="proton-update-release" class="cbi-button" href="https://github.com/ChesterGoodiny/luci-theme-proton2025/releases/latest" target="_blank" rel="noopener noreferrer" style="display: none;">${t(
+                  "Open Release Page",
+                )}</a>
+              </div>
+              <div class="cbi-value-description">
+                <div>${t("Current version")}: <strong id="proton-update-current">—</strong></div>
+                <div>${t("Latest version")}: <strong id="proton-update-latest">—</strong></div>
+                <div id="proton-update-status" style="margin-top: 4px;">${t(
+                  "Click the button to check for a new Proton2025 release.",
+                )}</div>
+              </div>
+            </div>
+          </div>
+
           <div class="cbi-value proton-search-index-setting">
             <label class="cbi-value-title" for="proton-search-index-run">${t(
               "Search Page Index",
@@ -2603,6 +2629,200 @@ return baseclass.extend({
         const enabled = e.target.checked;
         localStorage.setItem("proton-custom-font", enabled);
         this.applyCustomFont(enabled);
+      });
+
+      const callProtonSettingsRpc = async (method, args = {}) => {
+        const rpcPath = (window.L && L.env && L.env.ubuspath) || "/ubus/";
+        const sessionId =
+          (window.L && L.env && L.env.sessionid) ||
+          "00000000000000000000000000000000";
+
+        const response = await fetch(rpcPath, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: Date.now(),
+            method: "call",
+            params: [sessionId, "luci.proton-settings", method, args || {}],
+          }),
+        });
+
+        const result = await response.json();
+        return result?.result?.[1] || null;
+      };
+
+      const updateCheckButton = document.getElementById("proton-update-check");
+      const updateInstallButton = document.getElementById("proton-update-install");
+      const updateReleaseLink = document.getElementById("proton-update-release");
+      const updateCurrent = document.getElementById("proton-update-current");
+      const updateLatest = document.getElementById("proton-update-latest");
+      const updateStatus = document.getElementById("proton-update-status");
+
+      const setUpdateStatus = (message, isError) => {
+        if (!updateStatus) return;
+        updateStatus.textContent = message;
+        updateStatus.style.color = isError ? "#ff6b6b" : "";
+      };
+
+      const setUpdateInstallVisible = (visible) => {
+        if (!updateInstallButton) return;
+        updateInstallButton.style.display = visible ? "" : "none";
+      };
+
+      const loadInstalledThemeVersion = async () => {
+        if (updateCurrent) {
+          updateCurrent.textContent = t("Loading...");
+        }
+
+        try {
+          const payload = await callProtonSettingsRpc("getVersion");
+
+          if (!payload) {
+            throw new Error("Empty RPC response");
+          }
+
+          if (updateCurrent) {
+            updateCurrent.textContent = payload.current_version || "—";
+          }
+
+          if (updateReleaseLink && payload.release_url) {
+            updateReleaseLink.href = payload.release_url;
+          }
+
+          if (!payload.success && updateCurrent) {
+            updateCurrent.textContent = "—";
+          }
+        } catch (error) {
+          if (updateCurrent) {
+            updateCurrent.textContent = "—";
+          }
+        }
+      };
+
+      loadInstalledThemeVersion();
+
+      updateInstallButton?.addEventListener("click", async () => {
+        updateInstallButton.disabled = true;
+        updateCheckButton.disabled = true;
+        updateInstallButton.textContent = t("Installing...");
+        setUpdateStatus(t("Installing Proton2025 update..."), false);
+
+        try {
+          const payload = await callProtonSettingsRpc("installUpdate");
+
+          if (!payload) {
+            throw new Error("Empty RPC response");
+          }
+
+          if (updateCurrent) {
+            updateCurrent.textContent =
+              payload.installed_version || payload.current_version || "—";
+          }
+
+          if (updateLatest) {
+            updateLatest.textContent =
+              payload.latest_version || payload.latest_tag || "—";
+          }
+
+          if (updateReleaseLink && payload.release_url) {
+            updateReleaseLink.href = payload.release_url;
+            updateReleaseLink.style.display = "";
+          }
+
+          if (!payload.success) {
+            setUpdateInstallVisible(true);
+            setUpdateStatus(
+              payload.error || t("Failed to install update."),
+              true,
+            );
+            return;
+          }
+
+          if (payload.update_available) {
+            setUpdateInstallVisible(true);
+            setUpdateStatus(
+              t("Update installed, but a newer version is still available.") +
+                ` ${payload.current_version || "—"} → ${payload.latest_version || "—"}`,
+              true,
+            );
+          } else {
+            setUpdateInstallVisible(false);
+            setUpdateStatus(t("Proton2025 update installed."), false);
+          }
+        } catch (error) {
+          setUpdateInstallVisible(true);
+          setUpdateStatus(
+            t("Failed to install update.") +
+              " " +
+              (error && error.message ? error.message : String(error || "")),
+            true,
+          );
+        } finally {
+          updateInstallButton.disabled = false;
+          updateCheckButton.disabled = false;
+          updateInstallButton.textContent = t("Install Update");
+        }
+      });
+
+      updateCheckButton?.addEventListener("click", async () => {
+        updateCheckButton.disabled = true;
+        updateCheckButton.textContent = t("Checking...");
+        setUpdateStatus(t("Checking latest Proton2025 release..."), false);
+        setUpdateInstallVisible(false);
+
+        try {
+          const payload = await callProtonSettingsRpc("checkUpdate");
+
+          if (!payload) {
+            throw new Error("Empty RPC response");
+          }
+
+          if (updateCurrent) {
+            updateCurrent.textContent = payload.current_version || "—";
+          }
+
+          if (updateLatest) {
+            updateLatest.textContent =
+              payload.latest_version || payload.latest_tag || "—";
+          }
+
+          if (updateReleaseLink && payload.release_url) {
+            updateReleaseLink.href = payload.release_url;
+            updateReleaseLink.style.display = "";
+          }
+
+          if (!payload.success) {
+            setUpdateInstallVisible(false);
+            setUpdateStatus(
+              payload.error || t("Failed to check for updates."),
+              true,
+            );
+            return;
+          }
+
+          if (payload.update_available) {
+            setUpdateInstallVisible(true);
+            setUpdateStatus(
+              t("A new Proton2025 version is available.") +
+                ` ${payload.current_version} → ${payload.latest_version}`,
+              false,
+            );
+          } else {
+            setUpdateInstallVisible(false);
+            setUpdateStatus(t("Proton2025 is up to date."), false);
+          }
+        } catch (error) {
+          setUpdateStatus(
+            t("Failed to check for updates.") +
+              " " +
+              (error && error.message ? error.message : String(error || "")),
+            true,
+          );
+        } finally {
+          updateCheckButton.disabled = false;
+          updateCheckButton.textContent = t("Check for Updates");
+        }
       });
 
       const formatBytes = (bytes) => {

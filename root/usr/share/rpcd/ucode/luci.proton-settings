@@ -7,6 +7,7 @@
 'use strict';
 
 import { cursor } from 'uci';
+import { popen } from 'fs';
 
 const CONFIG_NAME = 'proton2025';
 const SECTION_NAME = 'settings';
@@ -177,6 +178,314 @@ function resetSettings() {
 	return { success: true };
 }
 
+const THEME_PACKAGE = 'luci-theme-proton2025';
+const RELEASE_API_URL = 'https://api.github.com/repos/ChesterGoodiny/luci-theme-proton2025/releases/latest';
+const RELEASE_PAGE_URL = 'https://github.com/ChesterGoodiny/luci-theme-proton2025/releases/latest';
+
+function trimOutput(value) {
+        if (value == null) {
+                return '';
+        }
+
+        let str = '' + value;
+        let lines = split(str, '\n');
+
+        if (length(lines) <= 0) {
+                return '';
+        }
+
+        let first = lines[0] ?? '';
+        first = replace(first, /\r$/, '');
+
+        return first;
+}
+
+function runCommand(command) {
+        try {
+                let proc = popen(command, 'r');
+
+                if (!proc) {
+                        return '';
+                }
+
+                let output = proc.read('all');
+                proc.close();
+
+                return trimOutput(output);
+        } catch (error) {
+                return '';
+        }
+}
+
+function detectPackageManager() {
+        const apk = runCommand('command -v apk 2>/dev/null');
+
+        if (length(apk) > 0) {
+                return 'apk';
+        }
+
+        const opkg = runCommand('command -v opkg 2>/dev/null');
+
+        if (length(opkg) > 0) {
+                return 'opkg';
+        }
+
+        return 'unknown';
+}
+
+function getInstalledThemeVersion(packageManager) {
+        if (packageManager == 'apk') {
+                return runCommand("apk info -v 2>/dev/null | sed -n 's/^" + THEME_PACKAGE + "-\\([0-9][0-9.]*\\)-r[0-9].*/\\1/p' | head -n1");
+        }
+
+        if (packageManager == 'opkg') {
+                return runCommand("opkg list-installed " + THEME_PACKAGE + " 2>/dev/null | sed -n 's/^" + THEME_PACKAGE + " - //p' | head -n1");
+        }
+
+        return '';
+}
+
+function getLatestReleaseTag() {
+        return runCommand("wget -qO- --timeout=10 '" + RELEASE_API_URL + "' 2>/dev/null | sed -n 's/.*\"tag_name\"[[:space:]]*:[[:space:]]*\"\\([^\"]*\\)\".*/\\1/p' | head -n1");
+}
+
+function getLatestReleaseAssetUrl(packageManager) {
+        const ext = packageManager == 'apk' ? 'apk' : 'ipk';
+
+        return runCommand("wget -qO- --timeout=10 '" + RELEASE_API_URL + "' 2>/dev/null | sed -n 's/.*\"browser_download_url\"[[:space:]]*:[[:space:]]*\"\\([^\"]*luci-theme-proton2025[^\"]*\\." + ext + "\\)\".*/\\1/p' | head -n1");
+}
+
+function normalizeVersion(version) {
+        if (version == null) {
+                return '';
+        }
+
+        let str = '' + version;
+        str = replace(str, /^v/, '');
+        str = replace(str, /^V/, '');
+
+        return str;
+}
+
+function compareVersions(currentVersion, latestVersion) {
+        const current = split(normalizeVersion(currentVersion), '.');
+        const latest = split(normalizeVersion(latestVersion), '.');
+
+        for (let i = 0; i < 3; i++) {
+                const c = +(current[i] ?? 0);
+                const l = +(latest[i] ?? 0);
+
+                if (l > c) {
+                        return 1;
+                }
+
+                if (l < c) {
+                        return -1;
+                }
+        }
+
+        return 0;
+}
+
+function getVersion() {
+        const packageManager = detectPackageManager();
+        const currentVersion = getInstalledThemeVersion(packageManager);
+        const currentNormalized = normalizeVersion(currentVersion);
+
+        if (packageManager == 'unknown') {
+                return {
+                        success: false,
+                        error: 'Package manager not found',
+                        package_manager: packageManager,
+                        current_version: '',
+                        release_url: RELEASE_PAGE_URL
+                };
+        }
+
+        if (!length(currentVersion)) {
+                return {
+                        success: false,
+                        error: 'Installed theme package version not found',
+                        package_manager: packageManager,
+                        current_version: '',
+                        release_url: RELEASE_PAGE_URL
+                };
+        }
+
+        return {
+                success: true,
+                package_manager: packageManager,
+                current_version: currentNormalized,
+                release_url: RELEASE_PAGE_URL
+        };
+}
+
+function checkUpdate() {
+        const packageManager = detectPackageManager();
+        const currentVersion = getInstalledThemeVersion(packageManager);
+        const latestTag = getLatestReleaseTag();
+        const latestVersion = normalizeVersion(latestTag);
+        const currentNormalized = normalizeVersion(currentVersion);
+
+        if (packageManager == 'unknown') {
+                return {
+                        success: false,
+                        error: 'Package manager not found',
+                        package_manager: packageManager,
+                        release_url: RELEASE_PAGE_URL
+                };
+        }
+
+        if (!length(currentVersion)) {
+                return {
+                        success: false,
+                        error: 'Installed theme package version not found',
+                        package_manager: packageManager,
+                        current_version: '',
+                        latest_version: latestVersion,
+                        latest_tag: latestTag,
+                        release_url: RELEASE_PAGE_URL
+                };
+        }
+
+        if (!length(latestTag)) {
+                return {
+                        success: false,
+                        error: 'Latest GitHub release not found',
+                        package_manager: packageManager,
+                        current_version: currentNormalized,
+                        latest_version: '',
+                        latest_tag: '',
+                        release_url: RELEASE_PAGE_URL
+                };
+        }
+
+        return {
+                success: true,
+                package_manager: packageManager,
+                current_version: currentNormalized,
+                latest_version: latestVersion,
+                latest_tag: latestTag,
+                update_available: compareVersions(currentVersion, latestVersion) > 0,
+                release_url: RELEASE_PAGE_URL
+        };
+}
+
+function installUpdate() {
+        const packageManager = detectPackageManager();
+        const currentVersion = getInstalledThemeVersion(packageManager);
+        const latestTag = getLatestReleaseTag();
+        const latestVersion = normalizeVersion(latestTag);
+        const currentNormalized = normalizeVersion(currentVersion);
+
+        if (packageManager == 'unknown') {
+                return {
+                        success: false,
+                        error: 'Package manager not found',
+                        package_manager: packageManager,
+                        current_version: currentNormalized,
+                        latest_version: latestVersion,
+                        release_url: RELEASE_PAGE_URL
+                };
+        }
+
+        if (!length(currentVersion)) {
+                return {
+                        success: false,
+                        error: 'Installed theme package version not found',
+                        package_manager: packageManager,
+                        current_version: '',
+                        latest_version: latestVersion,
+                        release_url: RELEASE_PAGE_URL
+                };
+        }
+
+        if (!length(latestTag)) {
+                return {
+                        success: false,
+                        error: 'Latest GitHub release not found',
+                        package_manager: packageManager,
+                        current_version: currentNormalized,
+                        latest_version: '',
+                        latest_tag: '',
+                        release_url: RELEASE_PAGE_URL
+                };
+        }
+
+        if (compareVersions(currentVersion, latestVersion) <= 0) {
+                return {
+                        success: true,
+                        package_manager: packageManager,
+                        current_version: currentNormalized,
+                        installed_version: currentNormalized,
+                        latest_version: latestVersion,
+                        latest_tag: latestTag,
+                        update_available: false,
+                        release_url: RELEASE_PAGE_URL
+                };
+        }
+
+        const assetUrl = getLatestReleaseAssetUrl(packageManager);
+
+        if (!length(assetUrl)) {
+                return {
+                        success: false,
+                        error: 'Release package asset not found',
+                        package_manager: packageManager,
+                        current_version: currentNormalized,
+                        latest_version: latestVersion,
+                        latest_tag: latestTag,
+                        release_url: RELEASE_PAGE_URL
+                };
+        }
+
+        const packagePath = packageManager == 'apk'
+                ? '/tmp/luci-theme-proton2025-update.apk'
+                : '/tmp/luci-theme-proton2025-update.ipk';
+
+        const downloadResult = runCommand("rm -f '" + packagePath + "'; wget -qO '" + packagePath + "' --timeout=30 '" + assetUrl + "' && echo ok || echo fail");
+
+        if (downloadResult != 'ok') {
+                return {
+                        success: false,
+                        error: 'Failed to download release package',
+                        package_manager: packageManager,
+                        current_version: currentNormalized,
+                        latest_version: latestVersion,
+                        latest_tag: latestTag,
+                        release_url: RELEASE_PAGE_URL
+                };
+        }
+
+        let installCommand = '';
+
+        if (packageManager == 'apk') {
+                installCommand = "apk add --allow-untrusted '" + packagePath + "'";
+        } else {
+                installCommand = "opkg install '" + packagePath + "'";
+        }
+
+        const installResult = runCommand("(" + installCommand + " >/tmp/proton2025-update.log 2>&1 && echo ok) || echo fail");
+
+        runCommand("rm -rf /tmp/luci-* /tmp/luci-indexcache /tmp/luci-modulecache");
+
+        const installedVersion = normalizeVersion(getInstalledThemeVersion(packageManager));
+        const installSucceeded = installResult == 'ok' || compareVersions(installedVersion, latestVersion) <= 0;
+
+        return {
+                success: installSucceeded,
+                error: installSucceeded ? '' : 'Package installation failed',
+                package_manager: packageManager,
+                current_version: installedVersion,
+                installed_version: installedVersion,
+                latest_version: latestVersion,
+                latest_tag: latestTag,
+                update_available: compareVersions(installedVersion, latestVersion) > 0,
+                release_url: RELEASE_PAGE_URL
+        };
+}
+
+
 // RPC method definitions
 const methods = {
 	getSettings: {
@@ -200,7 +509,23 @@ const methods = {
 		call: function() {
 			return resetSettings();
 		}
-	}
+	},
+        getVersion: {
+                call: function() {
+                        return getVersion();
+                }
+        },
+        checkUpdate: {
+                call: function() {
+                        return checkUpdate();
+                }
+        },
+        installUpdate: {
+                call: function() {
+                        return installUpdate();
+                }
+        }
+
 };
 
 return { 'luci.proton-settings': methods };

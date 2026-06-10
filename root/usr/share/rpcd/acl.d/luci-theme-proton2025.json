@@ -14,7 +14,9 @@
                     "loadCache"
                 ],
                 "luci.proton-settings": [
-                    "getSettings"
+                    "getSettings",
+                    "getVersion",
+                    "checkUpdate"
                 ],
                 "network.interface": [
                     "dump"
@@ -43,7 +45,8 @@
                 "luci.proton-settings": [
                     "setSetting",
                     "setSettings",
-                    "resetSettings"
+                    "resetSettings",
+                    "installUpdate"
                 ],
                 "luci.proton-search-cache": [
                     "saveCache",
