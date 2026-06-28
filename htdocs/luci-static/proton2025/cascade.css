@@ -14222,3 +14222,23 @@ body[data-page^="admin-services-passwall2"] .dl-remove {
     box-shadow: none !important;
     padding: 0 !important;
 }
+
+/* Port/Network status (overview): each box holds two sibling
+   .cbi-tooltip-container elements (the zone-badge strip and the
+   ▲/▼ TX/RX byte counters), both pinned to the same z-index. The
+   hovered popup is dropped below its trigger and lands over the
+   sibling counters, which — being later in the DOM at an equal
+   z-index — bleed on top of it. Lift the actively-hovered trigger
+   above its siblings so its popup wins, and make the popup fully
+   opaque so nothing shows through. */
+body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox .cbi-tooltip-container:hover {
+    z-index: 10030;
+}
+
+body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox .cbi-tooltip {
+    background: rgb(20, 25, 35);
+}
+
+:root[data-theme="light"] body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox .cbi-tooltip {
+    background: rgb(255, 255, 255);
+}
