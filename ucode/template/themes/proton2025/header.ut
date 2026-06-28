@@ -85,6 +85,16 @@
 		orange:  { accent: '#fb923c', hover: '#f47c1f', glow: 'rgba(251, 146, 60, 0.20)', rgb: '251, 146, 60' },
 		red:     { accent: '#f87171', hover: '#f04c4c', glow: 'rgba(248, 113, 113, 0.20)', rgb: '248, 113, 113' }
 	};
+	if (a === 'custom') {
+		var hx = (localStorage.getItem('proton-accent-custom') || '#5e9eff').trim().replace(/^#/, '');
+		if (/^[0-9a-fA-F]{3}$/.test(hx)) hx = hx.replace(/(.)/g, '$1$1');
+		if (/^[0-9a-fA-F]{6}$/.test(hx)) {
+			var rr = parseInt(hx.slice(0, 2), 16), gg = parseInt(hx.slice(2, 4), 16), bb = parseInt(hx.slice(4, 6), 16);
+			var lt = function (v) { return Math.round(v + (255 - v) * 0.2); };
+			var th = function (v) { return ('0' + v.toString(16)).slice(-2); };
+			c.custom = { accent: '#' + hx, hover: '#' + th(lt(rr)) + th(lt(gg)) + th(lt(bb)), glow: 'rgba(' + rr + ', ' + gg + ', ' + bb + ', 0.2)', rgb: rr + ', ' + gg + ', ' + bb };
+		}
+	}
 	if (c[a]) {
 		document.documentElement.style.setProperty('--proton-accent', c[a].accent);
 		document.documentElement.style.setProperty('--proton-accent-hover', c[a].hover);

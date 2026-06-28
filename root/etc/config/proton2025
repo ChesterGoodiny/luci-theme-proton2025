@@ -7,6 +7,7 @@
 config theme 'settings'
 option mode 'auto'
 option accent 'blue'
+option accent_custom '#5e9eff'
 option zoom '100'
 option transparency '1'
 option border_radius 'default'

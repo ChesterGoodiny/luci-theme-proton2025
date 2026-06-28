@@ -4,6 +4,7 @@
     var LOCAL_TO_UCI = {
         "proton-theme-mode": "mode",
         "proton-accent-color": "accent",
+        "proton-accent-custom": "accent_custom",
         "proton-zoom": "zoom",
         "proton-transparency": "transparency",
         "proton-border-radius": "border_radius",

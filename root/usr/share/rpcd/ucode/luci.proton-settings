@@ -15,7 +15,8 @@ const SECTION_NAME = 'settings';
 // Valid options and their defaults
 const VALID_OPTIONS = {
 	mode: { default: 'auto', values: ['dark', 'light', 'auto'] },
-	accent: { default: 'blue', values: ['default', 'blue', 'purple', 'green', 'orange', 'red'] },
+	accent: { default: 'blue', values: ['default', 'blue', 'purple', 'green', 'orange', 'red', 'custom'] },
+	accent_custom: { default: '#5e9eff', pattern: 'hex' },
 	zoom: { default: '100', min: 50, max: 150 },
 	transparency: { default: '1', values: ['0', '1'] },
 	border_radius: { default: 'default', values: ['default', 'sharp', 'extra'] },
@@ -55,7 +56,11 @@ function validateOption(name, value) {
 	if (opt.values) {
 		return index(opt.values, value) >= 0;
 	}
-	
+
+	if (opt.pattern === 'hex') {
+		return match(value, /^#[0-9a-fA-F]{6}$/) != null;
+	}
+
 	if (opt.min !== null && opt.max !== null) {
 		const num = +value;
 		return num == num && num >= opt.min && num <= opt.max;

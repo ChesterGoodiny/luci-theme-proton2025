@@ -21,6 +21,7 @@
   const SETTINGS_MAP = {
     "proton-theme-mode": "mode",
     "proton-accent-color": "accent",
+    "proton-accent-custom": "accent_custom",
     "proton-zoom": "zoom",
     "proton-transparency": "transparency",
     "proton-border-radius": "border_radius",
@@ -305,6 +306,7 @@
       const defaults = {
         "proton-theme-mode": "auto",
         "proton-accent-color": "blue",
+        "proton-accent-custom": "#5e9eff",
         "proton-zoom": "100",
         "proton-transparency": "true",
         "proton-border-radius": "default",

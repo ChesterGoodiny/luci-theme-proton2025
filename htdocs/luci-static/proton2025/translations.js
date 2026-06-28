@@ -151,6 +151,10 @@ window.ProtonTranslations = {
     "Choose light or dark theme": "Выберите светлую или тёмную тему",
     "Accent Color": "Акцентный цвет",
     "Choose theme accent color": "Выберите акцентный цвет темы",
+    Custom: "Свой",
+    "Custom Color": "Свой цвет",
+    "Pick a color or enter a HEX value (#rrggbb)":
+      "Выберите цвет или введите HEX-значение (#rrggbb)",
     Blue: "Синий",
     Purple: "Фиолетовый",
     Green: "Зелёный",

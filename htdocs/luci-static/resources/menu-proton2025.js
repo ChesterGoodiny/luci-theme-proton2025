@@ -2009,6 +2009,8 @@ return baseclass.extend({
             ? storedThemeMode
             : "auto",
         accentColor: localStorage.getItem("proton-accent-color") || "blue",
+        accentCustom:
+          localStorage.getItem("proton-accent-custom") || "#5e9eff",
         borderRadius: localStorage.getItem("proton-border-radius") || "default",
         zoom: parseInt(localStorage.getItem("proton-zoom") || defaultZoom),
         pageWidth: parseInt(localStorage.getItem("proton-page-width") || "0"),
@@ -2061,26 +2063,43 @@ return baseclass.extend({
               "Accent Color",
             )}</label>
             <div class="cbi-value-field">
-              <select id="proton-accent-select" class="cbi-input-select">
-                <option value="default" ${
-                  settings.accentColor === "default" ? "selected" : ""
-                }>${t("Neutral")}</option>
-                <option value="blue" ${
-                  settings.accentColor === "blue" ? "selected" : ""
-                }>${t("Blue")} (${t("Default")})</option>
-                <option value="purple" ${
-                  settings.accentColor === "purple" ? "selected" : ""
-                }>${t("Purple")}</option>
-                <option value="green" ${
-                  settings.accentColor === "green" ? "selected" : ""
-                }>${t("Green")}</option>
-                <option value="orange" ${
-                  settings.accentColor === "orange" ? "selected" : ""
-                }>${t("Orange")}</option>
-                <option value="red" ${
-                  settings.accentColor === "red" ? "selected" : ""
-                }>${t("Red")}</option>
-              </select>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <select id="proton-accent-select" class="cbi-input-select" style="flex: 1 1 auto; min-width: 0;">
+                  <option value="default" ${
+                    settings.accentColor === "default" ? "selected" : ""
+                  }>${t("Neutral")}</option>
+                  <option value="blue" ${
+                    settings.accentColor === "blue" ? "selected" : ""
+                  }>${t("Blue")} (${t("Default")})</option>
+                  <option value="purple" ${
+                    settings.accentColor === "purple" ? "selected" : ""
+                  }>${t("Purple")}</option>
+                  <option value="green" ${
+                    settings.accentColor === "green" ? "selected" : ""
+                  }>${t("Green")}</option>
+                  <option value="orange" ${
+                    settings.accentColor === "orange" ? "selected" : ""
+                  }>${t("Orange")}</option>
+                  <option value="red" ${
+                    settings.accentColor === "red" ? "selected" : ""
+                  }>${t("Red")}</option>
+                  <option value="custom" ${
+                    settings.accentColor === "custom" ? "selected" : ""
+                  }>${t("Custom")}</option>
+                </select>
+                <span id="proton-accent-custom-row" style="display: ${
+                  settings.accentColor === "custom" ? "inline-flex" : "none"
+                }; align-items: center; gap: 8px; flex: 0 0 auto;">
+                  <input type="color" id="proton-accent-custom-color" value="${
+                    settings.accentCustom
+                  }" title="${t(
+                    "Custom Color",
+                  )}" class="proton-accent-color-input" style="width: 40px; height: 34px; cursor: pointer; border-radius: var(--proton-radius-sm);">
+                  <input type="text" id="proton-accent-custom-hex" value="${
+                    settings.accentCustom
+                  }" maxlength="7" spellcheck="false" autocomplete="off" placeholder="#5e9eff" style="width: 90px; flex: 0 0 auto; font-family: monospace; text-transform: lowercase;">
+                </span>
+              </div>
               <div class="cbi-value-description">${t(
                 "Choose theme accent color",
               )}</div>
@@ -2434,12 +2453,59 @@ return baseclass.extend({
         if (pageWidthRange) updateSliderFill(pageWidthRange);
       });
 
+      const accentCustomRow = document.getElementById(
+        "proton-accent-custom-row",
+      );
+      const accentCustomColor = document.getElementById(
+        "proton-accent-custom-color",
+      );
+      const accentCustomHex = document.getElementById(
+        "proton-accent-custom-hex",
+      );
+
       accentSelect?.addEventListener("change", (e) => {
         const color = e.target.value;
         localStorage.setItem("proton-accent-color", color);
+        if (accentCustomRow) {
+          accentCustomRow.style.display =
+            color === "custom" ? "inline-flex" : "none";
+        }
         this.applyAccentColor(color);
         if (zoomRange) updateSliderFill(zoomRange);
         if (pageWidthRange) updateSliderFill(pageWidthRange);
+      });
+
+      // Apply a custom HEX accent from the picker / text field.
+      const applyCustomAccent = (raw, syncColor, syncHex) => {
+        const hex = this.normalizeHex(raw);
+        if (!hex) return;
+        localStorage.setItem("proton-accent-custom", hex);
+        if (syncColor && accentCustomColor) accentCustomColor.value = hex;
+        if (syncHex && accentCustomHex) accentCustomHex.value = hex;
+        this.applyAccentColor("custom");
+        if (zoomRange) updateSliderFill(zoomRange);
+        if (pageWidthRange) updateSliderFill(pageWidthRange);
+      };
+
+      accentCustomColor?.addEventListener("input", (e) => {
+        applyCustomAccent(e.target.value, false, true);
+      });
+
+      accentCustomHex?.addEventListener("input", (e) => {
+        // Only act once the field holds a complete, valid colour.
+        if (this.normalizeHex(e.target.value)) {
+          applyCustomAccent(e.target.value, true, false);
+        }
+      });
+
+      // Normalise / restore the text field when focus leaves it.
+      accentCustomHex?.addEventListener("blur", (e) => {
+        const hex =
+          this.normalizeHex(e.target.value) ||
+          localStorage.getItem("proton-accent-custom") ||
+          "#5e9eff";
+        e.target.value = hex;
+        if (accentCustomColor) accentCustomColor.value = hex;
       });
 
       radiusSelect?.addEventListener("change", (e) => {
@@ -3020,6 +3086,7 @@ return baseclass.extend({
       const PROTON_SETTINGS_KEYS = [
         "proton-theme-mode",
         "proton-accent-color",
+        "proton-accent-custom",
         "proton-border-radius",
         "proton-zoom",
         "proton-page-width",
@@ -3106,6 +3173,7 @@ return baseclass.extend({
             const defaults = {
               "proton-theme-mode": "auto",
               "proton-accent-color": "blue",
+              "proton-accent-custom": "#5e9eff",
               "proton-zoom": "100",
               "proton-transparency": "true",
               "proton-border-radius": "default",
@@ -3329,6 +3397,41 @@ return baseclass.extend({
     this.applyServicesLog(settings.servicesLog);
   },
 
+  // Accept "#rgb" / "#rrggbb" (with or without leading #), return a
+  // canonical lowercase "#rrggbb" string, or null when invalid.
+  normalizeHex(hex) {
+    if (typeof hex !== "string") return null;
+    let h = hex.trim().replace(/^#/, "");
+    if (/^[0-9a-fA-F]{3}$/.test(h)) {
+      h = h
+        .split("")
+        .map((ch) => ch + ch)
+        .join("");
+    }
+    if (/^[0-9a-fA-F]{6}$/.test(h)) {
+      return "#" + h.toLowerCase();
+    }
+    return null;
+  },
+
+  // Derive the accent / hover / glow / rgb set from a single HEX colour.
+  deriveAccent(hex) {
+    const safe = this.normalizeHex(hex) || "#5e9eff";
+    const r = parseInt(safe.slice(1, 3), 16);
+    const g = parseInt(safe.slice(3, 5), 16);
+    const b = parseInt(safe.slice(5, 7), 16);
+    // Hover = the accent lightened ~20% toward white (works on dark UI).
+    const lighten = (v) => Math.round(v + (255 - v) * 0.2);
+    const toHex = (v) => v.toString(16).padStart(2, "0");
+    return {
+      accent: safe,
+      hover:
+        "#" + toHex(lighten(r)) + toHex(lighten(g)) + toHex(lighten(b)),
+      glow: `rgba(${r}, ${g}, ${b}, 0.2)`,
+      rgb: `${r}, ${g}, ${b}`,
+    };
+  },
+
   applyAccentColor(color) {
     const colors = {
       default: {
@@ -3369,7 +3472,10 @@ return baseclass.extend({
       },
     };
 
-    const c = colors[color] || colors.default;
+    const c =
+      color === "custom"
+        ? this.deriveAccent(localStorage.getItem("proton-accent-custom"))
+        : colors[color] || colors.default;
     document.documentElement.style.setProperty("--proton-accent", c.accent);
     document.documentElement.style.setProperty(
       "--proton-accent-hover",

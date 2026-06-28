@@ -14242,3 +14242,33 @@ body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:gri
 :root[data-theme="light"] body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox .cbi-tooltip {
     background: rgb(255, 255, 255);
 }
+
+/* =====================================================
+   Accent "Custom" colour picker — full-bleed swatch
+   The native <input type="color"> renders the colour well with inner
+   padding and a border. Strip the chrome so the chosen colour fills
+   the whole rounded square edge-to-edge.
+   ===================================================== */
+.proton-accent-color-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding: 0;
+    border: none;
+    overflow: hidden;
+    background: transparent;
+}
+
+.proton-accent-color-input::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.proton-accent-color-input::-webkit-color-swatch {
+    border: none;
+    border-radius: var(--proton-radius-sm);
+}
+
+.proton-accent-color-input::-moz-color-swatch {
+    border: none;
+    border-radius: var(--proton-radius-sm);
+}
