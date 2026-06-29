@@ -2150,10 +2150,51 @@ table.assoclist td.cbi-section-actions button {
    ===================================================== */
 
 /* #status_leases / #status_leases6 - DHCP & DHCPv6 Leases Table Desktop */
+/* `table-layout: fixed` split the constrained page width into equal
+   columns, which on this (host, IPv4, MAC, DUID, IAID, lease, action)
+   table starved the "Set Static" button column and pushed it past the
+   card edge. Let the content size the columns instead (as the wide
+   bootstrap theme does), tighten the cells and let the host wrap, so
+   everything fits inside the card. */
 #status_leases,
 #status_leases6 {
-    table-layout: fixed;
+    table-layout: auto;
     width: 100%;
+}
+
+#status_leases th,
+#status_leases td,
+#status_leases6 th,
+#status_leases6 td {
+    padding: 10px 9px;
+}
+
+/* Keep the IPv4 lease values (address, MAC, DUID/IAID, lease time) on a
+   single line — they are short tokens that shouldn't break mid-value.
+   Column count varies between LuCI versions, so target all cells… */
+#status_leases td {
+    white-space: nowrap;
+}
+
+/* …except the hostname (first column), which can be long and should wrap
+   rather than stretch the whole table. */
+#status_leases td:nth-child(1) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Action column hugs the button and stays inside the card edge. */
+#status_leases .cbi-section-actions,
+#status_leases6 .cbi-section-actions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+#status_leases .cbi-section-actions .cbi-button,
+#status_leases6 .cbi-section-actions .cbi-button {
+    white-space: nowrap;
 }
 
 #status_leases td:nth-child(1),
