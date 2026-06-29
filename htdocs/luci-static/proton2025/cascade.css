@@ -332,7 +332,7 @@
 }
 
 /* Light Theme - Package Manager Improvements */
-:root[data-theme="light"] #view>.controls:first-of-type {
+:root[data-theme="light"] #view>.controls:has(.cbi-progressbar) {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -357,7 +357,7 @@
 }
 
 :root[data-theme="light"] #packages .tr:hover {
-    box-shadow: -4px 0 0 var(--proton-accent), 0 2px 12px rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 :root[data-theme="light"] #view>.controls .btn,
@@ -3563,7 +3563,11 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     padding: 8px 10px;
     color: var(--proton-fg-secondary);
     font-weight: 500;
-    border-bottom: 2px solid transparent;
+    /* Outline inactive tabs so they read as distinct, clickable tabs. */
+    border: 1px solid var(--proton-border);
+    /* Thicker accent underline for the active tab (kept transparent here
+       so inactive tabs reserve the same space and don't shift). */
+    border-bottom: 3px solid transparent;
     border-radius: var(--proton-radius-sm) var(--proton-radius-sm) 0 0;
     transition: var(--proton-transition);
     cursor: pointer;
@@ -3578,6 +3582,7 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 
 .cbi-tabmenu>.cbi-tab>a {
     color: var(--proton-accent);
+    border-color: transparent;
     border-bottom-color: var(--proton-accent);
     background: var(--proton-accent-glow);
 }
@@ -5239,18 +5244,26 @@ body.modal-overlay-active #modal_overlay {
         gap: 1px;
     }
 
-    /* Package Manager controls */
-    #view>.controls:first-of-type>div {
+    /* Package Manager controls — stack every group full-width and put
+       its label above the control on narrow screens. `body` prefix
+       raises specificity above the later desktop rules (media queries
+       alone don't win the cascade). */
+    :root body #view>.controls:has(.cbi-progressbar)>div {
+        flex: 1 1 100% !important;
         flex-direction: column !important;
         align-items: stretch !important;
-        gap: 12px !important;
+        gap: 10px !important;
     }
 
-    #view>.controls:first-of-type>div>* {
+    #view>.controls:has(.cbi-progressbar)>div>* {
         width: 100%;
     }
 
-    #view>.controls:first-of-type .cbi-progressbar {
+    #view>.controls:has(.cbi-progressbar)>div>label:first-child {
+        white-space: normal !important;
+    }
+
+    #view>.controls:has(.cbi-progressbar) .cbi-progressbar {
         min-width: auto;
     }
 
@@ -5626,6 +5639,14 @@ body.modal-overlay-active #modal_overlay {
         z-index: auto !important;
     }
 
+    /* On mobile the dropdown is shown inline (not a popup), so the
+       light-theme desktop popup rule's white background must not apply
+       here — keep it transparent so it blends with the card. */
+    :root[data-theme="light"] #cbi-network-interface td.cbi-section-actions .actions-dropdown {
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
     /* Сбросить стили dropdown для кнопок - вернуть обычный вид кнопок темы */
     #cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button,
     #cbi-network-interface td.cbi-section-actions .actions-dropdown button {
@@ -5638,7 +5659,14 @@ body.modal-overlay-active #modal_overlay {
         min-width: 80px;
     }
 
-    /* Восстановить цвета для типов кнопок */
+    /* Neutral (Restart / Stop) first, so the typed colours below win for
+       buttons that also carry the generic .cbi-button class. */
+    #cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button {
+        background: var(--proton-bg-tertiary) !important;
+        border: 1px solid var(--proton-border) !important;
+        color: var(--proton-fg) !important;
+    }
+
     #cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button-action {
         background: var(--proton-accent) !important;
         border: 1px solid var(--proton-accent) !important;
@@ -5651,17 +5679,19 @@ body.modal-overlay-active #modal_overlay {
         color: #fff !important;
     }
 
-    #cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button-negative {
+    /* Edit — blue */
+    #cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button-edit {
+        background: rgba(74, 143, 231, 0.12) !important;
+        border: 1px solid rgba(74, 143, 231, 0.35) !important;
+        color: var(--proton-accent) !important;
+    }
+
+    /* Delete — red */
+    #cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button-negative,
+    #cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button-remove {
         background: rgba(255, 107, 107, 0.1) !important;
         border: 1px solid rgba(255, 107, 107, 0.3) !important;
         color: var(--proton-danger) !important;
-    }
-
-    #cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button-edit,
-    #cbi-network-interface td.cbi-section-actions .actions-dropdown .cbi-button {
-        background: var(--proton-bg-tertiary) !important;
-        border: 1px solid var(--proton-border) !important;
-        color: var(--proton-fg) !important;
     }
 
     /* =====================================================
@@ -6284,17 +6314,24 @@ body.modal-overlay-active #modal_overlay {
 /* =====================================================
    Controls Panel - Clean Minimal Design
    ===================================================== */
-#view>.controls:first-of-type {
+#view>.controls:has(.cbi-progressbar) {
+    /* Compact flex flow within the fixed page width: disk space on its
+       own full line, then Download (left) + Actions (right) on one line,
+       then Filter (left) + Display (right) on the next. `space-between`
+       pins each pair to the page edges; the groups are content-sized so
+       a pair shares one line and the next pair wraps below.
+       Background matches the pager card (light grey in the light theme). */
     display: flex !important;
-    flex-direction: column !important;
-    gap: 0 !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 14px 24px !important;
     margin: 24px 0 !important;
-    padding: 0 !important;
-    background: var(--proton-bg-secondary) !important;
+    padding: 16px 20px !important;
+    background: linear-gradient(135deg, var(--proton-bg-secondary) 0%, var(--proton-bg-tertiary) 100%) !important;
     border-radius: var(--proton-radius-lg);
     border: 1px solid var(--proton-border);
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     animation: fadeInUp 0.4s ease-out;
 }
 
@@ -6310,33 +6347,57 @@ body.modal-overlay-active #modal_overlay {
     }
 }
 
-/* Каждый блок - строка */
-#view>.controls:first-of-type>div {
+/* Each cell: label and its control(s) inline on one row, sized to
+   content so two groups share a line (and get pushed to the edges). */
+#view>.controls:has(.cbi-progressbar)>div {
+    flex: 0 1 auto !important;
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    gap: 16px !important;
-    padding: 16px 20px !important;
-    background: var(--proton-bg-secondary);
-    border-bottom: 1px solid var(--proton-border-light);
+    justify-content: flex-start !important;
     flex-wrap: wrap !important;
+    gap: 10px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: none !important;
 }
 
-#view>.controls:first-of-type>div:last-child {
-    border-bottom: none;
+/* The app's CSS sets `.controls > * > * { align-self: center }`, which
+   horizontally centres the label/controls inside our column cells and
+   defeats their left/right alignment. Reset so each child follows the
+   cell's own alignment (Download/Filter left, Actions/Display right). */
+#view>.controls:has(.cbi-progressbar)>div>* {
+    align-self: auto !important;
 }
 
-#view>.controls:first-of-type>div:nth-child(odd) {
-    background: var(--proton-bg-tertiary);
+/* Right-align the Display group: the app sets flex-grow:1 on cell
+   children, which fills the row and defeats justify-content:flex-end.
+   Make its children content-sized so they get pushed to the right. */
+#view>.controls:has(.cbi-progressbar)>div:nth-child(5)>* {
+    flex: 0 0 auto !important;
 }
 
-/* Labels - inline, не колонка */
-#view>.controls:first-of-type>div>label:first-child {
+/* The package-name field — a bit wider so the placeholder fits, but not
+   so wide that the OK button wraps to a second line. Force the group to
+   stay on one line so OK always sits next to the input. */
+#view>.controls:has(.cbi-progressbar)>div:nth-child(3) .control-group {
+    flex-wrap: nowrap !important;
+}
+
+#view>.controls:has(.cbi-progressbar)>div:nth-child(3) .control-group input[type="text"] {
+    max-width: 230px !important;
+}
+
+/* Cell labels — inline, sized to text (override the app's flex/centering). */
+#view>.controls:has(.cbi-progressbar)>div>label:first-child {
     font-weight: 600 !important;
     color: var(--proton-fg) !important;
-    font-size: 0.85rem !important;
-    min-width: 180px !important;
-    flex-shrink: 0 !important;
+    font-size: 0.82rem !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+    text-align: left !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
@@ -6344,9 +6405,52 @@ body.modal-overlay-active #modal_overlay {
     letter-spacing: normal !important;
 }
 
-/* Disk Space - специальный стиль */
-#view>.controls:first-of-type>div:first-child {
-    flex-wrap: nowrap !important;
+/* --- Flex order / sizing ----------------------------------------------
+   DOM order is: 1 disk, 2 filter, 3 download, 4 actions, 5 display.
+   Reorder + size so each pair owns a full line regardless of content
+   width: disk (full line), then Download + Actions, then Filter +
+   Display. Each control group is ~half the row (so exactly two fit per
+   line); the left one is left-aligned, the right one right-aligned.
+   The container column-gap is 24px, hence basis calc(50% - 12px). */
+#view>.controls:has(.cbi-progressbar)>div:nth-child(1) {
+    order: 0;
+    flex: 1 1 100% !important;
+}
+
+/* Left of row 1 — Download. Label on its own line, control row below;
+   left-aligned. */
+#view>.controls:has(.cbi-progressbar)>div:nth-child(3) {
+    order: 1;
+    flex: 1 1 calc(50% - 12px) !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+}
+
+/* Right of row 1 — Actions. Same structure mirrored to the right: the
+   "Actions" label sits opposite the Download label, and the three
+   buttons line up under it (full half-width = they fit on one line),
+   all right-aligned. */
+#view>.controls:has(.cbi-progressbar)>div:nth-child(4) {
+    order: 2;
+    flex: 1 1 calc(50% - 12px) !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 8px !important;
+}
+
+/* Left of row 2 — Filter */
+#view>.controls:has(.cbi-progressbar)>div:nth-child(2) {
+    order: 3;
+    flex: 1 1 calc(50% - 12px) !important;
+    justify-content: flex-start !important;
+}
+
+/* Right of row 2 — Display translations */
+#view>.controls:has(.cbi-progressbar)>div:nth-child(5) {
+    order: 4;
+    flex: 1 1 calc(50% - 12px) !important;
+    justify-content: flex-end !important;
 }
 
 #view>.controls .cbi-progressbar {
@@ -6391,21 +6495,6 @@ body.modal-overlay-active #modal_overlay {
     }
 }
 
-/* Subtle pulse animation for active buttons */
-@keyframes subtlePulse {
-    0%, 100% {
-        box-shadow: 0 2px 8px rgba(74, 143, 231, 0.3);
-    }
-
-    50% {
-        box-shadow: 0 2px 16px rgba(74, 143, 231, 0.5);
-    }
-}
-
-#view>.controls .cbi-button-positive {
-    animation: subtlePulse 3s ease-in-out infinite;
-}
-
 /* Показать текст после progress bar */
 #view>.controls .cbi-progressbar::after {
     content: attr(title);
@@ -6428,20 +6517,22 @@ body.modal-overlay-active #modal_overlay {
     display: flex !important;
     gap: 8px !important;
     align-items: center !important;
-    flex-wrap: nowrap !important;
+    /* Wrap so the multi-button Actions group reflows inside its
+       narrower grid cell instead of overflowing. */
+    flex-wrap: wrap !important;
     flex: 1 !important;
 }
 
 #view>.controls .control-group input[type="text"] {
-    flex: 1 !important;
-    min-width: 150px !important;
-    max-width: 300px !important;
-    padding: 10px 14px !important;
+    flex: 1 1 auto !important;
+    min-width: 90px !important;
+    max-width: 150px !important;
+    padding: 6px 10px !important;
     background: var(--proton-bg-primary) !important;
-    border: 2px solid var(--proton-border) !important;
-    border-radius: var(--proton-radius) !important;
+    border: 1px solid var(--proton-border) !important;
+    border-radius: var(--proton-radius-sm) !important;
     color: var(--proton-fg) !important;
-    font-size: 0.9rem !important;
+    font-size: 0.82rem !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -6461,9 +6552,9 @@ body.modal-overlay-active #modal_overlay {
 /* Buttons in Controls */
 #view>.controls .btn,
 #view>.controls button {
-    padding: 10px 16px !important;
-    border-radius: var(--proton-radius) !important;
-    font-size: 0.875rem !important;
+    padding: 5px 10px !important;
+    border-radius: var(--proton-radius-sm) !important;
+    font-size: 0.78rem !important;
     font-weight: 500 !important;
     cursor: pointer !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -6491,6 +6582,8 @@ body.modal-overlay-active #modal_overlay {
     overflow: hidden;
 }
 
+/* Ripple is a brighter shade of the button's own colour (not white),
+   so the hover reads as the button becoming more vivid. */
 #view>.controls .cbi-button-positive::before {
     content: '';
     position: absolute;
@@ -6499,7 +6592,7 @@ body.modal-overlay-active #modal_overlay {
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(120, 240, 165, 0.55);
     transform: translate(-50%, -50%);
     transition: width 0.6s, height 0.6s;
 }
@@ -6510,6 +6603,10 @@ body.modal-overlay-active #modal_overlay {
 }
 
 #view>.controls .cbi-button-positive:hover {
+    /* Keep the green base (override the generic grey .btn:hover); the
+       brighter-green ripple above makes it more vivid. */
+    background: linear-gradient(135deg, var(--proton-success) 0%, #48bb78 100%) !important;
+    border-color: var(--proton-success) !important;
     transform: translateY(-2px) !important;
     box-shadow: 0 6px 20px rgba(56, 161, 105, 0.5) !important;
 }
@@ -6523,6 +6620,7 @@ body.modal-overlay-active #modal_overlay {
     overflow: hidden;
 }
 
+/* Ripple is a brighter shade of the button's own colour (not white). */
 #view>.controls .cbi-button-action::before {
     content: '';
     position: absolute;
@@ -6531,7 +6629,7 @@ body.modal-overlay-active #modal_overlay {
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(140, 190, 255, 0.55);
     transform: translate(-50%, -50%);
     transition: width 0.6s, height 0.6s;
 }
@@ -6542,50 +6640,83 @@ body.modal-overlay-active #modal_overlay {
 }
 
 #view>.controls .cbi-button-action:hover {
+    /* Keep the blue base (override the generic grey .btn:hover); the
+       brighter-blue ripple above makes it more vivid. */
+    background: linear-gradient(135deg, var(--proton-accent) 0%, #5e9eff 100%) !important;
+    border-color: var(--proton-accent) !important;
     transform: translateY(-2px) !important;
     box-shadow: 0 6px 20px rgba(74, 143, 231, 0.5) !important;
 }
 
-/* Radio Buttons - inline pills */
+/* Display-translations cell: keep it as small as possible so it fits
+   on one line opposite the Filter group. The label is de-emphasised
+   (small, muted, normal weight) and the options are plain radio
+   buttons rather than big pills. */
+#view>.controls:has(.cbi-progressbar)>div:nth-child(5)>label:first-child {
+    font-size: 0.68rem !important;
+    font-weight: 400 !important;
+    color: var(--proton-muted) !important;
+}
+
+/* Radio options — standard radios (circle + text), like bootstrap. */
 #view>.controls>div>div:has(input[type="radio"]) {
     display: flex !important;
     flex-wrap: wrap !important;
-    gap: 8px !important;
+    gap: 10px !important;
 }
 
 #view>.controls label:has(input[type="radio"]) {
     display: inline-flex !important;
     align-items: center !important;
-    gap: 6px !important;
-    padding: 8px 16px !important;
-    background: var(--proton-bg-tertiary) !important;
-    border: 2px solid var(--proton-border) !important;
-    border-radius: 24px !important;
+    gap: 5px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
     cursor: pointer !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: color 0.15s ease !important;
     color: var(--proton-fg-secondary) !important;
-    font-size: 0.875rem !important;
-    font-weight: 500 !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    font-size: 0.78rem !important;
+    font-weight: 400 !important;
 }
 
 #view>.controls label:has(input[type="radio"]):hover {
-    border-color: var(--proton-accent) !important;
-    background: var(--proton-bg-hover) !important;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    color: var(--proton-fg) !important;
+    background: transparent !important;
+    border: none !important;
 }
 
 #view>.controls label:has(input[type="radio"]:checked) {
-    background: linear-gradient(135deg, var(--proton-accent) 0%, #5e9eff 100%) !important;
-    border-color: var(--proton-accent) !important;
-    color: #fff !important;
-    box-shadow: 0 3px 10px rgba(74, 143, 231, 0.4);
-    transform: scale(1.05);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--proton-fg) !important;
+    font-weight: 500 !important;
 }
 
+/* Custom-drawn radio so the colours are explicit in both themes
+   (the native control kept rendering a dark face in the light theme
+   regardless of color-scheme). Unchecked = themed surface + border;
+   checked = accent ring with an accent dot. */
 #view>.controls input[type="radio"] {
-    display: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    display: inline-block !important;
+    width: 14px !important;
+    height: 14px !important;
+    margin: 0 !important;
+    border-radius: 50% !important;
+    border: 1.5px solid var(--proton-border) !important;
+    background: var(--proton-bg-solid) !important;
+    cursor: pointer !important;
+    transition: border-color 0.15s ease, background 0.15s ease !important;
+}
+
+#view>.controls input[type="radio"]:checked {
+    border-color: var(--proton-accent) !important;
+    background: var(--proton-accent) !important;
+    box-shadow: inset 0 0 0 2.5px var(--proton-bg-solid) !important;
 }
 
 /* Actions - кнопки в ряд */
@@ -6653,9 +6784,9 @@ body.modal-overlay-active #modal_overlay {
 }
 
 #packages .tr:hover {
+    /* Just a row highlight — no shift / accent bar, which made the row
+       look like a clickable, selectable item. */
     background: var(--proton-bg-hover);
-    transform: translateX(4px);
-    box-shadow: -4px 0 0 var(--proton-accent), 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* Переопределить inline стили из страницы для .td.version и .td.size */
@@ -6728,7 +6859,6 @@ body.modal-overlay-active #modal_overlay {
     word-break: break-all !important;
     color: var(--proton-accent);
     background: rgba(74, 143, 231, 0.05);
-    border-radius: 4px;
     font-weight: 500;
 }
 
@@ -6940,6 +7070,8 @@ body.modal-overlay-active #modal_overlay {
     padding: 12px 20px;
     color: var(--proton-fg-secondary);
     text-decoration: none;
+    /* Outline so the inactive tabs are clearly distinguishable. */
+    border: 1px solid var(--proton-border);
     border-radius: var(--proton-radius-sm);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     font-weight: 500;
@@ -6954,7 +7086,7 @@ body.modal-overlay-active #modal_overlay {
     bottom: 0;
     left: 50%;
     width: 0;
-    height: 3px;
+    height: 5px;
     background: var(--proton-accent);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform: translateX(-50%);
@@ -6969,6 +7101,7 @@ body.modal-overlay-active #modal_overlay {
 #packages .cbi-tabmenu li.active a {
     background: var(--proton-bg-tertiary);
     color: var(--proton-accent);
+    border-color: transparent;
     font-weight: 600;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -6997,7 +7130,7 @@ body.modal-overlay-active #modal_overlay {
         margin: 16px 0 !important;
     }
 
-    #view>.controls:first-of-type {
+    #view>.controls:has(.cbi-progressbar) {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
     }
 
@@ -7091,20 +7224,20 @@ body.modal-overlay-active #modal_overlay {
     }
 
     #view>.controls label:has(input[type="radio"]) {
-        padding: 12px 18px !important;
-        font-size: 0.9rem !important;
-        font-weight: 500 !important;
-        min-height: 44px !important;
+        padding: 4px 0 !important;
+        font-size: 0.85rem !important;
+        font-weight: 400 !important;
+        min-height: 0 !important;
         display: inline-flex !important;
         align-items: center !important;
-        justify-content: center !important;
-        flex: 1 !important;
+        flex: 0 0 auto !important;
     }
 
     #view>.controls>div>div:has(input[type="radio"]) {
         display: flex !important;
-        gap: 8px !important;
-        width: 100% !important;
+        flex-wrap: wrap !important;
+        gap: 16px !important;
+        width: auto !important;
     }
 
     /* Пагинация - компактно на мобильных */
