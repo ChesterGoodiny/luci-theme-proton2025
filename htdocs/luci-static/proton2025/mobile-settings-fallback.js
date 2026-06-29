@@ -95,6 +95,21 @@
             return "proton-login-animation";
         }
 
+        // The custom-accent colour picker and hex field share the
+        // "Accent Color" row, so the title-based lookup below would
+        // mis-map them to proton-accent-color and store a raw hex there
+        // (which then falls back to the grey/default accent). Map them
+        // explicitly: the picker/hex → the custom hex, the select → mode.
+        if (
+            el.id === "proton-accent-custom-color" ||
+            el.id === "proton-accent-custom-hex"
+        ) {
+            return "proton-accent-custom";
+        }
+        if (el.id === "proton-accent-select") {
+            return "proton-accent-color";
+        }
+
         return TITLE_TO_KEY[getTitle(el)] || "";
     }
 

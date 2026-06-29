@@ -14324,6 +14324,14 @@ body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:gri
     z-index: 1;
 }
 
+/* These boxes are overflow:visible (so the hover tooltips can escape),
+   which means the coloured header background isn't clipped to the box's
+   rounded corners and pokes out past them. Round the header's own top
+   corners to match the box radius (which tracks the radius setting). */
+body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-head:first-child {
+    border-radius: var(--proton-radius-sm) var(--proton-radius-sm) 0 0;
+}
+
 body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox:hover,
 body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:grid"]>.ifacebox:focus-within {
     z-index: 10020;

@@ -2466,6 +2466,18 @@ return baseclass.extend({
       accentSelect?.addEventListener("change", (e) => {
         const color = e.target.value;
         localStorage.setItem("proton-accent-color", color);
+        if (color === "custom") {
+          // Persist the custom hex too (not only after the picker is
+          // touched), so the value is written everywhere — localStorage
+          // AND UCI — and the next page's UCI sync can't revert it.
+          const hex =
+            this.normalizeHex(accentCustomColor && accentCustomColor.value) ||
+            this.normalizeHex(localStorage.getItem("proton-accent-custom")) ||
+            "#5e9eff";
+          localStorage.setItem("proton-accent-custom", hex);
+          if (accentCustomColor) accentCustomColor.value = hex;
+          if (accentCustomHex) accentCustomHex.value = hex;
+        }
         if (accentCustomRow) {
           accentCustomRow.style.display =
             color === "custom" ? "inline-flex" : "none";
@@ -2480,6 +2492,11 @@ return baseclass.extend({
         const hex = this.normalizeHex(raw);
         if (!hex) return;
         localStorage.setItem("proton-accent-custom", hex);
+        // Re-affirm the custom *mode* together with the hex, so the
+        // accent ("custom") is also (re)written to localStorage + UCI.
+        // Without this, changing only the colour leaves UCI's accent at
+        // its old value, and the next page's sync reverts it to grey.
+        localStorage.setItem("proton-accent-color", "custom");
         if (syncColor && accentCustomColor) accentCustomColor.value = hex;
         if (syncHex && accentCustomHex) accentCustomHex.value = hex;
         this.applyAccentColor("custom");
