@@ -8,6 +8,23 @@
 {%
 	const boardinfo = ubus.call('system', 'board');
 
+	// Optional custom login branding (router name + uploaded logo).
+	const protonResp = ubus.call('uci', 'get', { config: 'proton2025', section: 'settings' });
+	const protonSettings = (protonResp && protonResp.values) ? protonResp.values : {};
+	const loginBranding = (protonSettings.login_branding == '1');
+	const loginLogoOnly = (protonSettings.login_logo_only == '1');
+	const loginLogo = protonSettings.login_logo;
+	const customName = protonSettings.login_name;
+	const loginName = (customName != null && customName != '') ? customName : (boardinfo.hostname ?? 'Router');
+
+	// Settings copy for the client-side sync, WITHOUT the (potentially
+	// large) logo data URI — it is only needed server-side for the <img>
+	// above. This keeps the embedded blob small.
+	const clientSettings = {};
+	for (let k in protonSettings)
+		if (k != 'login_logo')
+			clientSettings[k] = protonSettings[k];
+
 	http.prepare_content('text/html; charset=UTF-8');
 -%}
 
@@ -20,7 +37,7 @@
 (function () {
     "use strict";
 
-    var response = {{ sprintf('%J', ubus.call('uci', 'get', { config: 'proton2025', section: 'settings' }) || {}) }};
+    var response = {{ sprintf('%J', { values: clientSettings }) }};
     var settings = response && response.values ? response.values : {};
 
     var map = {
@@ -198,6 +215,22 @@
 <body class="login-page lang_{{ dispatcher.lang }}" data-lang="{{ dispatcher.lang }}">
 <div class="login-container">
 	<div class="login-card">
+		{% if (loginBranding): %}
+		<div class="login-header login-header-branded">
+			{% if (loginLogo): %}
+			<img class="login-brand-logo" src="{{ loginLogo }}" alt="" />
+			{% else %}
+			<svg class="login-brand-logo" viewBox="0 0 60 60" aria-hidden="true">
+				<circle cx="30" cy="30" r="18" fill="var(--proton-accent)" opacity="0.2"/>
+				<circle cx="30" cy="30" r="12" fill="var(--proton-accent)" opacity="0.4"/>
+				<circle cx="30" cy="30" r="6" fill="var(--proton-accent)"/>
+				<ellipse cx="30" cy="30" rx="22" ry="8" fill="none" stroke="var(--proton-accent)" stroke-width="1.5" opacity="0.6" transform="rotate(-20 30 30)"/>
+				<ellipse cx="30" cy="30" rx="22" ry="8" fill="none" stroke="var(--proton-accent)" stroke-width="1.5" opacity="0.4" transform="rotate(40 30 30)"/>
+			</svg>
+			{% endif %}
+			{% if (!loginLogoOnly): %}<span class="login-brand-name">{{ loginName }}</span>{% endif %}
+		</div>
+		{% else %}
 		<div class="login-header">
 			<svg class="login-logo" viewBox="0 0 200 60" aria-label="Proton2025">
 				<circle cx="25" cy="30" r="18" fill="var(--proton-accent)" opacity="0.2"/>
@@ -208,6 +241,7 @@
 				<text x="55" y="38" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="600" fill="var(--proton-fg)">Proton<tspan fill="var(--proton-accent)">2025</tspan></text>
 			</svg>
 		</div>
+		{% endif %}
 
 		{% if (fuser): %}
 		<div class="login-error">

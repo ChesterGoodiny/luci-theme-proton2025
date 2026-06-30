@@ -21,6 +21,12 @@ const VALID_OPTIONS = {
 	transparency: { default: '1', values: ['0', '1'] },
 	border_radius: { default: 'default', values: ['default', 'sharp', 'extra'] },
 	tab_outline: { default: '0', values: ['0', '1'] },
+	login_branding: { default: '0', values: ['0', '1'] },
+	login_name: { default: '', pattern: 'any', maxlen: 128 },
+	// Custom login logo as a data URI. A ~200 KB image becomes a ~270 KB
+	// base64 string, so cap a bit above that.
+	login_logo: { default: '', pattern: 'any', maxlen: 300000 },
+	login_logo_only: { default: '0', values: ['0', '1'] },
 	animations: { default: '1', values: ['0', '1'] },
 	services_widget: { default: '1', values: ['0', '1'] },
 	temp_widget: { default: '1', values: ['0', '1'] },
@@ -60,6 +66,11 @@ function validateOption(name, value) {
 
 	if (opt.pattern === 'hex') {
 		return match(value, /^#[0-9a-fA-F]{6}$/) != null;
+	}
+
+	// Free-form string (optionally length-capped), e.g. the login logo.
+	if (opt.pattern === 'any') {
+		return opt.maxlen == null || length(value) <= opt.maxlen;
 	}
 
 	if (opt.min !== null && opt.max !== null) {

@@ -66,6 +66,10 @@
 		document.documentElement.setAttribute('data-darkmode', 'true');
 	}
 	
+	// Expose the router hostname so the login-branding setting can
+	// pre-fill the display-name field with it.
+	window.protonHostname = {{ sprintf('%J', boardinfo.hostname ?? '') }};
+
 	var defaultZoom = '100';
 	var z = localStorage.getItem('proton-zoom') || defaultZoom;
 	if (window.innerWidth >= 800) {

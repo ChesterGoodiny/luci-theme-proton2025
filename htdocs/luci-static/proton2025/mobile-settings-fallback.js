@@ -17,7 +17,11 @@
         "proton-log-highlight": "log_highlight",
         "proton-page-width": "page_width",
         "proton-custom-font": "custom_font",
-        "proton-login-animation": "login_animation"
+        "proton-login-animation": "login_animation",
+        "proton-login-branding": "login_branding",
+        "proton-login-name": "login_name",
+        "proton-login-logo": "login_logo",
+        "proton-login-logo-only": "login_logo_only"
     };
 
     var TITLE_TO_KEY = {
@@ -92,9 +96,20 @@
     function getKey(el) {
         if (!el) return "";
 
+        // The login logo is handled by login-animation-settings.js
+        // (FileReader -> data URI). Never let this fallback store a file
+        // input's fake path.
+        if (el.type === "file") return "";
+
         if (el.id === "proton-login-animation-select") {
             return "proton-login-animation";
         }
+        if (el.id === "proton-login-branding-check") {
+            return "proton-login-branding";
+        }
+        // The display-mode radios (proton-login-mode-*) write
+        // proton-login-logo-only directly via login-animation-settings.js,
+        // so this fallback intentionally does not key them.
 
         // The custom-accent colour picker and hex field share the
         // "Accent Color" row, so the title-based lookup below would

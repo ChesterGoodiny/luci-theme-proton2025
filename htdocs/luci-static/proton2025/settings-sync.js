@@ -35,6 +35,10 @@
     "proton-page-width": "page_width",
     "proton-custom-font": "custom_font",
     "proton-login-animation": "login_animation",
+    "proton-login-branding": "login_branding",
+    "proton-login-name": "login_name",
+    "proton-login-logo": "login_logo",
+    "proton-login-logo-only": "login_logo_only",
   };
 
   // Reverse mapping
@@ -59,6 +63,8 @@
       "log_highlight",
       "custom_font",
       "tab_outline",
+      "login_branding",
+      "login_logo_only",
     ];
 
     if (booleanOptions.includes(uciName)) {
@@ -82,6 +88,8 @@
       "log_highlight",
       "custom_font",
       "tab_outline",
+      "login_branding",
+      "login_logo_only",
     ];
 
     if (booleanOptions.includes(uciName)) {
@@ -354,6 +362,10 @@
         "proton-page-width": "",
         "proton-custom-font": "true",
         "proton-login-animation": "particles",
+        "proton-login-branding": "false",
+        "proton-login-name": "",
+        "proton-login-logo": "",
+        "proton-login-logo-only": "false",
       };
 
       // Clear all proton settings from localStorage

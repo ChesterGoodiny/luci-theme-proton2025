@@ -11700,6 +11700,107 @@ body.login-page {
     margin: 0;
 }
 
+/* Custom login branding (router name + optional uploaded logo) —
+   logo and name on one line, like the default Proton2025 lockup. */
+.login-header-branded {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.login-header-branded .login-brand-logo {
+    height: 48px;
+    width: auto;
+    max-width: 140px;
+    object-fit: contain;
+    margin: 0 !important;
+    display: inline-block;
+    flex: 0 0 auto;
+}
+
+/* Logo-only mode: the logo is the sole child, so make it a bit larger
+   and let the flex container keep it centered. */
+.login-header-branded .login-brand-logo:only-child {
+    height: 64px;
+    max-width: 220px;
+}
+
+/* Don't auto-darken a user-supplied logo in the light theme. */
+:root[data-theme="light"] .login-header-branded .login-brand-logo {
+    filter: none !important;
+}
+
+/* Pin the login name input's line-height to match the segmented picker's
+   options (both 14px / line-height 1.2 / padding 10px 14px / 1px border),
+   so the two controls are pixel-identical in height and the block doesn't
+   shift when the name field is shown/hidden. */
+#proton-login-name-input {
+    line-height: 1.2;
+}
+
+/* Segmented control for the login display-mode picker (Logo & name / Logo
+   only) in the theme settings panel. */
+.proton-seg {
+    display: inline-flex;
+    align-self: flex-start;
+    border: 1px solid var(--proton-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.proton-seg .proton-seg-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    /* Match the theme text input (padding 10px 14px, font-size 14px, 1px
+       border) so the picker and the name field are exactly the same
+       height — otherwise the block shifts a few px when the name field
+       appears/disappears on toggle. */
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.2;
+    color: var(--proton-fg-secondary);
+    user-select: none;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.proton-seg .proton-seg-option + .proton-seg-option {
+    border-left: 1px solid var(--proton-border);
+}
+
+.proton-seg .proton-seg-option:hover {
+    background: var(--proton-bg-secondary);
+}
+
+.proton-seg .proton-seg-option.proton-seg-active {
+    background: var(--proton-accent);
+    color: #fff;
+}
+
+/* The radio itself is the state holder, not a visible control. */
+.proton-seg .proton-seg-option input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    margin: 0;
+}
+
+.login-header-branded .login-brand-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--proton-fg);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    word-break: break-word;
+}
+
 .login-form .form-group {
     margin-bottom: 24px;
 }
