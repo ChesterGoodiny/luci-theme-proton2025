@@ -14478,3 +14478,50 @@ body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:gri
     border: none;
     border-radius: var(--proton-radius-sm);
 }
+
+/* Widen modal dialogs containing LuCI CBI tables, e.g. WireGuard peer lists */
+.modal:has(.cbi-section-table),
+.modal:has(.table) {
+  width: min(1180px, calc(100vw - 48px)) !important;
+  max-width: calc(100vw - 48px) !important;
+}
+
+/* Let wide table content use the enlarged dialog instead of leaking outside */
+.modal:has(.cbi-section-table) .cbi-section,
+.modal:has(.table) .cbi-section {
+  max-width: 100%;
+  overflow: visible;
+}
+
+/* On smaller screens, keep table scroll inside the modal */
+.modal:has(.cbi-section-table) .cbi-section-node,
+.modal:has(.table) .cbi-section-node,
+.modal:has(.cbi-section-table) .table,
+.modal:has(.table) .table {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+/* Keep row action buttons on one line */
+.modal .cbi-section-actions,
+.modal .td.cbi-section-actions,
+.modal td.cbi-section-actions {
+  white-space: nowrap;
+}
+
+/* Avoid oversized action buttons stretching modal rows */
+.modal .cbi-section-actions .cbi-button,
+.modal .td.cbi-section-actions .cbi-button,
+.modal td.cbi-section-actions .cbi-button {
+  margin-left: 6px;
+}
+
+/* Mobile fallback: use almost full viewport width */
+@media screen and (max-width: 900px) {
+  .modal:has(.cbi-section-table),
+  .modal:has(.table) {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+}
