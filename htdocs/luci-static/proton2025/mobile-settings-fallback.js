@@ -24,46 +24,27 @@
         "proton-login-logo-only": "login_logo_only"
     };
 
-    var TITLE_TO_KEY = {
-        "Theme Mode": "proton-theme-mode",
-        "Режим темы": "proton-theme-mode",
-
-        "Accent Color": "proton-accent-color",
-        "Акцентный цвет": "proton-accent-color",
-
-        "Login Page Animation": "proton-login-animation",
-        "Анимация страницы входа": "proton-login-animation",
-
-        "Border Radius": "proton-border-radius",
-        "Скругление углов": "proton-border-radius",
-        "Стиль скругления углов": "proton-border-radius",
-
-        "Zoom": "proton-zoom",
-        "Масштаб": "proton-zoom",
-
-        "Animations": "proton-animations",
-        "Анимации": "proton-animations",
-
-        "Transparency": "proton-transparency",
-        "Прозрачность": "proton-transparency",
-
-        "Custom Font": "proton-custom-font",
-        "Пользовательский шрифт": "proton-custom-font",
-
-        "Wrap Tables": "proton-table-wrap",
-        "Перенос таблиц": "proton-table-wrap",
-
-        "Log Highlight": "proton-log-highlight",
-        "Подсветка логов": "proton-log-highlight",
-
-        "Services Widget": "proton-services-widget-enabled",
-        "Виджет сервисов": "proton-services-widget-enabled",
-
-        "Temperature Widget": "proton-temp-widget-enabled",
-        "Виджет температуры": "proton-temp-widget-enabled",
-
-        "Services Log": "proton-services-log",
-        "Журнал сервисов": "proton-services-log"
+    var ID_TO_KEY = {
+        "proton-mode-select": "proton-theme-mode",
+        "proton-accent-select": "proton-accent-color",
+        "proton-accent-custom-color": "proton-accent-custom",
+        "proton-accent-custom-hex": "proton-accent-custom",
+        "proton-radius-select": "proton-border-radius",
+        "proton-tab-outline-check": "proton-tab-outline",
+        "proton-zoom-range": "proton-zoom",
+        "proton-transparency-check": "proton-transparency",
+        "proton-animations-check": "proton-animations",
+        "proton-custom-font-check": "proton-custom-font",
+        "proton-table-wrap-check": "proton-table-wrap",
+        "proton-log-highlight-check": "proton-log-highlight",
+        "proton-services-widget-check": "proton-services-widget-enabled",
+        "proton-temp-widget-check": "proton-temp-widget-enabled",
+        "proton-services-log-check": "proton-services-log",
+        "proton-page-width-check": "proton-page-width",
+        "proton-page-width-range": "proton-page-width",
+        "proton-login-animation-select": "proton-login-animation",
+        "proton-login-branding-check": "proton-login-branding",
+        "proton-login-name-input": "proton-login-name"
     };
 
     var pending = {};
@@ -85,14 +66,6 @@
         return String(value);
     }
 
-    function getTitle(el) {
-        var row = el && el.closest ? el.closest(".cbi-value") : null;
-        if (!row) return "";
-
-        var title = row.querySelector(".cbi-value-title, label, .control-label");
-        return title ? (title.textContent || "").trim() : "";
-    }
-
     function getKey(el) {
         if (!el) return "";
 
@@ -101,38 +74,12 @@
         // input's fake path.
         if (el.type === "file") return "";
 
-        if (el.id === "proton-login-animation-select") {
-            return "proton-login-animation";
-        }
-        if (el.id === "proton-login-branding-check") {
-            return "proton-login-branding";
-        }
         // The display-mode radios (proton-login-mode-*) write
         // proton-login-logo-only directly via login-animation-settings.js,
         // so this fallback intentionally does not key them.
+        if (el.name === "proton-login-mode") return "";
 
-        // The custom-accent colour picker and hex field share the
-        // "Accent Color" row, so the title-based lookup below would
-        // mis-map them to proton-accent-color and store a raw hex there
-        // (which then falls back to the grey/default accent). Map them
-        // explicitly: the picker/hex → the custom hex, the select → mode.
-        if (
-            el.id === "proton-accent-custom-color" ||
-            el.id === "proton-accent-custom-hex"
-        ) {
-            return "proton-accent-custom";
-        }
-        if (el.id === "proton-accent-select") {
-            return "proton-accent-color";
-        }
-
-        // The tab-outline checkbox lives in the "Border Radius" row, so
-        // the title lookup would mis-map it; key it explicitly.
-        if (el.id === "proton-tab-outline-check") {
-            return "proton-tab-outline";
-        }
-
-        return TITLE_TO_KEY[getTitle(el)] || "";
+        return ID_TO_KEY[el.id] || "";
     }
 
     function getValue(el) {

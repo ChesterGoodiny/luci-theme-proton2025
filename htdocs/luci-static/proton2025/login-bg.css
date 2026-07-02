@@ -80,7 +80,7 @@ body.login-page .login-form input[type="password"]:focus {
     outline: none !important;
 }
 
-body.login-page .login-form button,
+body.login-page .login-form > button[type="submit"],
 body.login-page .login-form input[type="submit"],
 body.login-page .login-form .btn {
     color: var(--on-primary-color, #fff) !important;
@@ -94,7 +94,7 @@ body.login-page .login-form .btn {
     box-shadow: 0 14px 32px var(--proton-accent-glow, rgba(94,158,255,0.18)) !important;
 }
 
-body.login-page .login-form button:hover,
+body.login-page .login-form > button[type="submit"]:hover,
 body.login-page .login-form input[type="submit"]:hover,
 body.login-page .login-form .btn:hover {
     background-image: linear-gradient(
@@ -104,6 +104,23 @@ body.login-page .login-form .btn:hover {
     ) !important;
 }
 
+
+body.login-page .login-password-toggle,
+body.login-page .login-password-toggle:hover,
+body.login-page .login-password-toggle:focus,
+body.login-page .login-password-toggle:active,
+body.login-page .login-password-toggle[aria-pressed="true"] {
+    color: var(--proton-muted, #9299a8) !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+body.login-page .login-input-wrap:focus-within .login-password-toggle {
+    color: var(--proton-accent, #5e9eff) !important;
+}
 body.login-page .login-form label,
 body.login-page .login-header,
 body.login-page .login-logo {

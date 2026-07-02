@@ -21,51 +21,42 @@
         }
     }
 
-    function isRu() {
-        var lang = (document.documentElement.lang || document.body.dataset.lang || "").toLowerCase();
-        return lang.indexOf("ru") === 0;
-    }
+    function tr(key) {
+        if (window.protonT && typeof window.protonT === "function") {
+            return window.protonT(key);
+        }
 
-    function tr(en, ru) {
-        return isRu() ? ru : en;
-    }
-
-    var OPTIONS = [
-        ["off", tr("Off", "Выкл")],
-        ["particles", tr("Classic Particles", "Классические частицы")],
-        ["constellation", tr("Constellation", "Созвездие")],
-        ["plexus", tr("Plexus / Neural", "Плекс / Нейронный")],
-        ["breathing", tr("Breathing Particles", "Дышащие частицы")],
-        ["gravity", tr("Gravity Hover", "Гравитация")],
-        ["lowpoly", tr("Low Poly Mesh", "Низкополигональная сетка")],
-        ["dataflow", tr("Data Flow", "Поток данных")],
-        ["flowfield", tr("Flow Field", "Поле течений")],
-        ["circuit", tr("Circuit Board", "Плата схем")],
-        ["packetpulses", tr("Packet Pulses", "Пакетные импульсы")],
-        ["hex", tr("Hex Grid", "Шестиугольная сетка")],
-        ["underwater", tr("Underwater Depths", "Подводные глубины")]
-    ];
-
-    function getTitleText(row) {
-        var title = row.querySelector(".cbi-value-title, label, .control-label");
-        return title ? (title.textContent || "").trim() : "";
-    }
-
-    function findRowByTitle(names, root) {
-        var container = root || document;
-        var rows = Array.prototype.slice.call(container.querySelectorAll(".cbi-value"));
-
-        for (var i = 0; i < rows.length; i++) {
-            var title = getTitleText(rows[i]);
-
-            for (var j = 0; j < names.length; j++) {
-                if (title === names[j]) {
-                    return rows[i];
-                }
+        if (window.L && typeof window.L.tr === "function") {
+            var luciTranslated = window.L.tr(key);
+            if (luciTranslated && luciTranslated !== key) {
+                return luciTranslated;
             }
         }
 
-        return null;
+        return key;
+    }
+
+    var OPTIONS = [
+        ["off", tr("Off")],
+        ["particles", tr("Classic Particles")],
+        ["constellation", tr("Constellation")],
+        ["plexus", tr("Plexus / Neural")],
+        ["breathing", tr("Breathing Particles")],
+        ["gravity", tr("Gravity Hover")],
+        ["lowpoly", tr("Low Poly Mesh")],
+        ["dataflow", tr("Data Flow")],
+        ["flowfield", tr("Flow Field")],
+        ["circuit", tr("Circuit Board")],
+        ["packetpulses", tr("Packet Pulses")],
+        ["hex", tr("Hex Grid")],
+        ["underwater", tr("Underwater Depths")]
+    ];
+
+    function findRowByControlId(id, root) {
+        var container = root || document;
+        var control = container.querySelector("#" + id);
+
+        return control && control.closest ? control.closest(".cbi-value") : null;
     }
 
     function createRow() {
@@ -77,7 +68,7 @@
 
         var title = document.createElement("label");
         title.className = "cbi-value-title";
-        title.textContent = tr("Login Page Animation", "Анимация страницы входа");
+        title.textContent = tr("Login Page Animation");
 
         var field = document.createElement("div");
         field.className = "cbi-value-field";
@@ -101,8 +92,7 @@
         var desc = document.createElement("div");
         desc.className = "cbi-value-description";
         desc.textContent = tr(
-            "Animation used on the LuCI login page. The color follows the selected Proton accent color.",
-            "Анимация на странице входа LuCI. Цвет берётся из выбранного акцента Proton."
+            "Animation used on the LuCI login page. The color follows the selected Proton accent color."
         );
 
         select.addEventListener("change", function () {
@@ -112,7 +102,7 @@
                 window.protonSettingsSync.saveToUci();
             }
 
-            showToast(tr("Login animation saved", "Анимация входа сохранена"));
+            showToast(tr("Login animation saved"));
         });
 
         field.appendChild(select);
@@ -135,7 +125,7 @@
         var title = document.createElement("label");
         title.className = "cbi-value-title";
         title.setAttribute("for", "proton-login-branding-check");
-        title.textContent = tr("Custom login branding", "Своё оформление входа");
+        title.textContent = tr("Custom login branding");
 
         var field = document.createElement("div");
         field.className = "cbi-value-field";
@@ -159,7 +149,7 @@
             ";flex-direction:column;gap:6px;";
 
         var nameLabel = document.createElement("span");
-        nameLabel.textContent = tr("Name on login screen:", "Имя на странице входа:");
+        nameLabel.textContent = tr("Name on login screen:");
         nameLabel.style.cssText = "font-size:0.85rem;color:var(--proton-fg-secondary);";
 
         var nameInput = document.createElement("input");
@@ -191,7 +181,7 @@
         modeWrap.style.cssText = "display:flex;flex-direction:column;gap:6px;";
 
         var modeLabel = document.createElement("span");
-        modeLabel.textContent = tr("What to show:", "Что показывать:");
+        modeLabel.textContent = tr("What to show:");
         modeLabel.style.cssText = "font-size:0.85rem;color:var(--proton-fg-secondary);";
 
         var seg = document.createElement("div");
@@ -213,8 +203,8 @@
             return { label: lab, input: radio };
         }
 
-        var segBoth = makeSeg("both", tr("Logo & name", "Лого и имя"), !logoOnly);
-        var segLogo = makeSeg("logo", tr("Logo only", "Только лого"), logoOnly);
+        var segBoth = makeSeg("both", tr("Logo & name"), !logoOnly);
+        var segLogo = makeSeg("logo", tr("Logo only"), logoOnly);
         segBoth.input.id = "proton-login-mode-both";
         segLogo.input.id = "proton-login-mode-logo";
 
@@ -251,13 +241,13 @@
             if (!segBoth.input.checked) return;
             applyMode(false);
             flushToUci();
-            showToast(tr("Showing logo and name", "Показывается логотип и имя"));
+            showToast(tr("Showing logo and name"));
         });
         segLogo.input.addEventListener("change", function () {
             if (!segLogo.input.checked) return;
             applyMode(true);
             flushToUci();
-            showToast(tr("Showing logo only", "Показывается только логотип"));
+            showToast(tr("Showing logo only"));
         });
 
         var logo = document.createElement("div");
@@ -279,7 +269,7 @@
         chooseBtn.id = "proton-login-logo-choose";
         chooseBtn.type = "button";
         chooseBtn.className = "cbi-button cbi-button-action";
-        chooseBtn.textContent = tr("Choose file…", "Выбрать файл…");
+        chooseBtn.textContent = tr("Choose file…");
         chooseBtn.addEventListener("click", function () {
             file.click();
         });
@@ -288,7 +278,7 @@
         clear.id = "proton-login-logo-clear";
         clear.type = "button";
         clear.className = "cbi-button cbi-button-remove";
-        clear.textContent = tr("Remove logo", "Убрать логотип");
+        clear.textContent = tr("Remove logo");
 
         var status = document.createElement("span");
         status.id = "proton-login-logo-status";
@@ -305,8 +295,8 @@
         function refreshStatus() {
             var data = localStorage.getItem(LOGO_KEY);
             status.textContent = data
-                ? tr("Custom logo set", "Свой логотип задан")
-                : tr("No logo — default icon is used", "Логотип не задан — стандартная иконка");
+                ? tr("Custom logo set")
+                : tr("No logo — default icon is used");
             if (data) {
                 preview.src = data;
                 preview.style.display = "inline-block";
@@ -326,8 +316,7 @@
         var desc = document.createElement("div");
         desc.className = "cbi-value-description";
         desc.textContent = tr(
-            "On the login page, show the router name instead of \"Proton2025\" and an optional uploaded logo. SVG or small PNG (≤ 200 KB) recommended.",
-            "На странице входа показывать имя роутера вместо «Proton2025» и, по желанию, загруженный логотип. Лучше SVG или небольшой PNG (≤ 200 КБ)."
+            "On the login page, show the router name instead of \"Proton2025\" and an optional uploaded logo. SVG or small PNG (≤ 200 KB) recommended."
         );
 
         input.addEventListener("change", function () {
@@ -337,7 +326,7 @@
             logo.style.display = on ? "flex" : "none";
             updateNameVisibility();
             flushToUci();
-            showToast(tr("Login branding saved", "Оформление входа сохранено"));
+            showToast(tr("Login branding saved"));
         });
 
         file.addEventListener("change", function () {
@@ -345,8 +334,7 @@
             if (!f) return;
             if (f.size > LOGO_MAX_BYTES) {
                 showToast(tr(
-                    "Logo is too large (max 200 KB). Use a smaller image or an SVG.",
-                    "Логотип слишком большой (макс. 200 КБ). Возьмите меньше или SVG."
+                    "Logo is too large (max 200 KB). Use a smaller image or an SVG."
                 ));
                 file.value = "";
                 return;
@@ -356,8 +344,7 @@
                 var data = String(reader.result || "");
                 if (data.length > LOGO_MAX) {
                     showToast(tr(
-                        "Logo is too large. Use a smaller image or an SVG.",
-                        "Логотип слишком большой. Возьмите меньше или SVG."
+                        "Logo is too large. Use a smaller image or an SVG."
                     ));
                     file.value = "";
                     return;
@@ -366,7 +353,7 @@
                 file.value = "";
                 refreshStatus();
                 flushToUci();
-                showToast(tr("Logo uploaded", "Логотип загружен"));
+                showToast(tr("Logo uploaded"));
             };
             reader.readAsDataURL(f);
         });
@@ -376,7 +363,7 @@
             file.value = "";
             refreshStatus();
             flushToUci();
-            showToast(tr("Logo removed", "Логотип убран"));
+            showToast(tr("Logo removed"));
         });
 
         field.appendChild(cbWrap);
@@ -452,25 +439,9 @@
             existingRow.remove();
         }
 
-        var accentRow = findRowByTitle([
-            "Accent Color",
-            "Акцентный цвет",
-            "强调色",
-            "Akzentfarbe",
-            "Couleur d'Accent",
-            "Color de Acento",
-            "Cor de Destaque"
-        ], settingsBlock);
-
-        var themeRow = findRowByTitle([
-            "Theme Mode",
-            "Режим темы"
-        ], settingsBlock);
-
-        var borderRow = findRowByTitle([
-            "Border Radius",
-            "Скругление углов"
-        ], settingsBlock);
+        var accentRow = findRowByControlId("proton-accent-select", settingsBlock);
+        var themeRow = findRowByControlId("proton-mode-select", settingsBlock);
+        var borderRow = findRowByControlId("proton-radius-select", settingsBlock);
 
         var row = createRow();
 
@@ -491,8 +462,6 @@
         }
 
         ensureBrandingRow(row);
-
-        console.log("[Proton2025] Login animation setting injected");
     }
 
     function init() {

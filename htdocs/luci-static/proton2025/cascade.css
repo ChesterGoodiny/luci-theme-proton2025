@@ -2049,13 +2049,13 @@ table.cbi-section-table td.cbi-section-actions button {
 }
 
 /* Single gap only */
-table.cbi-section-table .cbi-section-actions > div {
+table.cbi-section-table .cbi-section-actions>div {
     gap: 4px;
 }
 
-table.cbi-section-table .cbi-section-actions button + button,
-table.cbi-section-table .cbi-section-actions .btn + .btn,
-table.cbi-section-table .cbi-section-actions .cbi-button + .cbi-button {
+table.cbi-section-table .cbi-section-actions button+button,
+table.cbi-section-table .cbi-section-actions .btn+.btn,
+table.cbi-section-table .cbi-section-actions .cbi-button+.cbi-button {
     margin-left: 0;
 }
 
@@ -11599,7 +11599,7 @@ body.login-page {
 .login-container {
     width: 100%;
     max-width: 420px;
-    animation: fadeInUp 0.6s ease-out;
+    animation: loginSlideIn 0.6s ease-out;
     margin: auto;
 }
 
@@ -11632,14 +11632,12 @@ body.login-page {
     }
 }
 
-@keyframes fadeInUp {
+@keyframes loginSlideIn {
     from {
-        opacity: 0;
         transform: translateY(20px);
     }
 
     to {
-        opacity: 1;
         transform: translateY(0);
     }
 }
@@ -11769,7 +11767,7 @@ body.login-page {
     transition: background 0.15s ease, color 0.15s ease;
 }
 
-.proton-seg .proton-seg-option + .proton-seg-option {
+.proton-seg .proton-seg-option+.proton-seg-option {
     border-left: 1px solid var(--proton-border);
 }
 
@@ -11802,7 +11800,7 @@ body.login-page {
 }
 
 .login-form .form-group {
-    margin-bottom: 24px;
+    margin-bottom: 22px;
 }
 
 .login-form label {
@@ -11814,16 +11812,58 @@ body.login-page {
     letter-spacing: 0.01em;
 }
 
+.login-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.login-input-icon,
+.login-password-toggle {
+    position: absolute;
+    top: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--proton-muted);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.login-input-icon {
+    left: 14px;
+}
+
+.login-input-icon svg,
+.login-password-toggle svg {
+    width: 18px;
+    height: 18px;
+    fill: none !important;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.login-input-icon svg *,
+.login-password-toggle svg * {
+    fill: none !important;
+}
+
 .login-form input {
     width: 100%;
     max-width: 100%;
-    padding: 13px 16px;
+    padding: 13px 16px 13px 44px;
     font-size: 0.95rem;
     background: var(--proton-bg-tertiary);
     border: 1px solid var(--proton-border);
     border-radius: var(--proton-radius-sm);
     color: var(--proton-fg);
     transition: var(--proton-transition);
+}
+
+.login-password-wrap input {
+    padding-right: 44px;
 }
 
 .login-form input:focus {
@@ -11833,7 +11873,16 @@ body.login-page {
     box-shadow: 0 0 0 3px var(--proton-accent-glow);
 }
 
-.login-form button {
+.login-input-wrap:focus-within .login-input-icon,
+.login-input-wrap:focus-within .login-password-toggle {
+    color: var(--proton-accent);
+}
+
+.login-form>button[type="submit"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     width: 100%;
     padding: 14px 20px;
     font-size: 1rem;
@@ -11847,7 +11896,13 @@ body.login-page {
     margin-top: 8px;
 }
 
-.login-form button:hover {
+.login-submit-icon {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+}
+
+.login-form>button[type="submit"]:hover {
     background: transparent;
     color: var(--proton-accent);
     border-color: var(--proton-accent);
@@ -11855,17 +11910,83 @@ body.login-page {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-:root[data-theme="light"] .login-form button:hover {
+:root[data-theme="light"] .login-form>button[type="submit"]:hover {
     background: transparent;
     color: var(--proton-accent);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.login-form button:active {
+.login-form>button[type="submit"]:active {
     transform: translateY(0);
     background: transparent;
     color: var(--proton-accent);
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.login-password-toggle {
+    right: 12px;
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+    min-height: 32px;
+    padding: 0;
+    margin: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: 0 !important;
+    border-radius: 999px;
+    box-shadow: none !important;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    transform: translateY(-50%) !important;
+    pointer-events: auto;
+}
+
+.login-password-toggle:hover,
+.login-password-toggle:focus,
+.login-password-toggle:active,
+.login-password-toggle[aria-pressed="true"] {
+    color: var(--proton-accent);
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    transform: translateY(-50%) !important;
+}
+
+.login-password-toggle:focus-visible {
+    outline: 2px solid var(--proton-accent);
+    outline-offset: 2px;
+}
+
+.login-password-toggle[aria-pressed="false"] .login-eye-slash {
+    display: none;
+}
+
+.login-powered {
+    margin-top: 10px;
+    padding-top: 12px;
+    text-align: center;
+    color: var(--proton-muted);
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.login-powered::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 1px;
+    margin: 0 0 12px;
+    border-radius: 999px;
+    background: var(--proton-border);
+}
+
+.login-powered span {
+    color: inherit;
+    font-weight: 500;
 }
 
 .login-error {
@@ -14268,6 +14389,7 @@ body[data-page*="mihomo"] [style*="border: 2px solid #0066cc"] .cbi-section-desc
     background: #eaedf1 !important;
     color: #888a8c !important;
 }
+
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_print-margin {
     background: #d6d9de !important;
 }
@@ -14281,12 +14403,15 @@ body[data-page*="mihomo"] [style*="border: 2px solid #0066cc"] .cbi-section-desc
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_marker-layer .ace_selection {
     background: rgba(59, 130, 246, 0.22) !important;
 }
+
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_marker-layer .ace_active-line {
     background: rgba(0, 0, 0, 0.055) !important;
 }
+
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_gutter-active-line {
     background-color: rgba(0, 0, 0, 0.08) !important;
 }
+
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_marker-layer .ace_selected-word {
     background: rgba(59, 130, 246, 0.1) !important;
     border-color: rgba(59, 130, 246, 0.4) !important;
@@ -14296,6 +14421,7 @@ body[data-page*="mihomo"] [style*="border: 2px solid #0066cc"] .cbi-section-desc
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_marker-layer .ace_bracket {
     border-color: #aaaaaa !important;
 }
+
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_marker-layer .ace_highlight {
     background: rgba(255, 220, 0, 0.18) !important;
     border-color: #c8b900 !important;
@@ -14320,12 +14446,14 @@ body[data-page*="mihomo"] [style*="border: 2px solid #0066cc"] .cbi-section-desc
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_storage,
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_storage.ace_type,
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_support.ace_type {
-    color: #8959a8 !important; /* purple */
+    color: #8959a8 !important;
+    /* purple */
 }
 
 /* Operators */
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_keyword.ace_operator {
-    color: #3e999f !important; /* teal */
+    color: #3e999f !important;
+    /* teal */
 }
 
 /* Numbers, constants, units */
@@ -14335,7 +14463,8 @@ body[data-page*="mihomo"] [style*="border: 2px solid #0066cc"] .cbi-section-desc
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_keyword.ace_other.ace_unit,
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_support.ace_constant,
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_variable.ace_parameter {
-    color: #f5871f !important; /* orange */
+    color: #f5871f !important;
+    /* orange */
 }
 
 /* Other constants */
@@ -14346,20 +14475,23 @@ body[data-page*="mihomo"] [style*="border: 2px solid #0066cc"] .cbi-section-desc
 /* Functions, variables (generic) */
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_entity.ace_name.ace_function,
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_support.ace_function {
-    color: #4271ae !important; /* blue */
+    color: #4271ae !important;
+    /* blue */
 }
 
 /* Types / support classes */
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_support.ace_class,
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_support.ace_type {
-    color: #b58900 !important; /* gold */
+    color: #b58900 !important;
+    /* gold */
 }
 
 /* Strings, headings */
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_heading,
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_markup.ace_heading,
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_string {
-    color: #718c00 !important; /* green */
+    color: #718c00 !important;
+    /* green */
 }
 
 /* Tags, attribute names, variables, regexp — YAML keys fall here */
@@ -14368,12 +14500,14 @@ body[data-page*="mihomo"] [style*="border: 2px solid #0066cc"] .cbi-section-desc
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_meta.ace_tag,
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_string.ace_regexp,
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_variable {
-    color: #c82829 !important; /* red */
+    color: #c82829 !important;
+    /* red */
 }
 
 /* Comments */
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_comment {
-    color: #8e908c !important; /* gray */
+    color: #8e908c !important;
+    /* gray */
 }
 
 /* Fold marker */
@@ -14387,6 +14521,7 @@ body[data-page*="mihomo"] [style*="border: 2px solid #0066cc"] .cbi-section-desc
     color: #ffffff !important;
     background-color: #c82829 !important;
 }
+
 :root[data-theme="light"] .ace-tomorrow-night-bright .ace_invalid.ace_deprecated {
     color: #ffffff !important;
     background-color: #8959a8 !important;
@@ -14583,15 +14718,15 @@ body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:gri
 /* Widen modal dialogs containing LuCI CBI tables, e.g. WireGuard peer lists */
 .modal:has(.cbi-section-table),
 .modal:has(.table) {
-  width: min(1180px, calc(100vw - 48px)) !important;
-  max-width: calc(100vw - 48px) !important;
+    width: min(1180px, calc(100vw - 48px)) !important;
+    max-width: calc(100vw - 48px) !important;
 }
 
 /* Let wide table content use the enlarged dialog instead of leaking outside */
 .modal:has(.cbi-section-table) .cbi-section,
 .modal:has(.table) .cbi-section {
-  max-width: 100%;
-  overflow: visible;
+    max-width: 100%;
+    overflow: visible;
 }
 
 /* On smaller screens, keep table scroll inside the modal */
@@ -14599,30 +14734,52 @@ body[data-page="admin-status-overview"] .cbi-section>div>div[style*="display:gri
 .modal:has(.table) .cbi-section-node,
 .modal:has(.cbi-section-table) .table,
 .modal:has(.table) .table {
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: visible;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
 }
 
 /* Keep row action buttons on one line */
 .modal .cbi-section-actions,
 .modal .td.cbi-section-actions,
 .modal td.cbi-section-actions {
-  white-space: nowrap;
+    white-space: nowrap;
 }
 
 /* Avoid oversized action buttons stretching modal rows */
 .modal .cbi-section-actions .cbi-button,
 .modal .td.cbi-section-actions .cbi-button,
 .modal td.cbi-section-actions .cbi-button {
-  margin-left: 6px;
+    margin-left: 6px;
 }
 
 /* Mobile fallback: use almost full viewport width */
 @media screen and (max-width: 900px) {
-  .modal:has(.cbi-section-table),
-  .modal:has(.table) {
-    width: calc(100vw - 24px) !important;
-    max-width: calc(100vw - 24px) !important;
-  }
+
+    .modal:has(.cbi-section-table),
+    .modal:has(.table) {
+        width: calc(100vw - 24px) !important;
+        max-width: calc(100vw - 24px) !important;
+    }
+}
+
+/* Login password eye: keep it icon-only and override global button styles. */
+body.login-page .login-password-toggle,
+body.login-page .login-password-toggle:hover,
+body.login-page .login-password-toggle:focus,
+body.login-page .login-password-toggle:active,
+body.login-page .login-password-toggle[aria-pressed="true"] {
+    background: none !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    outline: none;
+    transform: translateY(-50%) !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body.login-page .login-password-toggle:focus-visible {
+    outline: 2px solid var(--proton-accent);
+    outline-offset: 2px;
 }
