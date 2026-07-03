@@ -66,6 +66,41 @@
     --proton-bg-secondary: rgba(255, 255, 255, 0.03);
     --proton-bg-tertiary: rgba(255, 255, 255, 0.025);
     --proton-bg-hover: rgba(255, 255, 255, 0.05);
+    /* Colour the optional background pattern is painted with (see the
+       .proton-pattern-* rules). On DARK, an accent tint (a light-blue) reads
+       nicely against the near-black bg and follows the chosen accent. */
+    --proton-pattern-fg: rgba(var(--proton-accent-rgb), 0.04);
+
+    /* Opaque card colour used as the BOTTOM of the panel gradient while a
+       pattern is active. --proton-card-rgb is the same colour as RGB comps so
+       the gradient TOP can be a translucent version of it (partial pattern
+       peek) without needing color-mix. */
+    --proton-card-solid: #161c26;
+    --proton-card-rgb: 22, 28, 38;
+
+    /* The base page background as a reusable layer list (accent glows + the
+       base gradient). Kept in a variable so the optional background pattern
+       can be composited ON TOP of it without re-declaring these gradients.
+       The pattern layer(s) default to nothing. */
+    --proton-bg-image:
+        radial-gradient(circle at 20% 30%, rgba(var(--proton-accent-rgb), 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(var(--proton-accent-rgb), 0.03) 0%, transparent 50%),
+        var(--proton-bg);
+    --proton-pattern-image: none;
+    --proton-pattern-size: auto;
+
+    /* Tunable geometry and light-mode ink for the optional background
+       patterns (see the .proton-pattern-* rules). Base sizes drive
+       background-size; --proton-pattern-scale (set from the "Pattern size"
+       slider, 0.5–2) multiplies them. The light-* colours are the fixed slate
+       ink used on white, where the dark-theme accent tint
+       (--proton-pattern-fg) would be invisible. */
+    --proton-pattern-grid-size: 52px;
+    --proton-pattern-dots-size: 33px;
+    --proton-pattern-stars-size: 200px;
+    --proton-pattern-scale: 1;
+    --proton-pattern-light-line: rgba(15, 23, 42, 0.03);
+    --proton-pattern-light-dot: rgba(15, 23, 42, 0.05);
 
     /* Text Colors */
     --proton-fg: #f5f7fa;
@@ -192,6 +227,17 @@
     --proton-bg-secondary: rgba(0, 0, 0, 0.03);
     --proton-bg-tertiary: rgba(0, 0, 0, 0.02);
     --proton-bg-hover: rgba(75, 85, 99, 0.05);
+    /* IMPORTANT: the dark theme's accent tint is a *light* blue, which is
+       essentially invisible on white (a translucent light colour over white
+       ≈ white). Light theme therefore uses a DARK slate line colour, which is
+       what actually reads as lines/dots on a light background. */
+    --proton-pattern-fg: rgba(30, 41, 59, 0.16);
+    --proton-card-solid: #ffffff;
+    --proton-card-rgb: 255, 255, 255;
+    --proton-bg-image:
+        radial-gradient(circle at 20% 30%, rgba(var(--proton-accent-rgb), 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(var(--proton-accent-rgb), 0.025) 0%, transparent 50%),
+        var(--proton-bg);
 
     /* Text Colors */
     --proton-fg: #1a1d29;
@@ -390,10 +436,11 @@ html {
 
 body {
     background: var(--proton-bg-solid);
-    background-image:
-        radial-gradient(circle at 20% 30%, rgba(var(--proton-accent-rgb), 0.06) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(var(--proton-accent-rgb), 0.03) 0%, transparent 50%),
-        var(--proton-bg);
+    /* Optional pattern layer(s) on top of the base background image. Both
+       vars default to "none"/"auto", so with no pattern selected this is
+       exactly the original background. */
+    background-image: var(--proton-pattern-image), var(--proton-bg-image);
+    background-size: var(--proton-pattern-size), auto, auto, auto;
     background-attachment: fixed;
     color: var(--proton-fg);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -408,12 +455,98 @@ body {
     overflow-x: hidden;
 }
 
-/* Light theme background gradients */
+/* Light theme: re-assert the SAME composited background (pattern + base) at
+   the [data-theme="light"] specificity. header.ut ships a critical inline
+   `:root[data-theme="light"] body { background-image: … }` (anti-flash, base
+   gradients only) which, being more specific than a bare `body`, would
+   otherwise override the pattern layer on light and make patterns invisible.
+   This rule has equal specificity but cascade.css loads later, so it wins. */
 :root[data-theme="light"] body {
-    background-image:
-        radial-gradient(circle at 20% 30%, rgba(var(--proton-accent-rgb), 0.04) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(var(--proton-accent-rgb), 0.025) 0%, transparent 50%),
-        var(--proton-bg);
+    background-image: var(--proton-pattern-image), var(--proton-bg-image);
+    background-size: var(--proton-pattern-size), auto, auto, auto;
+}
+
+/* ==========================================================================
+   Optional background patterns (System → System → Language and Style →
+   "Background Pattern"). An html.proton-pattern-* class sets two custom
+   properties that the `body` rule composites ON TOP of the base background
+   image — so the pattern lives in body's real (visible) background, not in a
+   z-index:-1 pseudo that would be hidden behind body's opaque background.
+
+   --proton-pattern-image : the pattern's background layer(s)
+   --proton-pattern-size  : matching background-size for those layer(s)
+
+   Grid/dots use CSS gradients with the theme-aware --proton-pattern-fg colour
+   (one rule each). Stars is an SVG data-URI; since a data-URI can't read a CSS
+   var, its colour is baked and given a light-theme override.
+   Adding a new pattern later = one rule (+ maybe a light override) + one
+   <option> in menu-proton2025.js. */
+
+/* Grid — square lattice of accent-tinted lines. --proton-pattern-cell is the
+   base size scaled by the "Pattern size" slider. */
+html.proton-pattern-grid {
+    --proton-pattern-cell: calc(var(--proton-pattern-grid-size) * var(--proton-pattern-scale));
+    --proton-pattern-image:
+        linear-gradient(var(--proton-pattern-fg) 1px, transparent 1px),
+        linear-gradient(90deg, var(--proton-pattern-fg) 1px, transparent 1px);
+    --proton-pattern-size:
+        var(--proton-pattern-cell) var(--proton-pattern-cell),
+        var(--proton-pattern-cell) var(--proton-pattern-cell);
+}
+
+/* Dots — evenly spaced dot grid. */
+html.proton-pattern-dots {
+    --proton-pattern-cell: calc(var(--proton-pattern-dots-size) * var(--proton-pattern-scale));
+    --proton-pattern-image: radial-gradient(var(--proton-pattern-fg) 1.5px, transparent 1.6px);
+    --proton-pattern-size: var(--proton-pattern-cell) var(--proton-pattern-cell);
+}
+
+/* Light theme, grid/dots: paint with the fixed slate ink
+   (--proton-pattern-light-line / --proton-pattern-light-dot) instead of the
+   dark-theme accent tint (--proton-pattern-fg), which is a light blue that
+   would be invisible on a white background. */
+:root[data-theme="light"].proton-pattern-grid {
+    --proton-pattern-image:
+        linear-gradient(var(--proton-pattern-light-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--proton-pattern-light-line) 1px, transparent 1px);
+}
+:root[data-theme="light"].proton-pattern-dots {
+    --proton-pattern-image: radial-gradient(var(--proton-pattern-light-dot) 1.5px, transparent 1.6px);
+}
+
+/* Stars — a faint starfield over a subtle noise grain, in one baked SVG tile
+   (random dots of varying size/opacity, duplicated across the tile edges so it
+   repeats seamlessly; feTurbulence adds the grain). Kept dim, on par with the
+   dots pattern. This baked tile is the pre-paint / no-JS fallback; when JS is
+   available the theme regenerates a fresh random field on size changes. White
+   specks on dark, slate specks on light — colour is baked (a data-URI can't
+   read CSS vars). Tile size follows --proton-pattern-stars-size * the slider. */
+html.proton-pattern-stars {
+    --proton-pattern-cell: calc(var(--proton-pattern-stars-size) * var(--proton-pattern-scale));
+    --proton-pattern-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3e%3cfilter id='n'%3e%3cfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3e%3c/filter%3e%3crect width='100%25' height='100%25' filter='url(%23n)'/%3e%3cg fill='%23ffffff'%3e%3ccircle cx='111.6' cy='129.2' r='1.52' opacity='0.166'/%3e%3ccircle cx='74.3' cy='75.1' r='0.66' opacity='0.14'/%3e%3ccircle cx='8.7' cy='153.5' r='1.0' opacity='0.07'/%3e%3ccircle cx='5.6' cy='102.0' r='0.82' opacity='0.065'/%3e%3ccircle cx='45.6' cy='157.2' r='1.29' opacity='0.131'/%3e%3ccircle cx='182.4' cy='119.1' r='1.38' opacity='0.084'/%3e%3ccircle cx='121.2' cy='23.2' r='0.68' opacity='0.134'/%3e%3ccircle cx='197.6' cy='92.1' r='0.84' opacity='0.248'/%3e%3ccircle cx='-2.4' cy='92.1' r='0.84' opacity='0.248'/%3e%3ccircle cx='35.2' cy='145.9' r='1.49' opacity='0.22'/%3e%3ccircle cx='91.3' cy='138.1' r='1.2' opacity='0.177'/%3e%3ccircle cx='151.6' cy='171.1' r='0.72' opacity='0.169'/%3e%3ccircle cx='119.9' cy='32.2' r='0.99' opacity='0.119'/%3e%3ccircle cx='15.1' cy='29.4' r='0.87' opacity='0.173'/%3e%3ccircle cx='179.2' cy='0.1' r='1.67' opacity='0.168'/%3e%3ccircle cx='179.2' cy='200.1' r='1.67' opacity='0.168'/%3e%3ccircle cx='114.2' cy='100.5' r='1.26' opacity='0.163'/%3e%3ccircle cx='61.4' cy='4.9' r='1.21' opacity='0.101'/%3e%3ccircle cx='41.0' cy='28.7' r='1.48' opacity='0.252'/%3e%3ccircle cx='30.2' cy='102.0' r='0.58' opacity='0.099'/%3e%3ccircle cx='28.5' cy='34.5' r='0.82' opacity='0.112'/%3e%3ccircle cx='181.5' cy='27.3' r='1.02' opacity='0.09'/%3e%3ccircle cx='189.3' cy='45.8' r='1.45' opacity='0.076'/%3e%3ccircle cx='102.0' cy='48.1' r='1.07' opacity='0.201'/%3e%3ccircle cx='174.3' cy='131.0' r='1.39' opacity='0.237'/%3e%3ccircle cx='70.6' cy='142.8' r='1.45' opacity='0.163'/%3e%3ccircle cx='65.2' cy='190.7' r='0.62' opacity='0.161'/%3e%3ccircle cx='123.4' cy='124.0' r='1.08' opacity='0.084'/%3e%3ccircle cx='125.7' cy='49.8' r='0.61' opacity='0.083'/%3e%3ccircle cx='46.3' cy='29.5' r='0.71' opacity='0.185'/%3e%3ccircle cx='20.4' cy='52.5' r='0.53' opacity='0.061'/%3e%3ccircle cx='116.9' cy='161.9' r='1.03' opacity='0.105'/%3e%3ccircle cx='52.4' cy='53.8' r='0.5' opacity='0.171'/%3e%3ccircle cx='86.6' cy='154.9' r='1.41' opacity='0.124'/%3e%3ccircle cx='180.4' cy='91.8' r='0.45' opacity='0.211'/%3e%3ccircle cx='148.3' cy='193.9' r='1.35' opacity='0.199'/%3e%3ccircle cx='140.6' cy='19.8' r='1.1' opacity='0.13'/%3e%3ccircle cx='9.8' cy='17.8' r='0.74' opacity='0.08'/%3e%3ccircle cx='183.9' cy='105.0' r='1.35' opacity='0.239'/%3e%3ccircle cx='50.7' cy='67.3' r='1.08' opacity='0.164'/%3e%3ccircle cx='164.2' cy='26.0' r='1.5' opacity='0.083'/%3e%3ccircle cx='51.5' cy='24.9' r='1.12' opacity='0.185'/%3e%3ccircle cx='63.3' cy='129.9' r='0.4' opacity='0.061'/%3e%3ccircle cx='143.8' cy='60.7' r='0.97' opacity='0.231'/%3e%3ccircle cx='74.6' cy='198.3' r='0.98' opacity='0.189'/%3e%3ccircle cx='74.6' cy='-1.7' r='0.98' opacity='0.189'/%3e%3ccircle cx='169.2' cy='30.6' r='0.7' opacity='0.192'/%3e%3ccircle cx='177.1' cy='94.0' r='0.6' opacity='0.182'/%3e%3ccircle cx='197.7' cy='83.0' r='0.76' opacity='0.197'/%3e%3ccircle cx='-2.3' cy='83.0' r='0.76' opacity='0.197'/%3e%3c/g%3e%3c/svg%3e");
+    --proton-pattern-size: var(--proton-pattern-cell) var(--proton-pattern-cell);
+}
+:root[data-theme="light"].proton-pattern-stars {
+    --proton-pattern-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3e%3cfilter id='n'%3e%3cfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .07 0'/%3e%3c/filter%3e%3crect width='100%25' height='100%25' filter='url(%23n)'/%3e%3cg fill='%230f172a'%3e%3ccircle cx='111.6' cy='129.2' r='1.52' opacity='0.166'/%3e%3ccircle cx='74.3' cy='75.1' r='0.66' opacity='0.14'/%3e%3ccircle cx='8.7' cy='153.5' r='1.0' opacity='0.07'/%3e%3ccircle cx='5.6' cy='102.0' r='0.82' opacity='0.065'/%3e%3ccircle cx='45.6' cy='157.2' r='1.29' opacity='0.131'/%3e%3ccircle cx='182.4' cy='119.1' r='1.38' opacity='0.084'/%3e%3ccircle cx='121.2' cy='23.2' r='0.68' opacity='0.134'/%3e%3ccircle cx='197.6' cy='92.1' r='0.84' opacity='0.248'/%3e%3ccircle cx='-2.4' cy='92.1' r='0.84' opacity='0.248'/%3e%3ccircle cx='35.2' cy='145.9' r='1.49' opacity='0.22'/%3e%3ccircle cx='91.3' cy='138.1' r='1.2' opacity='0.177'/%3e%3ccircle cx='151.6' cy='171.1' r='0.72' opacity='0.169'/%3e%3ccircle cx='119.9' cy='32.2' r='0.99' opacity='0.119'/%3e%3ccircle cx='15.1' cy='29.4' r='0.87' opacity='0.173'/%3e%3ccircle cx='179.2' cy='0.1' r='1.67' opacity='0.168'/%3e%3ccircle cx='179.2' cy='200.1' r='1.67' opacity='0.168'/%3e%3ccircle cx='114.2' cy='100.5' r='1.26' opacity='0.163'/%3e%3ccircle cx='61.4' cy='4.9' r='1.21' opacity='0.101'/%3e%3ccircle cx='41.0' cy='28.7' r='1.48' opacity='0.252'/%3e%3ccircle cx='30.2' cy='102.0' r='0.58' opacity='0.099'/%3e%3ccircle cx='28.5' cy='34.5' r='0.82' opacity='0.112'/%3e%3ccircle cx='181.5' cy='27.3' r='1.02' opacity='0.09'/%3e%3ccircle cx='189.3' cy='45.8' r='1.45' opacity='0.076'/%3e%3ccircle cx='102.0' cy='48.1' r='1.07' opacity='0.201'/%3e%3ccircle cx='174.3' cy='131.0' r='1.39' opacity='0.237'/%3e%3ccircle cx='70.6' cy='142.8' r='1.45' opacity='0.163'/%3e%3ccircle cx='65.2' cy='190.7' r='0.62' opacity='0.161'/%3e%3ccircle cx='123.4' cy='124.0' r='1.08' opacity='0.084'/%3e%3ccircle cx='125.7' cy='49.8' r='0.61' opacity='0.083'/%3e%3ccircle cx='46.3' cy='29.5' r='0.71' opacity='0.185'/%3e%3ccircle cx='20.4' cy='52.5' r='0.53' opacity='0.061'/%3e%3ccircle cx='116.9' cy='161.9' r='1.03' opacity='0.105'/%3e%3ccircle cx='52.4' cy='53.8' r='0.5' opacity='0.171'/%3e%3ccircle cx='86.6' cy='154.9' r='1.41' opacity='0.124'/%3e%3ccircle cx='180.4' cy='91.8' r='0.45' opacity='0.211'/%3e%3ccircle cx='148.3' cy='193.9' r='1.35' opacity='0.199'/%3e%3ccircle cx='140.6' cy='19.8' r='1.1' opacity='0.13'/%3e%3ccircle cx='9.8' cy='17.8' r='0.74' opacity='0.08'/%3e%3ccircle cx='183.9' cy='105.0' r='1.35' opacity='0.239'/%3e%3ccircle cx='50.7' cy='67.3' r='1.08' opacity='0.164'/%3e%3ccircle cx='164.2' cy='26.0' r='1.5' opacity='0.083'/%3e%3ccircle cx='51.5' cy='24.9' r='1.12' opacity='0.185'/%3e%3ccircle cx='63.3' cy='129.9' r='0.4' opacity='0.061'/%3e%3ccircle cx='143.8' cy='60.7' r='0.97' opacity='0.231'/%3e%3ccircle cx='74.6' cy='198.3' r='0.98' opacity='0.189'/%3e%3ccircle cx='74.6' cy='-1.7' r='0.98' opacity='0.189'/%3e%3ccircle cx='169.2' cy='30.6' r='0.7' opacity='0.192'/%3e%3ccircle cx='177.1' cy='94.0' r='0.6' opacity='0.182'/%3e%3ccircle cx='197.7' cy='83.0' r='0.76' opacity='0.197'/%3e%3ccircle cx='-2.3' cy='83.0' r='0.76' opacity='0.197'/%3e%3c/g%3e%3c/svg%3e");
+}
+
+/* Panel gradient: while a pattern is active, give content cards
+   a vertical gradient — a faint accent tint at the TOP (the background pattern
+   still peeks through, softened) fading to an OPAQUE card colour at the BOTTOM
+   (pattern fully hidden, text always readable). The panel keeps a pleasant
+   gradient instead of a flat fill. The 2nd selector out-specifies the
+   light-theme .cbi-section rule that appears later in the file. Dashboard
+   cards keep their own translucent !important background (the faint pattern
+   behind them stays readable). */
+html[class*="proton-pattern-"] .cbi-section,
+:root[data-theme="light"][class*="proton-pattern-"] .cbi-section {
+    /* Layer 1 (top): accent tint that ramps up over the lower half, so the
+       opaque bottom reads as accent-tinted rather than flat grey. Layer 2:
+       neutral card colour, ~65% opaque at the TOP (pattern only ~35% visible)
+       fading to fully opaque (pattern hidden) by the middle. */
+    background:
+        linear-gradient(180deg, rgba(var(--proton-accent-rgb), 0.06) 0%, rgba(var(--proton-accent-rgb), 0.12) 100%),
+        linear-gradient(180deg, rgba(var(--proton-card-rgb), 0.65) 0%, var(--proton-card-solid) 50%);
 }
 
 /* Center the initial LuCI "Loading view…" placeholder as early as possible */
@@ -4828,17 +4961,10 @@ body.modal-overlay-active #modal_overlay {
         height: 100%;
         z-index: -1;
         background: var(--proton-bg-solid);
-        background-image:
-            radial-gradient(circle at 20% 30%, rgba(var(--proton-accent-rgb), 0.06) 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, rgba(var(--proton-accent-rgb), 0.03) 0%, transparent 50%),
-            var(--proton-bg);
-    }
-
-    :root[data-theme="light"] body::before {
-        background-image:
-            radial-gradient(circle at 20% 30%, rgba(var(--proton-accent-rgb), 0.04) 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, rgba(var(--proton-accent-rgb), 0.025) 0%, transparent 50%),
-            var(--proton-bg);
+        /* Same composited background (base + optional pattern) as body, so
+           the pattern is present on the fixed mobile backdrop too. */
+        background-image: var(--proton-pattern-image), var(--proton-bg-image);
+        background-size: var(--proton-pattern-size), auto, auto, auto;
     }
 
     #menubar {
@@ -14135,6 +14261,17 @@ body[data-page^="admin-dashboard"] .cbi-section {
     background: var(--proton-bg-secondary) !important;
     border-color: rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* While a pattern is active, give the dashboard cards the same panel
+   gradient as .cbi-section (translucent accent tint on top → opaque card at
+   the bottom). Needs !important + the [data-theme="light"] variant to
+   out-specify the dashboard overrides just above. */
+html[class*="proton-pattern-"] body[data-page^="admin-dashboard"] .Dashboard .dashboard-bg,
+:root[data-theme="light"][class*="proton-pattern-"] body[data-page^="admin-dashboard"] .Dashboard .dashboard-bg {
+    background:
+        linear-gradient(180deg, rgba(var(--proton-accent-rgb), 0.06) 0%, rgba(var(--proton-accent-rgb), 0.12) 100%),
+        linear-gradient(180deg, rgba(var(--proton-card-rgb), 0.65) 0%, var(--proton-card-solid) 50%) !important;
 }
 
 /* =====================================================

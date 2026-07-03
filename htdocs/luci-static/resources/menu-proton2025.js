@@ -126,6 +126,9 @@ return baseclass.extend({
       accentColor: localStorage.getItem("proton-accent-color") || "blue",
       borderRadius: localStorage.getItem("proton-border-radius") || "default",
       tabOutline: localStorage.getItem("proton-tab-outline") === "true",
+      backgroundPattern:
+        localStorage.getItem("proton-background-pattern") || "none",
+      patternScale: localStorage.getItem("proton-pattern-scale") || "100",
       zoom: localStorage.getItem("proton-zoom") || defaultZoom,
       pageWidth: localStorage.getItem("proton-page-width") || "0",
       animations: localStorage.getItem("proton-animations") !== "false",
@@ -2014,6 +2017,10 @@ return baseclass.extend({
           localStorage.getItem("proton-accent-custom") || "#5e9eff",
         borderRadius: localStorage.getItem("proton-border-radius") || "default",
         tabOutline: localStorage.getItem("proton-tab-outline") === "true",
+        backgroundPattern: (
+          localStorage.getItem("proton-background-pattern") || "none"
+        ).replace(/^noise$/, "stars"),
+        patternScale: parseInt(localStorage.getItem("proton-pattern-scale") || "100"),
         zoom: parseInt(localStorage.getItem("proton-zoom") || defaultZoom),
         pageWidth: parseInt(localStorage.getItem("proton-page-width") || "0"),
         animations: localStorage.getItem("proton-animations") !== "false",
@@ -2135,6 +2142,52 @@ return baseclass.extend({
               <div class="cbi-value-description">${t(
                 "Corner rounding style",
               )}</div>
+            </div>
+          </div>
+
+          <div class="cbi-value">
+            <label class="cbi-value-title" for="proton-background-pattern-select">${t(
+              "Background Pattern",
+            )}</label>
+            <div class="cbi-value-field">
+              <select id="proton-background-pattern-select" class="cbi-input-select">
+                <option value="none" ${
+                  settings.backgroundPattern === "none" ? "selected" : ""
+                }>${t("None")}</option>
+                <option value="grid" ${
+                  settings.backgroundPattern === "grid" ? "selected" : ""
+                }>${t("Grid")}</option>
+                <option value="dots" ${
+                  settings.backgroundPattern === "dots" ? "selected" : ""
+                }>${t("Dots")}</option>
+                <option value="stars" ${
+                  settings.backgroundPattern === "stars" ? "selected" : ""
+                }>${t("Stars")}</option>
+              </select>
+              <div class="cbi-value-description">${t(
+                "Background texture behind the interface",
+              )}</div>
+            </div>
+          </div>
+
+          <div class="cbi-value" id="proton-pattern-size-row" style="display: ${settings.backgroundPattern !== "none" ? "flex" : "none"};">
+            <label class="cbi-value-title" for="proton-pattern-scale-range">${t(
+              "Pattern size",
+            )} <span id="proton-pattern-scale-value">${settings.patternScale}%</span></label>
+            <div class="cbi-value-field">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <button type="button" id="proton-pattern-scale-minus" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">−</button>
+                <input type="range" id="proton-pattern-scale-range" min="50" max="200" step="10" value="${
+                  settings.patternScale
+                }" style="flex: 1; accent-color: var(--proton-accent);">
+                <button type="button" id="proton-pattern-scale-plus" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">+</button>
+                <button type="button" id="proton-pattern-scale-reset" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">${t(
+                  "Reset",
+                )}</button>
+              </div>
+              <div class="cbi-value-description">${t(
+                "Size of the background pattern",
+              )} (50% - 200%)</div>
             </div>
           </div>
 
@@ -2461,6 +2514,7 @@ return baseclass.extend({
         this.applyThemeMode(mode);
         if (zoomRange) updateSliderFill(zoomRange);
         if (pageWidthRange) updateSliderFill(pageWidthRange);
+        if (patternScaleRange) updateSliderFill(patternScaleRange);
       });
 
       const accentCustomRow = document.getElementById(
@@ -2495,6 +2549,7 @@ return baseclass.extend({
         this.applyAccentColor(color);
         if (zoomRange) updateSliderFill(zoomRange);
         if (pageWidthRange) updateSliderFill(pageWidthRange);
+        if (patternScaleRange) updateSliderFill(patternScaleRange);
       });
 
       // Apply a custom HEX accent from the picker / text field.
@@ -2512,6 +2567,7 @@ return baseclass.extend({
         this.applyAccentColor("custom");
         if (zoomRange) updateSliderFill(zoomRange);
         if (pageWidthRange) updateSliderFill(pageWidthRange);
+        if (patternScaleRange) updateSliderFill(patternScaleRange);
       };
 
       accentCustomColor?.addEventListener("input", (e) => {
@@ -2539,6 +2595,19 @@ return baseclass.extend({
         const radius = e.target.value;
         localStorage.setItem("proton-border-radius", radius);
         this.applyBorderRadius(radius);
+      });
+
+      const patternSelect = document.getElementById(
+        "proton-background-pattern-select",
+      );
+      patternSelect?.addEventListener("change", (e) => {
+        const pattern = e.target.value;
+        localStorage.setItem("proton-background-pattern", pattern);
+        this.applyBackgroundPattern(pattern);
+        if (pattern === "stars") this.refreshStarfield();
+        const sizeRow = document.getElementById("proton-pattern-size-row");
+        if (sizeRow)
+          sizeRow.style.display = pattern !== "none" ? "flex" : "none";
       });
 
       const tabOutlineCheck = document.getElementById(
@@ -2601,6 +2670,54 @@ return baseclass.extend({
         updateZoom(parseInt(zoomRange.value) + 5),
       );
       zoomReset?.addEventListener("click", () => updateZoom(100));
+
+      // Background-pattern size slider (only meaningful while a pattern is on)
+      const patternScaleRange = document.getElementById(
+        "proton-pattern-scale-range",
+      );
+      const patternScaleValue = document.getElementById(
+        "proton-pattern-scale-value",
+      );
+      const patternScaleMinus = document.getElementById(
+        "proton-pattern-scale-minus",
+      );
+      const patternScalePlus = document.getElementById(
+        "proton-pattern-scale-plus",
+      );
+      const patternScaleReset = document.getElementById(
+        "proton-pattern-scale-reset",
+      );
+
+      if (patternScaleRange) updateSliderFill(patternScaleRange);
+
+      const updatePatternScale = (displayValue) => {
+        displayValue = Math.max(50, Math.min(200, parseInt(displayValue)));
+        patternScaleRange.value = displayValue;
+        patternScaleValue.textContent = displayValue + "%";
+        localStorage.setItem("proton-pattern-scale", displayValue);
+        this.applyPatternScale(displayValue);
+        this.refreshStarfield(); // reshuffle the sky on each size change
+        updateSliderFill(patternScaleRange);
+
+        window.dispatchEvent(
+          new CustomEvent("proton-setting-changed", {
+            detail: { key: "proton-pattern-scale", value: displayValue },
+          }),
+        );
+      };
+
+      patternScaleRange?.addEventListener("input", (e) =>
+        updatePatternScale(e.target.value),
+      );
+      patternScaleMinus?.addEventListener("click", () =>
+        updatePatternScale(parseInt(patternScaleRange.value) - 10),
+      );
+      patternScalePlus?.addEventListener("click", () =>
+        updatePatternScale(parseInt(patternScaleRange.value) + 10),
+      );
+      patternScaleReset?.addEventListener("click", () =>
+        updatePatternScale(100),
+      );
 
       // Page width: checkbox + slider
       const pageWidthCheck = document.getElementById("proton-page-width-check");
@@ -3414,6 +3531,11 @@ return baseclass.extend({
       colorSchemeMeta.setAttribute("content", resolvedMode);
     }
 
+    // A JS-generated starfield is coloured for one theme; on a theme change drop
+    // it so the baked stars tile (which has both light and dark variants) takes
+    // over with the right colour. It re-shuffles again on the next size change.
+    document.documentElement.style.removeProperty("--proton-pattern-image");
+
     return resolvedMode;
   },
 
@@ -3425,6 +3547,8 @@ return baseclass.extend({
     this.applyAccentColor(settings.accentColor);
     this.applyBorderRadius(settings.borderRadius);
     this.applyTabOutline(settings.tabOutline);
+    this.applyBackgroundPattern(settings.backgroundPattern);
+    this.applyPatternScale(settings.patternScale);
     this.applyZoom(settings.zoom);
     this.applyPageWidth(settings.pageWidth);
     this.applyAnimations(settings.animations);
@@ -3539,6 +3663,91 @@ return baseclass.extend({
     document.documentElement.classList.toggle(
       "proton-tab-outline",
       enabled === true || enabled === "true",
+    );
+  },
+
+  applyBackgroundPattern(pattern) {
+    const root = document.documentElement;
+    root.classList.remove(
+      "proton-pattern-grid",
+      "proton-pattern-dots",
+      "proton-pattern-stars",
+      "proton-pattern-noise",
+    );
+
+    if (pattern === "noise") pattern = "stars"; // pattern was renamed
+
+    // The starfield can be regenerated by JS as an inline --proton-pattern-image
+    // override; drop it for any non-stars pattern so the CSS grid/dots/none
+    // rules (or the baked stars tile) take over again.
+    if (pattern !== "stars") root.style.removeProperty("--proton-pattern-image");
+
+    if (pattern && pattern !== "none") {
+      root.classList.add("proton-pattern-" + pattern);
+    }
+  },
+
+  applyPatternScale(scale) {
+    const pct = Math.max(50, Math.min(200, parseInt(scale) || 100));
+    document.documentElement.style.setProperty(
+      "--proton-pattern-scale",
+      pct / 100,
+    );
+  },
+
+  // Build a random starfield (faint noise grain + scattered dim dots) as a
+  // background-image data-URI, coloured for the current theme. Stars near the
+  // tile edges are duplicated on the opposite side so the 200px tile repeats
+  // seamlessly. Kept dim, on par with the dots pattern.
+  buildStarfield() {
+    const isLight =
+      document.documentElement.getAttribute("data-theme") === "light";
+    const color = isLight ? "#0f172a" : "#ffffff";
+    const na = isLight ? ".07" : ".05";
+    const mat = isLight
+      ? "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 " + na + " 0"
+      : "0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 " + na + " 0";
+    const W = 200,
+      m = 2,
+      radii = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6],
+      c = [];
+    const put = (x, y, r, o) =>
+      c.push("<circle cx='" + x + "' cy='" + y + "' r='" + r + "' opacity='" + o + "'/>");
+    for (let i = 0; i < 46; i++) {
+      const x = +(Math.random() * W).toFixed(1),
+        y = +(Math.random() * W).toFixed(1),
+        r = +(radii[(Math.random() * radii.length) | 0] * (0.8 + Math.random() * 0.3)).toFixed(2),
+        o = +(0.06 + Math.random() * 0.2).toFixed(3);
+      const xs = [x];
+      if (x < r + m) xs.push(x + W);
+      if (x > W - (r + m)) xs.push(x - W);
+      const ys = [y];
+      if (y < r + m) ys.push(y + W);
+      if (y > W - (r + m)) ys.push(y - W);
+      for (const xx of xs)
+        for (const yy of ys) put(+xx.toFixed(1), +yy.toFixed(1), r, o);
+    }
+    const svg =
+      "<svg xmlns='http://www.w3.org/2000/svg' width='" + W + "' height='" + W + "'>" +
+      "<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/>" +
+      "<feColorMatrix type='matrix' values='" + mat + "'/></filter>" +
+      "<rect width='100%' height='100%' filter='url(#n)'/>" +
+      "<g fill='" + color + "'>" + c.join("") + "</g></svg>";
+    const uri = svg
+      .replace(/%/g, "%25")
+      .replace(/</g, "%3c")
+      .replace(/>/g, "%3e")
+      .replace(/#/g, "%23");
+    return 'url("data:image/svg+xml,' + uri + '")';
+  },
+
+  // Shuffle the starfield (only meaningful while the stars pattern is active).
+  refreshStarfield() {
+    if (!document.documentElement.classList.contains("proton-pattern-stars"))
+      return;
+    document.documentElement.style.setProperty(
+      "--proton-pattern-image",
+      this.buildStarfield(),
     );
   },
 

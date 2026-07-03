@@ -16,6 +16,7 @@
         "proton-table-wrap": "table_wrap",
         "proton-log-highlight": "log_highlight",
         "proton-page-width": "page_width",
+        "proton-background-pattern": "background_pattern",
         "proton-custom-font": "custom_font",
         "proton-login-animation": "login_animation",
         "proton-login-branding": "login_branding",
@@ -42,6 +43,7 @@
         "proton-services-log-check": "proton-services-log",
         "proton-page-width-check": "proton-page-width",
         "proton-page-width-range": "proton-page-width",
+        "proton-background-pattern-select": "proton-background-pattern",
         "proton-login-animation-select": "proton-login-animation",
         "proton-login-branding-check": "proton-login-branding",
         "proton-login-name-input": "proton-login-name"

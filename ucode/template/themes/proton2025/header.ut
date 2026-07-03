@@ -81,6 +81,14 @@
 	if (r === 'sharp') document.documentElement.classList.add('proton-radius-sharp');
 	else if (r === 'extra') document.documentElement.classList.add('proton-radius-extra');
 	if (localStorage.getItem('proton-tab-outline') === 'true') document.documentElement.classList.add('proton-tab-outline');
+	var bp = localStorage.getItem('proton-background-pattern') || 'none';
+	if (bp === 'noise') bp = 'stars';  // pattern was renamed
+	if (bp !== 'none') {
+		document.documentElement.classList.add('proton-pattern-' + bp);
+		var ps = parseInt(localStorage.getItem('proton-pattern-scale') || '100', 10);
+		if (!isNaN(ps) && ps >= 50 && ps <= 200 && ps !== 100)
+			document.documentElement.style.setProperty('--proton-pattern-scale', ps / 100);
+	}
 	var a = localStorage.getItem('proton-accent-color') || 'blue';
 	var c = {
 		default: { accent: '#4b5563', hover: '#374151', glow: 'rgba(75, 85, 99, 0.22)', rgb: '75, 85, 99' },

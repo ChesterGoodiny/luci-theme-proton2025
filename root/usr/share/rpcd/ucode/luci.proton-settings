@@ -34,6 +34,8 @@ const VALID_OPTIONS = {
 	table_wrap: { default: '1', values: ['0', '1'] },
 	log_highlight: { default: '1', values: ['0', '1'] },
 	page_width: { default: '0', min: 0, max: 100 },
+	background_pattern: { default: 'none', values: ['none', 'grid', 'dots', 'stars', 'noise'] },
+	pattern_scale: { default: '100', min: 50, max: 200 },
 	custom_font: { default: '1', values: ['0', '1'] },
 	login_animation: {
     	default: 'particles',
