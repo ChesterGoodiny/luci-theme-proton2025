@@ -43,6 +43,11 @@
     var map = {
         mode: "proton-theme-mode",
         accent: "proton-accent-color",
+        // accent_custom must ride along with accent: without it the first-ever
+        // login (empty localStorage) sets accent="custom" but no hex, so the
+        // apply block below falls back to #5e9eff and the page looks blue until
+        // a later login populates localStorage from the main-UI sync.
+        accent_custom: "proton-accent-custom",
         zoom: "proton-zoom",
         transparency: "proton-transparency",
         border_radius: "proton-border-radius",

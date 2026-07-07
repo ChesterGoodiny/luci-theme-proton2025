@@ -264,34 +264,21 @@
       // Set flag to prevent sync loop
       isSyncingFromUci = true;
 
-      const localAccent = localStorage.getItem("proton-accent-color");
-
+      // A deliberately-picked-but-not-yet-saved local value is already
+      // protected: syncFromUci() bails out at the top while hasPendingChanges()
+      // is true (that queue is persisted in sessionStorage across navigation).
+      // So by the time we get here UCI is authoritative for every option, the
+      // custom accent included — no per-option guard. Guarding the accent here
+      // used to make it "sticky" to whatever the browser had in localStorage
+      // and ignore the value shipped in /etc/config/proton2025 on a freshly
+      // flashed device (accent=custom + a stale/empty accent_custom fell back
+      // to the built-in #5e9eff instead of the configured colour).
       for (const [uciName, uciValue] of Object.entries(settings)) {
         const localKey = UCI_TO_LOCAL[uciName];
         if (!localKey) continue;
 
         const localValue = uciToLocal(uciName, uciValue);
         const currentLocal = localStorage.getItem(localKey);
-
-        // Never let a stale/uncommitted UCI value clobber a deliberately
-        // chosen local "custom" accent. If UCI hasn't caught up yet, keep
-        // the local choice and re-push it to UCI so it self-heals. This
-        // fixes the custom accent reverting to grey ("default") after
-        // navigating to another page.
-        if (localAccent === "custom") {
-          if (uciName === "accent" && localValue !== "custom") {
-            pendingChanges.accent = "custom";
-            const cu = localStorage.getItem("proton-accent-custom");
-            if (cu) pendingChanges.accent_custom = cu;
-            persistPendingChanges();
-            scheduleSaveToUci();
-            continue;
-          }
-          if (uciName === "accent_custom") {
-            // Keep whatever hex the user picked locally.
-            continue;
-          }
-        }
 
         // UCI takes precedence - update localStorage if different
         if (currentLocal !== localValue) {
