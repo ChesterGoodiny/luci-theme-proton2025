@@ -25,6 +25,10 @@ LUCI_MINIFY_CSS:=0
 PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE NOTICE
 
+define Package/$(PKG_NAME)/conffiles
+/etc/config/proton2025
+endef
+
 include $(TOPDIR)/feeds/luci/luci.mk
 
 define Package/$(PKG_NAME)/postinst
