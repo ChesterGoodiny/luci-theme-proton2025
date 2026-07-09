@@ -1083,6 +1083,13 @@ a:active {
     display: flex;
     flex: 1 0 auto;
     min-height: 0;
+    /* Явно поверх футера: у футера backdrop-filter создаёт stacking
+       context, и открытая выпадашка «Применить ▾» у нижнего края
+       страницы иначе рисуется ПОД ним (Chrome к тому же нестабильно
+       комбинирует backdrop-filter с fixed-фоном — меню «проявлялось»
+       только при наведении на футер). */
+    position: relative;
+    z-index: 1;
 }
 
 /* =====================================================
@@ -1181,11 +1188,20 @@ a:active {
     max-width: var(--proton-page-max-width);
     margin: 0 auto;
     padding: 24px var(--proton-page-gutter);
-    padding-bottom: 120px;
+    /* Небольшой нижний отступ вместо прежних 120px, которые оставляли
+       огромную пустую полосу под контентом на каждой странице. Запас был
+       нужен выпадашке «Применить ▾»: при overflow-y:auto она у нижнего
+       края вызывала внутренний скролл — поэтому ниже overflow переведён
+       в clip/visible (clip не создаёт scroll-контейнер), и меню просто
+       ложится поверх футера, как в bootstrap. */
+    padding-bottom: 40px;
     min-width: 0;
     box-sizing: border-box;
+    /* fallback для старых браузеров без overflow: clip */
     overflow-x: hidden;
     overflow-y: auto;
+    overflow-x: clip;
+    overflow-y: visible;
     animation: fadeIn 0.4s ease-out;
 }
 
@@ -1215,7 +1231,14 @@ body>.luci {
     border-top: 1px solid var(--proton-border);
     color: var(--proton-muted);
     font-size: 12px;
-    margin-top: 60px;
+    /* Без margin-top: прежние 60px вместе со 120px нижнего паддинга
+       #maincontent давали ~200px пустоты под контентом каждой страницы.
+       Отступ от контента задаёт padding-bottom #maincontent. */
+    margin-top: 0;
+    /* Ниже контента (см. z-index у #maincontainer): выпадашки у нижнего
+       края страницы должны ложиться поверх футера. */
+    position: relative;
+    z-index: 0;
 }
 
 .proton-footer a,
