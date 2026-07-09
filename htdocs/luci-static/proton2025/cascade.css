@@ -4054,7 +4054,11 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     display: block;
     position: absolute;
     left: 0;
-    right: 0;
+    /* Не right: 0 — оно прибивало ширину меню к ширине закрытого контрола,
+       и длинные пункты (например, URL-ы зеркал в OpenClash) обрезались.
+       Меню растёт по самому широкому пункту, но не уже контрола
+       (min-width) и не безгранично (max-width). */
+    right: auto;
     background: #1e2530 !important;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: var(--proton-radius-sm);
@@ -4063,7 +4067,8 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     max-height: 300px;
     overflow-y: auto;
     min-width: 100%;
-    width: auto;
+    width: max-content;
+    max-width: min(480px, calc(100vw - 40px));
 }
 
 :root[data-theme="light"] .cbi-dropdown[open]>ul.dropdown {
@@ -4093,6 +4098,14 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     border-bottom: 1px solid var(--proton-border-light);
     transition: var(--proton-transition);
     background: #1e2530 !important;
+    /* Базовый .cbi-dropdown>ul>li режет текст в одну строку с многоточием —
+       это для закрытого контрола. В открытом меню пункты видны целиком:
+       URL-ы и прочие «слова» без пробелов переносятся, когда меню упирается
+       в max-width, а не обрезаются. */
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
 }
 
 .cbi-dropdown[open]>ul.dropdown>li .hide-open {
@@ -5707,9 +5720,14 @@ body.modal-overlay-active #modal_overlay {
     /* Выпадающие меню внутри модального окна */
     #modal_overlay>.modal .cbi-dropdown[open]>ul.dropdown {
         /* LuCI может выставлять inline left/right (иногда отрицательные) для "вписывания" в viewport.
-           В модальном окне на мобиле это даёт заметный горизонтальный сдвиг, поэтому фиксируем по ширине поля. */
+           В модальном окне на мобиле это даёт заметный горизонтальный сдвиг, поэтому фиксируем по ширине поля.
+           width: auto обязателен: базовое правило теперь задаёт width: max-content,
+           а при заданных left+right+width право игнорируется — меню снова
+           вылезало бы за поле. */
         left: 0 !important;
         right: 0 !important;
+        width: auto !important;
+        max-width: none !important;
         z-index: 10002;
     }
 
