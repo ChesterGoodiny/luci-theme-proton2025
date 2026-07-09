@@ -266,7 +266,7 @@
 					</span>
 					<input type="text" id="luci_username" name="luci_username"
 						value="{{ fuser ?? 'root' }}" autocomplete="username"
-						autocapitalize="off" autofocus />
+						autocapitalize="off" />
 				</div>
 			</div>
 
@@ -279,8 +279,10 @@
 							<path d="M8 10V7a4 4 0 0 1 8 0v3" />
 						</svg>
 					</span>
+					<!-- Имя предзаполнено ('root'), поэтому фокус сразу на пароле,
+					     как в bootstrap. Если имя пустое, скрипт ниже вернёт фокус ему. -->
 					<input type="password" id="luci_password" name="luci_password"
-						autocomplete="current-password" />
+						autocomplete="current-password" autofocus />
 					<button class="login-password-toggle" type="button" aria-label="{{ _('Show password') }}" aria-pressed="false">
 						<svg viewBox="0 0 24 24" focusable="false" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
@@ -308,6 +310,13 @@
 </div>
 
 <script>
+// Autofocus стоит на поле пароля (имя предзаполнено). Если имя всё же
+// пустое — например, сборка убрала дефолт 'root' — фокус нужен ему.
+(function () {
+	var username = document.getElementById('luci_username');
+	if (username && !username.value) username.focus();
+})();
+
 // Password visibility toggle
 (function () {
 	var password = document.getElementById('luci_password');
