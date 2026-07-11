@@ -62,6 +62,128 @@ var SEARCH_INDEX_ACTIVITY_DETAILS_LIMIT = 32;
 var SEARCH_INDEX_PANEL_HASH = "#proton-search-index-panel";
 var SEARCH_INDEX_PANEL_FOCUS_EVENT = "proton-focus-search-index-panel";
 
+/* =========================================================================
+ * SPA client router (ported from luci-theme-footstrap)
+ *
+ * Убирает полную перезагрузку страницы при переходах по меню для `view`-нод
+ * (это ~89% страниц LuCI). LuCI и так рендерит каждую страницу на клиенте в
+ * #view (LuCI.view.__init__ -> load()->render()); по сети через дисптчер идёт
+ * только *навигация*. Поэтому перехватываем клики по ссылкам и вместо полного
+ * GET заново инстанцируем целевую view прямо на месте.
+ *
+ * Безопасно и аддитивно: всё, что НЕ удовлетворённая `view`-нода (call/function/
+ * template/alias/firstchild, внешние ссылки, download, cross-origin, клики с
+ * модификаторами) или любая ошибка -> обычная полная навигация. Deep-link/F5/
+ * назад работают, т.к. pushState кладёт настоящий URL диспетчера.
+ * ========================================================================= */
+
+/* Полная перезагрузка убивает все setInterval уходящей страницы; SPA-переход -
+ * нет, поэтому чужие setInterval-поллеры продолжают бить в исчезнувший DOM.
+ * L.Poll поллеры чистим отдельно (flush очереди в navigate); тут - «голые»
+ * setInterval. Патчим на этапе eval модуля, до первого рендера view. */
+var _protoViewIntervals = (window.__protoViewIntervals || (window.__protoViewIntervals = new Set()));
+(function hookIntervals() {
+  if (window.__protoIntervalsHooked) return;
+  window.__protoIntervalsHooked = true;
+  var _si = window.setInterval, _ci = window.clearInterval;
+  window.setInterval = function () {
+    var id = _si.apply(window, arguments);
+    _protoViewIntervals.add(id);
+    return id;
+  };
+  window.clearInterval = function (id) {
+    _protoViewIntervals.delete(id);
+    return _ci.apply(window, arguments);
+  };
+})();
+function protoClearViewIntervals() {
+  var keep = (window.L && window.L.Poll && window.L.Poll.timer) || null;
+  _protoViewIntervals.forEach(function (id) { if (id !== keep) window.clearInterval(id); });
+}
+
+/* /cgi-bin/luci/admin/status/overview -> ['admin','status','overview'] */
+function protoSegsFromPath(pathname) {
+  var base = L.env.scriptname || "";
+  if (base && pathname.indexOf(base) !== 0) return null;
+  var rest = pathname.slice(base.length).replace(/^\/+|\/+$/g, "");
+  return rest.length ? rest.split("/") : null;
+}
+
+/* пройти по (ACL-отфильтрованному) дереву меню к ноде пути */
+function protoNodeForSegs(tree, segs) {
+  var node = tree;
+  for (var i = 0; i < segs.length; i++) {
+    node = node && node.children && node.children[segs[i]];
+    if (!node) return null;
+  }
+  return node;
+}
+
+/* класс view, который инстанцирует нода, или null если нода не SPA-абельна.
+ * Status->Overview (template admin_status/index) НЕ SPA-им: у proton там своя
+ * постобработка плашек/виджетов, которая гоняется в гонку с переинстансом view
+ * (пустые плашки, виджет через раз). Пусть грузится полной навигацией. */
+function protoViewClassFor(node) {
+  if (!node || !node.action || node.satisfied === false) return null;
+  if (node.action.type === "view")
+    return "view." + String(node.action.path).replace(/\//g, ".");
+  return null;
+}
+
+/* точный URL, который дёрнет LuCI.require() для класса (с cache-bust) */
+function protoModuleUrl(className) {
+  var v = L.env.resource_version ? "?v=" + L.env.resource_version : "";
+  return (L.env.base_url || "") + "/" + className.replace(/\./g, "/") + ".js" + v;
+}
+
+/* hover-prefetch: прогреть HTTP-кэш модуля view плоским fetch (не require -
+ * require запустил бы __init__ и отрисовал чужую страницу в #view) */
+var _protoPrefetched = new Set();
+function protoPrefetchView(tree, pathname) {
+  var segs = protoSegsFromPath(pathname);
+  if (!segs) return;
+  var className = protoViewClassFor(protoNodeForSegs(tree, segs));
+  if (!className || _protoPrefetched.has(className)) return;
+  _protoPrefetched.add(className);
+  try { fetch(protoModuleUrl(className), { credentials: "same-origin" }).catch(function () {}); } catch (e) {}
+}
+
+/* Status->Overview - это `template`-нода, чей серверный шаблон определяет 3
+ * глобальных хелпера (progressbar/renderBox/renderBadge), используемых стоковыми
+ * status-инклудами, и инстанцирует view.status.index. При SPA-переходе inline
+ * <script> не выполняется, поэтому определяем хелперы тут (идемпотентно). */
+function protoEnsureOverviewHelpers() {
+  if (typeof window.progressbar != "function")
+    window.progressbar = function (query, value, max, byte) {
+      var pg = document.querySelector(query),
+        vn = parseInt(value) || 0,
+        mn = parseInt(max) || 100,
+        fv = byte ? String.format("%1024.2mB", value) : value,
+        fm = byte ? String.format("%1024.2mB", max) : max,
+        pc = Math.floor((100 / mn) * vn);
+      if (pg) {
+        pg.firstElementChild.style.width = pc + "%";
+        pg.setAttribute("title", "%s / %s (%d%%)".format(fv, fm, pc));
+      }
+    };
+  if (typeof window.renderBox != "function")
+    window.renderBox = function (title, active, childs) {
+      childs = childs || [];
+      childs.unshift(window.L.itemlist(E("span"), [].slice.call(arguments, 3)));
+      return E("div", { class: "ifacebox" }, [
+        E("div", { class: "ifacebox-head center " + (active ? "active" : "") }, E("strong", title)),
+        E("div", { class: "ifacebox-body left" }, childs),
+      ]);
+    };
+  if (typeof window.renderBadge != "function")
+    window.renderBadge = function (icon, title) {
+      return E("span", { class: "ifacebadge" }, [
+        E("img", { src: icon, title: title || "" }),
+        window.L.itemlist(E("span"), [].slice.call(arguments, 2)),
+      ]);
+    };
+}
+
 return baseclass.extend({
   __init__() {
     ui.menu.load().then((tree) => this.render(tree));
@@ -1220,6 +1342,10 @@ return baseclass.extend({
   },
 
   render(tree) {
+    // SPA: сохраняем дерево меню и один раз навешиваем клиентский роутер
+    this._spaTree = tree;
+    this.spaWireRouter();
+
     let node = tree;
     let url = "";
 
@@ -1489,6 +1615,154 @@ return baseclass.extend({
       );
 
     return ul;
+  },
+
+  /* --- SPA: перерисовать хром (mode-menu + main-menu + табы) из L.env.
+   * Контейнеры очищаем, т.к. renderModeMenu/renderTabMenu только добавляют. */
+  spaRenderChrome(tree) {
+    var modemenu = document.querySelector("#modemenu");
+    var mainmenu = document.querySelector("#mainmenu");
+    var tabmenu = document.querySelector("#tabmenu");
+    if (modemenu) { modemenu.innerHTML = ""; modemenu.style.display = "none"; }
+    if (mainmenu) mainmenu.innerHTML = "";
+    if (tabmenu) { tabmenu.innerHTML = ""; tabmenu.style.display = "none"; }
+
+    this.renderModeMenu(tree);
+
+    if (L.env.dispatchpath.length >= 3) {
+      var node = tree, url = "";
+      for (var i = 0; i < 3 && node; i++) {
+        node = node.children[L.env.dispatchpath[i]];
+        url = url + (url ? "/" : "") + L.env.dispatchpath[i];
+      }
+      if (node) this.renderTabMenu(node, url);
+    }
+  },
+
+  /* --- SPA: попытка навигации на месте. true = обработали (caller делает
+   * preventDefault), false = пусть браузер идёт обычным путём. */
+  spaNavigate(pathname, push) {
+    var self = this;
+    var tree = this._spaTree;
+    if (!tree) return false;
+
+    var segs = protoSegsFromPath(pathname);
+    if (!segs) return false;
+
+    var node = protoNodeForSegs(tree, segs);
+    var className = protoViewClassFor(node);
+    if (!className) return false;
+
+    /* Гарантируем контейнер #view. View-страницы и overview-шаблон его эмитят;
+     * cbi/иные шаблоны - нет: тогда вставляем его в #maincontent, выкинув
+     * устаревший контент, чтобы можно было SPA-ить дальше. */
+    if (!document.getElementById("view")) {
+      var host = document.getElementById("maincontent");
+      if (!host) return false;
+      Array.from(host.children).forEach(function (c) {
+        if (c.id !== "tabmenu" && c.id !== "modemenu" &&
+            !c.classList.contains("alert-message") && c.nodeName !== "NOSCRIPT")
+          c.remove();
+      });
+      var v = document.createElement("div");
+      v.id = "view";
+      host.appendChild(v);
+    }
+
+    /* teardown уходящей view: гасим её L.Poll-поллеры (flush очереди, но НЕ
+     * Poll.stop() - stop удаляет тик, и poll.add() входящей view не стартанёт)
+     * и «голые» setInterval. */
+    if (window.L && window.L.Poll && window.L.Poll.queue)
+      window.L.Poll.queue.length = 0;
+    protoClearViewIntervals();
+    try { if (ui && typeof ui.hideModal == "function") ui.hideModal(); } catch (e) {}
+
+    /* proton монтирует виджеты (services/temperature) в #maincontent РЯДОМ с
+     * #view (привязаны к data-page обзора). SPA меняет только #view, поэтому
+     * секция «залипает» на других страницах - убираем её сами. Поллер уже
+     * погашен выше (L.Poll flush + clearViewIntervals); при следующей полной
+     * загрузке обзора виджеты смонтируются заново. */
+    document.querySelectorAll(".proton-widgets-section").forEach(function (el) { el.remove(); });
+
+    /* переставляем env на новую ноду - view/табы/подсветка читают его */
+    L.env.requestpath = segs.slice();
+    L.env.dispatchpath = segs.slice();
+    L.env.pathinfo = "/" + segs.join("/");
+    L.env.nodespec = { satisfied: true, action: node.action, title: node.title, depends: node.depends };
+
+    /* body[data-page] - от него зависят page-scoped стили LuCI и хуки */
+    document.body.setAttribute("data-page", segs.join("-"));
+
+    if (push) history.pushState({ protonav: true }, "", pathname);
+
+    /* заголовок: <host> | <page> */
+    var host2 = (document.title.split("|")[0] || "").trim();
+    document.title = node.title ? host2 + " | " + _(node.title) : host2;
+
+    this.spaRenderChrome(tree);
+
+    if (className === "view.status.index") protoEnsureOverviewHelpers();
+
+    /* require + инстанс через РАНТАЙМ-синглтон window.L (не bare L модуля -
+     * «ловушка двух L»: у bare L нет itemlist/showModal и т.п.). Свежий
+     * инстанс -> свежий __init__ -> render в #view. Ошибки -> полная навигация. */
+    var RT = window.L;
+    RT.require(className).then(function (view) {
+      if (!(view instanceof RT.view))
+        throw new TypeError("Loaded class " + className + " is not a view");
+      new view.constructor();
+      /* Пере-запускаем page-хуки proton, привязанные к DOMContentLoaded (он при
+       * SPA не срабатывает): инъекция настроек темы в System, плавающие алерты.
+       * У них свои внутренние ретраи (0/300/800 мс), так что асинхронный рендер
+       * страницы они переждут сами. */
+      self.spaRunPageHooks();
+    }).catch(function () { window.location = pathname; });
+
+    return true;
+  },
+
+  /* re-run proton's page-scoped augmentation after a SPA navigation */
+  spaRunPageHooks() {
+    try { this._themeSettingsInit = false; this.initThemeSettings(); } catch (e) {}
+    try { this.initFloatingAlerts(); } catch (e) {}
+  },
+
+  /* --- SPA: навесить перехватчики кликов/наведения/popstate (один раз) */
+  spaWireRouter() {
+    if (this._spaWired) return;
+    this._spaWired = true;
+    var self = this;
+
+    document.addEventListener("click", function (ev) {
+      if (ev.defaultPrevented || ev.button !== 0 ||
+          ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
+      var a = ev.target.closest("a[href]");
+      if (!a) return;
+      if (a.target && a.target !== "_self") return;
+      if (a.hasAttribute("download")) return;
+      var raw = a.getAttribute("href");
+      if (!raw || raw.charAt(0) === "#") return;
+      var url;
+      try { url = new URL(a.href, window.location.href); } catch (e) { return; }
+      if (url.origin !== window.location.origin) return;
+      if (self.spaNavigate(url.pathname, true)) ev.preventDefault();
+    }, false);
+
+    document.addEventListener("pointerover", function (ev) {
+      var a = ev.target.closest && ev.target.closest("a[href]");
+      if (!a || (a.target && a.target !== "_self") || a.hasAttribute("download")) return;
+      var raw = a.getAttribute("href");
+      if (!raw || raw.charAt(0) === "#") return;
+      var url;
+      try { url = new URL(a.href, window.location.href); } catch (e) { return; }
+      if (url.origin === window.location.origin && self._spaTree)
+        protoPrefetchView(self._spaTree, url.pathname);
+    }, false);
+
+    window.addEventListener("popstate", function () {
+      if (!self.spaNavigate(window.location.pathname, false))
+        window.location.reload();
+    });
   },
 
   handleSidebarToggle(ev) {
