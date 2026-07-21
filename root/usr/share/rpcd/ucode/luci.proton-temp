@@ -17,7 +17,14 @@ let peakTemps = {};
 // (proton2025.settings.modem_temp='1'), expose the active modem's temperature
 // as one more sensor, so it shows up in the same router temperature block.
 const MODEM_MARKER = '/usr/share/5gmodem/5gmodem.sh';
-const MODEM_CACHE  = '/tmp/5gmodem_metrics.json';
+// Снимок метрик у приложения - НА КАЖДЫЙ модем (имя строится из USB-пути), а не
+// один общий, как было раньше. Поэтому фиксированного пути к кэшу больше нет:
+// файл ищется по модему, см. modemCacheFile().
+const MODEM_CACHE_DIR = '/tmp';
+// Насколько старым может быть снимок, чтобы его ещё показывать. Приложение
+// обновляет снимок ТОЛЬКО активного модема, поэтому у неактивных он неизбежно
+// стареет - и показывать их температуру как текущую было бы враньём.
+const MODEM_MAX_AGE = 120;
 
 function modemInstalled() {
 	return stat(MODEM_MARKER) != null;
@@ -44,23 +51,47 @@ function shortModel(name) {
 	return trim(name);
 }
 
-// Human name of the ACTIVE modem, from the app's uci: the active USB path
-// (@5gmodem[0].active_modem) points to the m_<path> section whose .model was
-// resolved by the app's AT poll. Shortened for the widget; "Modem" as fallback.
-function modemLabel() {
+// Все модемы, известные приложению. Оно заводит на каждый секцию типа 'modem'
+// с .path (USB-путь) и .model, разобранной его же опросом. Раньше здесь брался
+// только активный модем - но снимок метрик теперь отдельный на каждый, поэтому
+// показать можно все сразу.
+function modemList() {
 	let uci = cursor();
 	uci.load('5gmodem');
-	let amp = null;
-	uci.foreach('5gmodem', '5gmodem', function(s) {
-		if (s.active_modem) amp = s.active_modem;
+	let out = [];
+	uci.foreach('5gmodem', 'modem', function(s) {
+		if (s.path == null || length(trim(s.path)) == 0)
+			return;
+		push(out, { path: trim(s.path), model: s.model });
 	});
-	if (amp != null) {
-		let sec = 'm_' + replace(amp, /[^A-Za-z0-9]/g, '_');
-		let model = uci.get('5gmodem', sec, 'model');
-		if (model != null && length(trim(model)) > 0)
-			return shortModel(model);
-	}
+	return out;
+}
+
+// Имя модема для компактного блока температур; "Modem" как запасной вариант.
+function modemLabel(model) {
+	if (model != null && length(trim(model)) > 0)
+		return shortModel(model);
 	return 'Modem';
+}
+
+// Файл снимка для конкретного модема.
+//
+// Имя приложение строит из USB-пути, заменяя все не-буквенно-цифровые символы
+// подчёркиванием. Точное имя мы НЕ воспроизводим: на той стороне в ключ попадает
+// ещё и перевод строки, из-за чего в конце появляется лишнее подчёркивание
+// ("2-1" -> "2_1_"). Это артефакт реализации, он может исчезнуть при любой
+// правке там - поэтому принимаем оба варианта.
+// Сравниваем ПОЛНЫМ именем, а не префиксом: путь "2-1" префиксно совпал бы и с
+// файлом модема "2-1.1", то есть виджет показал бы чужую температуру.
+function modemCacheFile(path) {
+	let base = 'metrics_' + replace(path, /[^A-Za-z0-9]/g, '_');
+	let ents = lsdir(MODEM_CACHE_DIR);
+	if (!ents) return null;
+	for (let e in ents) {
+		if (e == '5gmodem_' + base + '.json' || e == '5gmodem_' + base + '_.json')
+			return MODEM_CACHE_DIR + '/' + e;
+	}
+	return null;
 }
 
 // Read the modem temperature sensor from the app's metrics cache. The cache is
@@ -69,38 +100,66 @@ function modemLabel() {
 // value keeps updating while the status page is open, without ever stalling this
 // call. The refresh is backgrounded WITH its fds redirected (see rpcd fd-detach
 // rule) so rpcd does not wait on it.
-function getModemSensor() {
-	if (!modemTempEnabled() || !modemInstalled())
+// Сенсор ОДНОГО модема из его снимка. null - если модема нет в системе, снимок
+// устарел или у прошивки вовсе нет датчика температуры.
+function modemSensorOne(m, now) {
+	let file = modemCacheFile(m.path);
+	if (!file) return null;
+
+	// Неактивные модемы приложение не опрашивает, их снимок только стареет.
+	// Показывать такое как текущую температуру нельзя.
+	let st = stat(file);
+	if (!st || (now - st.mtime) > MODEM_MAX_AGE)
 		return null;
 
-	let h = popen(MODEM_MARKER + ' cached 30 >/dev/null 2>&1 &');
-	if (h) h.close();
-
-	let raw = readfile(MODEM_CACHE);
+	let raw = readfile(file);
 	if (!raw) return null;
 
 	let j;
 	try { j = json(raw); } catch (e) { return null; }
+	// Часть прошивок градусов не отдаёт вовсе (напр. Compal RXM-G1: там есть
+	// только уровень троттлинга в отдельном поле). Тогда сенсора просто нет -
+	// выдавать уровень 0-3 за градусы нельзя.
 	if (!j || !j.mtemp) return null;
 
 	// mtemp looks like "54.0 &deg;C" - pull the leading number, to milli-degC.
-	let m = match(j.mtemp, /-?[0-9]+(\.[0-9]+)?/);
-	if (!m) return null;
-	let c = +m[0];
+	let mm = match(j.mtemp, /-?[0-9]+(\.[0-9]+)?/);
+	if (!mm) return null;
+	let c = +mm[0];
 	if (c != c) return null;             // NaN guard
 
 	let milli = int(c * 1000);
-	let key = MODEM_CACHE;
+	let key = file;
 	if (peakTemps[key] == null || milli > peakTemps[key])
 		peakTemps[key] = milli;
 
 	return {
-		name: modemLabel(),
+		name: modemLabel(m.model),
 		temp: milli,
 		peak: peakTemps[key],
-		path: 'modem:5gmodem',
+		// Путь уникален для каждого модема: он же ключ пикового значения, и по
+		// нему виджет отличает сенсоры друг от друга.
+		path: 'modem:5gmodem:' + m.path,
 		source: '5gmodem'
 	};
+}
+
+function getModemSensors() {
+	if (!modemTempEnabled() || !modemInstalled())
+		return [];
+
+	// Обновление пинаем ОДИН раз на вызов, а не на каждый модем: приложение всё
+	// равно опрашивает только активный, а лишние запуски множили бы процессы.
+	let h = popen(MODEM_MARKER + ' cached 30 >/dev/null 2>&1 &');
+	if (h) h.close();
+
+	let now = time();
+	let out = [];
+	for (let m in modemList()) {
+		let s = modemSensorOne(m, now);
+		if (s != null) push(out, s);
+	}
+	return out;
 }
 
 // Read file content safely, return null on error
@@ -242,10 +301,9 @@ function getSensors() {
 		});
 	}
 
-	// === 3. Optional: active modem temperature (luci-app-5gmodem) ===
-	let modemSensor = getModemSensor();
-	if (modemSensor != null)
-		push(sensors, modemSensor);
+	// === 3. Optional: modem temperatures (luci-app-5gmodem), по одному на модем ===
+	for (let ms in getModemSensors())
+		push(sensors, ms);
 
 	return { sensors: sensors };
 }
