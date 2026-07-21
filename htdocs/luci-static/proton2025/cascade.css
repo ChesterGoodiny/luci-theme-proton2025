@@ -4452,6 +4452,10 @@ body[data-page="admin-network-diagnostics"] .td {
 .cbi-progressbar {
     position: relative;
     height: 24px;
+    /* Дорожку (незаполненную часть) красит НЕ это правило, а псевдоэлемент
+       самой заливки - см. .cbi-progressbar>div::after ниже. Здесь остаётся лишь
+       нейтральная подложка: она видна сквозь приглушённую дорожку и работает
+       фолбэком, если заливки в разметке нет вовсе. */
     background: var(--proton-bg-tertiary);
     border-radius: 12px;
     overflow: hidden;
@@ -4465,11 +4469,38 @@ body[data-page="admin-network-diagnostics"] .td {
 }
 
 .cbi-progressbar>div {
+    /* position - якорь для дорожки (::after ниже) */
+    position: relative;
     height: 100%;
     background: linear-gradient(90deg, var(--proton-accent), var(--proton-accent-hover));
-    border-radius: 12px;
+    /* Справа НЕ скругляем: дорожка примыкает к заливке прямой границей, и дуга
+       оставляла бы между ними серп, сквозь который просвечивал фон родителя.
+       Внешнюю форму пилюли всё равно задаёт родитель - у него overflow: hidden
+       и свой border-radius, так что правый край скруглится по нему. */
+    border-radius: 12px 0 0 12px;
     transition: width 0.3s ease;
     box-shadow: 0 0 12px rgba(74, 143, 231, 0.3);
+}
+
+/* Незаполненная часть полоски - того же цвета, что и значение, только
+   приглушённая.
+   Красим её продолжением САМОЙ заливки: псевдоэлемент наследует её фон
+   (background: inherit) и уходит вправо, а overflow: hidden родителя обрезает
+   его по краю полоски. Ширины с запасом - реальную длину задаёт обрезка.
+   Почему именно так, а не фоном у родителя: цвет заливки обычно приходит
+   ИНЛАЙНОМ из JS (у метрик модема он вообще зависит от уровня сигнала), и
+   правило, висящее на родителе, такой цвет увидеть не может - дорожка тогда
+   осталась бы акцентной и спорила бы с жёлтой или красной заливкой. */
+.cbi-progressbar>div::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 100%;
+    width: 100vw;
+    background: inherit;
+    opacity: 0.3;
+    pointer-events: none;
 }
 
 :root[data-theme="light"] .cbi-progressbar>div {
