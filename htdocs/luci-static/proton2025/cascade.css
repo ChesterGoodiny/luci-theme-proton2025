@@ -2247,28 +2247,47 @@ table.cbi-section-table .cbi-section-actions .cbi-button+.cbi-button {
     margin-left: 0;
 }
 
-body:not([data-page^="admin-status"]) .cbi-tblsection {
+/* Горизонтальный скролл широких таблиц ЖИВЁТ НА ВНУТРЕННЕМ .table, а не на
+   секции: overflow:auto на секции превращал её в scroll-родителя открытых
+   комбобоксов (ui.js getScrollParent матчит любой auto) — меню обрезалось
+   карточкой и сжималось до высоты секции со скроллом внутри. Легаси-таблицы
+   тегом <table> скроллить сами не умеют — для них auto остаётся на секции. */
+body:not([data-page^="admin-status"]) .cbi-tblsection > .table {
     overflow-x: auto;
+}
+body:not([data-page^="admin-status"]) .cbi-tblsection:has(> table.cbi-section-table) {
+    overflow-x: auto;
+}
+
+/* Пока фокус в комбобоксе — обрезку отпускаем: браузер ставит фокус на
+   контрол ДО того, как ui.js меряет доступное место, поэтому меню получает
+   полную высоту страницы, а не высоту таблицы. */
+body:not([data-page^="admin-status"]) .cbi-tblsection > .table:has(.cbi-dropdown:focus-within),
+body:not([data-page^="admin-status"]) .cbi-tblsection:has(> table.cbi-section-table .cbi-dropdown:focus-within) {
+    overflow: visible;
 }
 
 /* Some GridSection tables have too many columns to fit the page width (e.g. the
    ZeroTier network list — ~10 flag columns, worse once headers are translated).
    They can't fit and custom-pages.js won't widen the page for them, so give the
    inevitable horizontal scroll a clean accent-tinted scrollbar. */
-body:not([data-page^="admin-status"]) .cbi-tblsection::-webkit-scrollbar {
+body:not([data-page^="admin-status"]) .cbi-tblsection::-webkit-scrollbar,
+body:not([data-page^="admin-status"]) .cbi-tblsection > .table::-webkit-scrollbar {
     height: 10px;
 }
 /* --proton-accent-rgb задаётся в :root обеих тем (94,158,255 dark /
    75,85,99 light), но на случай кастомных сборок/старого кэша даём
    fallback прямо в var(), иначе rgba() станет невалидной и скроллбар
    отрисуется системным. */
-body:not([data-page^="admin-status"]) .cbi-tblsection::-webkit-scrollbar-thumb {
+body:not([data-page^="admin-status"]) .cbi-tblsection::-webkit-scrollbar-thumb,
+body:not([data-page^="admin-status"]) .cbi-tblsection > .table::-webkit-scrollbar-thumb {
     background: rgba(var(--proton-accent-rgb, 94, 158, 255), 0.45);
     border: 2px solid transparent;
     border-radius: 8px;
     background-clip: padding-box;
 }
-body:not([data-page^="admin-status"]) .cbi-tblsection::-webkit-scrollbar-thumb:hover {
+body:not([data-page^="admin-status"]) .cbi-tblsection::-webkit-scrollbar-thumb:hover,
+body:not([data-page^="admin-status"]) .cbi-tblsection > .table::-webkit-scrollbar-thumb:hover {
     background: rgba(var(--proton-accent-rgb, 94, 158, 255), 0.7);
     background-clip: padding-box;
 }
@@ -4064,7 +4083,9 @@ table.assoclist td[data-title="Скорость приёма / отправки"
     border-radius: var(--proton-radius-sm);
     box-shadow: var(--proton-shadow);
     z-index: 10001;
-    max-height: 300px;
+    /* 300 обрезало типовые списки из 6-8 пунктов на пару пикселей - скролл
+       ради 5px. Реальную подгонку под вьюпорт делает ui.js инлайном. */
+    max-height: 360px;
     overflow-y: auto;
     min-width: 100%;
     width: max-content;
@@ -4094,7 +4115,9 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 
 .cbi-dropdown[open]>ul.dropdown>li {
     display: flex;
-    padding: 10px 14px;
+    /* Плотнее, чем в закрытом контроле: открытое меню соседствует с нативным
+       select и не должно выглядеть вдвое крупнее его пунктов. */
+    padding: 7px 12px;
     border-bottom: 1px solid var(--proton-border-light);
     transition: var(--proton-transition);
     background: #1e2530 !important;
@@ -4123,6 +4146,26 @@ table.assoclist td[data-title="Скорость приёма / отправки"
 .cbi-dropdown[open]>ul.dropdown>li[selected] {
     background: #252f3d !important;
     color: var(--proton-accent);
+}
+
+/* Строка свободного ввода в комбобоксе: компактная и в тон меню. */
+.cbi-dropdown[open]>ul.dropdown>li>input.create-item-input {
+    width: 100%;
+    min-width: 0;
+    padding: 4px 8px;
+    background: var(--proton-bg-tertiary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    color: inherit;
+}
+
+/* Вертикальный скролл открытого меню - тонкий, как остальные в теме. */
+.cbi-dropdown[open]>ul.dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+.cbi-dropdown[open]>ul.dropdown::-webkit-scrollbar-thumb {
+    background: rgba(var(--proton-accent-rgb, 94, 158, 255), 0.45);
+    border-radius: 8px;
 }
 
 /* =====================================================
