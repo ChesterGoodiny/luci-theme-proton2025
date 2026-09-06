@@ -1,0 +1,203 @@
+body[data-page="admin-status-processes"] #view>.table {
+    background: var(--proton-bg-secondary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius);
+    overflow: hidden;
+}
+
+body[data-page="admin-status-processes"] #view>.table .tr.table-titles {
+    background: var(--proton-bg-tertiary);
+}
+
+body[data-page="admin-status-processes"] #view>.table .tr.table-titles .th {
+    padding: 12px 16px;
+    font-weight: 600;
+    color: var(--proton-fg);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border-bottom: 1px solid var(--proton-border);
+}
+
+body[data-page="admin-status-processes"] #view>.table .tr:not(.table-titles) {
+    border-bottom: 1px solid var(--proton-border-subtle);
+    transition: var(--proton-transition);
+}
+
+body[data-page="admin-status-processes"] #view>.table .tr:not(.table-titles):hover {
+    background: var(--proton-bg-tertiary);
+}
+
+body[data-page="admin-status-processes"] #view>.table .tr:last-child {
+    border-bottom: none;
+}
+
+body[data-page="admin-status-processes"] #view>.table .td {
+    padding: 10px 16px;
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+body[data-page="admin-status-processes"] #view>.table .td[data-title="PID"] {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    font-weight: 600;
+    color: var(--proton-accent);
+}
+
+body[data-page="admin-status-processes"] #view>.table .td[data-title="Owner"] {
+    color: var(--proton-fg-secondary);
+}
+
+body[data-page="admin-status-processes"] #view>.table .td[data-title="Command"] {
+    word-break: break-all;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    font-size: 0.8rem;
+    color: var(--proton-fg);
+}
+
+body[data-page="admin-status-processes"] #view>.table .td[data-title="CPU usage (%)"],
+body[data-page="admin-status-processes"] #view>.table .td[data-title="Memory usage (%)"] {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    color: var(--proton-fg-secondary);
+}
+body[data-page="admin-status-processes"] #view>.table .cbi-section-actions {
+    white-space: normal !important;
+}
+
+body[data-page="admin-status-processes"] #view>.table .cbi-section-actions>div {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+body[data-page="admin-status-processes"] #view>.table .btn {
+    padding: 4px 8px !important;
+    font-size: 0.75rem !important;
+    border-radius: var(--proton-radius-sm) !important;
+}
+@media screen and (max-width: 900px) {
+    body[data-page="admin-status-processes"] #view>.table {
+        display: block;
+        border: none;
+        background: transparent;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .tr.table-titles {
+        display: none;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .tr:not(.table-titles) {
+        display: flex;
+        flex-direction: column;
+        background: var(--proton-bg-secondary);
+        border: 1px solid var(--proton-border);
+        border-radius: var(--proton-radius);
+        padding: 16px;
+        margin-bottom: 12px;
+        gap: 10px;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .tr:not(.table-titles):hover {
+        border-color: var(--proton-accent);
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 0;
+        border: none !important;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td::before {
+        content: attr(data-title);
+        font-weight: 600;
+        color: var(--proton-fg-secondary);
+        font-size: 0.7rem;
+        min-width: 100px;
+        flex-shrink: 0;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td[data-title="PID"] {
+        order: -2;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--proton-border-subtle) !important;
+        margin-bottom: 4px;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td[data-title="PID"]::before {
+        font-size: 0.9rem;
+        color: var(--proton-fg);
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td[data-title="Command"] {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        font-size: 0.8rem;
+        background: var(--proton-bg-tertiary);
+        padding: 10px !important;
+        border-radius: var(--proton-radius-sm);
+        margin: 4px 0;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td[data-title="Command"]::before {
+        margin-bottom: 4px;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td[data-title="Command"] span {
+        word-break: break-all;
+        line-height: 1.4;
+    }
+    body[data-page="admin-status-processes"] #view>.table .td[data-title="CPU usage (%)"],
+    body[data-page="admin-status-processes"] #view>.table .td[data-title="Memory usage (%)"] {
+        font-size: 0.9rem;
+    }
+    body[data-page="admin-status-processes"] #view>.table .td.cbi-section-actions {
+        order: 10;
+        padding-top: 12px !important;
+        border-top: 1px solid var(--proton-border-subtle) !important;
+        margin-top: 8px;
+        justify-content: flex-end;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td.cbi-section-actions::before {
+        display: none;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td.cbi-section-actions>div {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td.cbi-section-actions .btn {
+        padding: 8px 14px !important;
+        font-size: 0.9rem !important;
+    }
+}
+@media screen and (max-width: 480px) {
+    body[data-page="admin-status-processes"] #view>.table .tr:not(.table-titles) {
+        padding: 12px;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td::before {
+        min-width: 80px;
+        font-size: 0.7rem;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td[data-title="Command"] {
+        font-size: 0.7rem;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td.cbi-section-actions>div {
+        width: 100%;
+    }
+
+    body[data-page="admin-status-processes"] #view>.table .td.cbi-section-actions .btn {
+        flex: 1;
+        text-align: center;
+        padding: 10px 8px !important;
+    }
+}

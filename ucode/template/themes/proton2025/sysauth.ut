@@ -51,26 +51,29 @@
         zoom: "proton-zoom",
         transparency: "proton-transparency",
         border_radius: "proton-border-radius",
+        tab_outline: "proton-tab-outline",
+		tab_style: "proton-tab-style",
         animations: "proton-animations",
-        services_widget: "proton-services-widget-enabled",
-        temp_widget: "proton-temp-widget-enabled",
         services_log: "proton-services-log",
-        table_wrap: "proton-table-wrap",
         log_highlight: "proton-log-highlight",
         page_width: "proton-page-width",
+        background_pattern: "proton-background-pattern",
+        pattern_scale: "proton-pattern-scale",
         custom_font: "proton-custom-font",
-        login_animation: "proton-login-animation"
+        login_animation: "proton-login-animation",
+        // Фолбэк для header.ut: если ubus там недоступен, раскладка меню уже
+        // лежит в localStorage с логина и рельс не мелькнёт верхним меню.
+        menu_mode: "proton-menu-mode",
+        menu_collapsed: "proton-menu-collapsed"
     };
 
     var bools = {
         transparency: true,
         animations: true,
-        services_widget: true,
-        temp_widget: true,
         services_log: true,
-        table_wrap: true,
         log_highlight: true,
-        custom_font: true
+        custom_font: true,
+        menu_collapsed: true
     };
 
     function toLocal(key, value) {
@@ -116,7 +119,7 @@
              document.documentElement.setAttribute('data-darkmode', 'true');
      }
      document.documentElement.style.colorScheme = themeMode;
-	
+
 	// Zoom
 	var defaultZoom = '100';
 	var z = parseInt(localStorage.getItem('proton-zoom') || defaultZoom, 10);
@@ -134,16 +137,16 @@
 	if (document.body) {
 	    document.body.style.zoom = '';
 	}
-	
+
 	// Transparency
 	var t = localStorage.getItem('proton-transparency');
 	if (t !== 'false') document.documentElement.classList.add('proton-transparency');
-	
+
 	// Border radius
 	var r = localStorage.getItem('proton-border-radius');
 	if (r === 'sharp') document.documentElement.classList.add('proton-radius-sharp');
 	else if (r === 'extra') document.documentElement.classList.add('proton-radius-extra');
-	
+
 	// Accent color
 	var a = localStorage.getItem('proton-accent-color') || 'blue';
 	var c = {
@@ -170,7 +173,7 @@
 		document.documentElement.style.setProperty('--proton-accent-glow', c[a].glow);
 		document.documentElement.style.setProperty('--proton-accent-rgb', c[a].rgb);
 	}
-	
+
 	// Animations
 	if (localStorage.getItem('proton-animations') === 'false') document.documentElement.classList.add('proton-no-animations');
 
@@ -211,10 +214,13 @@
 <meta name="color-scheme" content="dark light" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<link rel="stylesheet" href="{{ media }}/cascade.css" />
-<link rel="stylesheet" href="{{ media }}/login-bg.css" />
+{# Версия должна совпадать с __pv в header.ut: без ?v= браузер отдаёт
+   старый cascade.css на странице логина после обновления темы. #}
+{% let __pv = "1.4.0"; %}
+<link rel="stylesheet" fetchpriority="high" href="{{ media }}/css/cascade.css?v={{ __pv }}" />
+<link rel="stylesheet" href="{{ media }}/css/login-bg.css?v={{ __pv }}" />
 
-<link rel="icon" href="{{ media }}/logo.svg" sizes="any" />
+<link rel="icon" href="{{ media }}/img/logo.svg" sizes="any" />
 <title>{{ _('Authorization Required') }} - {{ boardinfo.hostname ?? '?' }} - LuCI</title>
 </head>
 <body class="login-page lang_{{ dispatcher.lang }}" data-lang="{{ dispatcher.lang }}">
@@ -407,6 +413,6 @@
 	scheduleAdjust();
 })();
 </script>
-<script src="{{ media }}/login-particles.js"></script>
+<script src="{{ media }}/js/login-particles.js?v={{ __pv }}"></script>
 </body>
 </html>

@@ -1,0 +1,175 @@
+body:not([data-page^="admin-status"]) .cbi-tblsection {
+    overflow-x: auto;
+}
+
+body:not([data-page^="admin-status"]) .cbi-tblsection::-webkit-scrollbar {
+    height: 10px;
+}
+
+body:not([data-page^="admin-status"]) .cbi-tblsection::-webkit-scrollbar-thumb {
+    background: rgba(var(--proton-accent-rgb, 94, 158, 255), 0.45);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background-clip: padding-box;
+}
+
+body:not([data-page^="admin-status"]) .cbi-tblsection::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--proton-accent-rgb, 94, 158, 255), 0.7);
+    background-clip: padding-box;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"] {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+    gap: 12px;
+    margin: 0;
+    max-width: 100%;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox {
+    margin: 0 !important;
+    max-width: none !important;
+    min-width: 0;
+    display: grid !important;
+    grid-template-columns: 4px 1fr;
+    grid-template-areas:
+        "stripe name"
+        "stripe status"
+        "stripe traffic";
+    column-gap: 12px;
+    row-gap: 5px;
+    align-items: center;
+    position: relative;
+    overflow: visible;
+    padding: 10px 12px;
+    background: var(--proton-bg-tertiary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    transition: all 0.2s ease;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox:hover {
+    background: var(--proton-bg-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox:has(> .ifacebox-body img[src*="port_up"]):hover {
+    border-color: rgba(107, 207, 127, 0.3);
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-head:not(.cbi-tooltip-container) {
+    grid-area: name;
+    background: transparent;
+    color: var(--proton-fg);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0;
+    text-align: left;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-body:nth-child(2) {
+    grid-area: status;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--proton-muted);
+    white-space: nowrap;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox:has(> .ifacebox-body img[src*="port_up"])>.ifacebox-body:nth-child(2) {
+    color: var(--proton-success);
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-body img {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--proton-muted);
+    opacity: 0.45;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-body img[src*="port_up"] {
+    background: var(--proton-success);
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(107, 207, 127, 0.5);
+    animation: proton-port-led-pulse 2s ease-in-out infinite;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-body:nth-child(2) br {
+    display: none;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-head.cbi-tooltip-container {
+    grid-area: stripe;
+    align-self: stretch;
+    display: block !important;
+    position: relative;
+    width: auto;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-head.cbi-tooltip-container .zonebadge {
+    display: block;
+    width: 4px;
+    height: 100% !important;
+    flex: none;
+    border: none;
+    border-radius: 4px;
+    gap: 0;
+    padding: 0;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-body:nth-child(4) {
+    grid-area: traffic;
+    padding: 0;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--proton-muted);
+    white-space: nowrap;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-body:nth-child(4) .cbi-tooltip-container {
+    font-size: 11px !important;
+    text-align: left !important;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-head.cbi-tooltip-container>.cbi-tooltip {
+    left: calc(100% + 10px);
+    right: auto;
+    top: -6px;
+    bottom: auto;
+    transform: none;
+}
+
+:root[data-theme="light"] body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox {
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="light"] body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox:hover {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-body img[src*="port_up"] {
+        animation: none;
+    }
+}
+
+.proton-no-animations body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-body img[src*="port_up"] {
+    animation: none;
+}

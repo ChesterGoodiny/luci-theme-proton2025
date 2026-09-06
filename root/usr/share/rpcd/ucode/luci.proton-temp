@@ -117,7 +117,7 @@ function modemSensorOne(m, now) {
 
 	let j;
 	try { j = json(raw); } catch (e) { return null; }
-	// Часть прошивок градусов не отдаёт вовсе (напр. Compal RXM-G1: там есть
+	// Часть прошивок градусов не отдают вовсе (напр. Compal RXM-G1: там есть
 	// только уровень троттлинга в отдельном поле). Тогда сенсора просто нет -
 	// выдавать уровень 0-3 за градусы нельзя.
 	if (!j || !j.mtemp) return null;
@@ -172,7 +172,7 @@ function readFileContent(path) {
 function findDirs(basePath, prefix) {
 	let entries = lsdir(basePath);
 	if (!entries) return [];
-	
+
 	let result = [];
 	for (let name in entries) {
 		if (index(name, prefix) == 0) {
@@ -194,7 +194,7 @@ function getSensors() {
 
 	// === 1. Read hwmon sensors ===
 	let hwmonDirs = findDirs('/sys/class/hwmon', 'hwmon');
-	
+
 	for (let hwmonPath in hwmonDirs) {
 		let deviceName = readFileContent(hwmonPath + '/name') || 'hwmon';
 		let hwmonDevId = realpath(hwmonPath + '/device');
@@ -210,21 +210,21 @@ function getSensors() {
 			// Do not accept files such as temp1_input_alarm.
 			if (!match(file, /^temp[0-9]+_input$/))
 				continue;
-			
+
 			let tempPath = hwmonPath + '/' + file;
 			let temp = readFileContent(tempPath);
 			if (temp == null) continue;
-			
+
 			let tempValue = +temp;
 			if (tempValue != tempValue) continue; // NaN check
-			
+
 			// Extract index from temp1_input -> 1
 			let idx = substr(file, 4, index(file, '_input') - 4);
-			
+
 			// Try to read label
 			let labelPath = hwmonPath + '/temp' + idx + '_label';
 			let label = readFileContent(labelPath);
-			
+
 			let sensorName = label || deviceName;
 
 			// Update peak temperature

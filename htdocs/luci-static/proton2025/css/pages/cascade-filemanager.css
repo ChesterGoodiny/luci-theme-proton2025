@@ -1,0 +1,69 @@
+/* Proton2025 integration for the third-party File Manager. */
+
+body[data-page="admin-system-filemanager"] #file-manager-container {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+}
+
+body[data-page="admin-system-filemanager"] #file-list-container {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+    border-color: var(--proton-border) !important;
+    background: var(--proton-bg-secondary) !important;
+}
+
+body[data-page="admin-system-filemanager"] #file-table {
+    width: 100% !important;
+    max-width: none !important;
+    table-layout: fixed !important;
+    color: var(--proton-fg) !important;
+    background: var(--proton-bg-secondary) !important;
+}
+
+body[data-page="admin-system-filemanager"] #file-table th {
+    min-width: 0 !important;
+    color: var(--proton-fg-secondary) !important;
+    background: var(--proton-bg-tertiary) !important;
+    border-color: var(--proton-border) !important;
+}
+
+body[data-page="admin-system-filemanager"] #file-table td {
+    min-width: 0 !important;
+    color: var(--proton-fg) !important;
+    background: transparent !important;
+    border-color: var(--proton-border-light) !important;
+}
+
+body[data-page="admin-system-filemanager"] #file-table tr:hover td {
+    background: var(--proton-bg-hover) !important;
+}
+
+body[data-page="admin-system-filemanager"] #file-table tr:hover {
+    background: var(--proton-bg-hover) !important;
+}
+
+body[data-page="admin-system-filemanager"] #file-table .sort-button:hover {
+    color: var(--proton-fg) !important;
+    background: var(--proton-bg-hover) !important;
+    border-color: var(--proton-border) !important;
+}
+
+body[data-page="admin-system-filemanager"] #status-bar {
+    color: var(--proton-fg-secondary) !important;
+    background: var(--proton-bg-secondary) !important;
+    border-color: var(--proton-border) !important;
+}
+
+@media (max-width: 800px) {
+    body[data-page="admin-system-filemanager"] #file-list-container {
+        overflow-x: auto;
+    }
+
+    body[data-page="admin-system-filemanager"] #file-table {
+        min-width: 680px;
+    }
+}

@@ -1,0 +1,44 @@
+# Linux/OpenWrt first: keep repository text files with LF line endings.
+# This prevents Windows Git/VS Code from saving shell and LuCI files as CRLF.
+
+* text=auto eol=lf
+
+# Shell and OpenWrt scripts. CRLF can break /bin/sh on Linux/OpenWrt.
+*.sh text eol=lf
+root/etc/uci-defaults/* text eol=lf
+root/usr/share/rpcd/ucode/* text eol=lf
+
+# LuCI/OpenWrt source files.
+*.ut text eol=lf
+*.uc text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.svg text eol=lf
+Makefile text eol=lf
+LICENSE text eol=lf
+NOTICE text eol=lf
+
+# Binary assets must never be line-ending converted.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+*.pdf binary
+*.ipk binary
+*.apk binary
+*.tar binary
+*.tar.gz binary
+*.tar.xz binary
+*.zip binary

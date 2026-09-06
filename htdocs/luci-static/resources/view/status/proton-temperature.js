@@ -793,6 +793,8 @@ return view.extend({
       }, this),
     );
 
+    const seriesLabels = [];
+
     sensors.forEach(
       L.bind(function (item) {
         const history = this.history.get(item.id) || [];
@@ -866,18 +868,42 @@ return view.extend({
           }),
         );
 
-        var labelText = sensor
-          ? formatTemp(history[history.length - 1], 1)
-          : item.label + " " + formatTemp(history[history.length - 1], 1);
-        var labelAnchor =
-          lastX > GRAPH_WIDTH - GRAPH_PADDING.right - 60 ? "end" : "start";
-        var labelOffsetX = labelAnchor === "end" ? lastX - 10 : lastX + 10;
+        seriesLabels.push({
+          text: sensor
+            ? formatTemp(history[history.length - 1], 1)
+            : item.label + " " + formatTemp(history[history.length - 1], 1),
+          x: lastX,
+          y: lastY - 8,
+        });
+      }, this),
+    );
+
+    seriesLabels.sort(function (a, b) {
+      return a.y - b.y;
+    });
+    const LABEL_MIN_GAP = 16;
+    for (let i = 1; i < seriesLabels.length; i++) {
+      const minY = seriesLabels[i - 1].y + LABEL_MIN_GAP;
+      if (seriesLabels[i].y < minY) seriesLabels[i].y = minY;
+    }
+    for (let i = seriesLabels.length - 2; i >= 0; i--) {
+      const maxY = seriesLabels[i + 1].y - LABEL_MIN_GAP;
+      if (seriesLabels[i].y > maxY) seriesLabels[i].y = maxY;
+    }
+    seriesLabels.forEach(
+      L.bind(function (label) {
+        const anchor =
+          label.x > GRAPH_WIDTH - GRAPH_PADDING.right - 60 ? "end" : "start";
         svg.appendChild(
           this.createAxisLabel(
-            labelText,
-            labelOffsetX,
-            lastY - 8,
-            labelAnchor,
+            label.text,
+            anchor === "end" ? label.x - 10 : label.x + 10,
+            clamp(
+              label.y,
+              GRAPH_PADDING.top + 10,
+              GRAPH_HEIGHT - GRAPH_PADDING.bottom - 6,
+            ),
+            anchor,
             "proton-temp-series-label",
           ),
         );
@@ -1169,23 +1195,27 @@ return view.extend({
   },
 
   pollSensors: function () {
-    return L.resolveDefault(callGetSensors(), null).then(
-      L.bind(function (rawSensors) {
-        if (rawSensors == null) {
-          this.errorState = true;
-          this.setStatusMessage(
-            t(
-              "RPC is temporarily unavailable. Showing the last successful sample.",
-            ),
-            "warning",
-          );
-          return;
-        }
+    return L.resolveDefault(callGetSensors(), null)
+      .then(
+        L.bind(function (rawSensors) {
+          if (rawSensors == null) {
+            this.errorState = true;
+            this.setStatusMessage(
+              t(
+                "RPC is temporarily unavailable. Showing the last successful sample.",
+              ),
+              "warning",
+            );
+            return;
+          }
 
-        this.errorState = false;
-        this.applySensors(rawSensors);
-      }, this),
-    );
+          this.errorState = false;
+          this.applySensors(rawSensors);
+        }, this),
+      )
+      .catch(function (error) {
+        console.warn("[Proton2025] Temperature sensors poll failed:", error);
+      });
   },
 
   render: function (rawSensors) {

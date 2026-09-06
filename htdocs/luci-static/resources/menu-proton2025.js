@@ -17,43 +17,60 @@ var defined_E =
         return dom.create(tag, attr, children);
       };
 
-// Helper function for translations - проверяем каждый раз при вызове
 var translate = function (s) {
   if (!s) return s;
 
-  // 1. Используем L.tr() из LuCI (основной способ для меню)
   if (window.L && typeof window.L.tr === "function") {
     try {
       const translated = window.L.tr(s);
-      // L.tr() возвращает переведенный текст или оригинал, если перевод не найден
       if (translated && translated !== s) {
         return translated;
       }
-    } catch (e) {
-      // Игнорируем ошибки
-    }
+    } catch (e) {}
   }
 
-  // 2. Используем глобальную функцию _() из LuCI если доступна
   if (typeof window._ !== "undefined" && typeof window._ === "function") {
     try {
       const translated = window._(s);
-      // Проверяем, что это не просто заглушка (которая вернет оригинал)
       if (translated && translated !== s) {
         return translated;
       }
-    } catch (e) {
-      // Игнорируем ошибки
-    }
+    } catch (e) {}
   }
 
-  // 3. Возвращаем оригинал если переводы недоступны
   return s;
 };
 
-// Use safe wrappers
 var E = defined_E;
 var _ = translate;
+var safeStorage = {
+  get(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  },
+  set(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+  remove(key) {
+    try {
+      localStorage.removeItem(key);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+  removeItem(key) {
+    return this.remove(key);
+  },
+};
 var SEARCH_INDEX_ACTIVITY_LOG_KEY = "proton-search-index-activity-log";
 var SEARCH_INDEX_ACTIVITY_LOG_EXPANDED_KEY =
   "proton-search-index-activity-log-expanded";
@@ -62,57 +79,213 @@ var SEARCH_INDEX_ACTIVITY_DETAILS_LIMIT = 32;
 var SEARCH_INDEX_PANEL_HASH = "#proton-search-index-panel";
 var SEARCH_INDEX_PANEL_FOCUS_EVENT = "proton-focus-search-index-panel";
 
+var PROTON_MENU_ICONS = {
+  chart:
+    '<path d="M3 3v18h18"/><path d="M7 15v3"/><path d="M12 10v8"/><path d="M17 6v12"/>',
+  gear: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  box: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/>',
+  globe:
+    '<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+  lock: '<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  shield:
+    '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  plug: '<path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 8V2"/><path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/>',
+  bolt: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+};
+var PROTON_MENU_ICON_MAP = {
+  status: "chart",
+  system: "gear",
+  services: "plug",
+  network: "globe",
+  vpn: "lock",
+  firewall: "shield",
+  logout: "bolt",
+};
+
 return baseclass.extend({
+  scheduleIdle(fn, fallbackDelay) {
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(fn, { timeout: 500 });
+    } else {
+      setTimeout(fn, fallbackDelay || 100);
+    }
+  },
+
+  whenDomReady(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn, { once: true });
+    } else {
+      this.scheduleIdle(fn);
+    }
+  },
+
+  _loadedModules: {},
+
+  loadMenuModule(name) {
+    if (!this._loadModulePromises) this._loadModulePromises = {};
+    if (this._loadModulePromises[name]) return this._loadModulePromises[name];
+
+    var self = this;
+    var promise = L.require(name)
+      .then(function (mod) {
+        if (mod && mod.protonMixin) {
+          Object.assign(self, mod.protonMixin);
+        }
+        self._loadedModules[name] = true;
+        return true;
+      })
+      .catch(function (err) {
+        try {
+          console.warn("[proton2025] failed to load module", name, err);
+        } catch (e) {}
+        return false;
+      });
+
+    this._loadModulePromises[name] = promise;
+    return promise;
+  },
+
+  ensureSearchIndexModule() {
+    return this.loadMenuModule("menu-search-index");
+  },
+
+  ensureDropdownsModule() {
+    return this.loadMenuModule("menu-dropdowns");
+  },
+
+  ensureThemeSettingsModule() {
+    var self = this;
+    return this.ensureSearchIndexModule().then(function () {
+      return self.loadMenuModule("menu-theme-settings");
+    });
+  },
+
+  installSearchIndexLazyTrigger() {
+    if (this._searchIndexLazyTriggerInstalled) return;
+    this._searchIndexLazyTriggerInstalled = true;
+
+    var self = this;
+    var triggered = false;
+    var activate = function () {
+      if (triggered) return;
+      triggered = true;
+      self.ensureSearchIndexModule().then(function (ok) {
+        if (!ok) return;
+        self.initSearchIndexFeedback();
+        self.maybeFocusSearchIndexPanelFromHash();
+      });
+    };
+
+    var onFocus = function (ev) {
+      var t = ev.target;
+      if (
+        t &&
+        (t.id === "proton-search-input" ||
+          (t.closest && t.closest("#proton-search-container")) ||
+          (t.matches && t.matches('input[placeholder="Поиск..."]')))
+      ) {
+        activate();
+      }
+    };
+    document.addEventListener("focusin", onFocus, true);
+    document.addEventListener("pointerdown", onFocus, true);
+
+    var onState = function (ev) {
+      var status = (ev && ev.detail && ev.detail.status) || {};
+      if (status.inProgress) {
+        window.removeEventListener("proton-search-index-state", onState);
+        activate();
+      }
+    };
+    window.addEventListener("proton-search-index-state", onState);
+
+    if (window.location.hash === SEARCH_INDEX_PANEL_HASH) {
+      activate();
+    }
+  },
+
   __init__() {
     ui.menu.load().then((tree) => this.render(tree));
 
     this.installThemeModeObserver();
-    this.initSearchIndexFeedback();
+
+    this.installSearchIndexLazyTrigger();
     window.addEventListener(SEARCH_INDEX_PANEL_FOCUS_EVENT, () => {
-      this.focusSearchIndexPanel();
+      this.ensureSearchIndexModule().then((ok) => {
+        if (ok) this.focusSearchIndexPanel();
+      });
     });
 
-    // Apply saved theme settings on every page
     this.loadAndApplyThemeSettings();
 
-    // Initialize theme settings UI on System page
-    document.addEventListener("DOMContentLoaded", () => {
-      this.initThemeSettings();
-    });
+    this.whenDomReady(() => this.maybeInitThemeSettings());
 
-    // Also try after a delay in case DOMContentLoaded already fired
-    setTimeout(() => this.initThemeSettings(), 100);
-
-    // Listen for settings sync from UCI
     window.addEventListener("proton-settings-synced", () => {
       this.loadAndApplyThemeSettings();
-      // Re-init settings UI if on settings page
       this._themeSettingsInit = false;
-      this.initThemeSettings();
+      this.maybeInitThemeSettings();
     });
 
-    // Re-apply zoom and page width on resize (desktop only — mobile ↔ desktop transition)
+    window.addEventListener("proton-spa-navigated", (ev) => {
+      const segs = ev && ev.detail && ev.detail.pathSegments;
+      if (Array.isArray(segs) && segs.length) this.updateActiveMenu(segs);
+
+      // При SPA-переходе whenDomReady больше не срабатывает, поэтому панель
+      // настроек темы монтируем заново на каждой навигации.
+      if (!document.getElementById("proton-theme-settings")) {
+        this._themeSettingsInit = false;
+      }
+      this.maybeInitThemeSettings();
+    });
+
     let _resizeTimer = null;
-    window.addEventListener("resize", () => {
-      clearTimeout(_resizeTimer);
-      _resizeTimer = setTimeout(() => {
-        requestAnimationFrame(() => this.repositionAlerts());
+    let _resizeRafPending = false;
+    const scheduledResize = () => {
+      if (_resizeRafPending) return;
+      _resizeRafPending = true;
+      requestAnimationFrame(() => {
+        _resizeRafPending = false;
+        clearTimeout(_resizeTimer);
+        _resizeTimer = setTimeout(() => {
+          requestAnimationFrame(() => this.repositionAlerts());
 
-        // На мобильных resize часто вызывается скрытием/показом адресной строки —
-        // пропускаем, чтобы не дёргать layout и не сбивать скролл
-        if (window.innerWidth < 800) return;
-        const z = localStorage.getItem("proton-zoom") || "100";
-        this.applyZoom(z);
-        const pw = parseInt(localStorage.getItem("proton-page-width")) || 0;
-        this.applyPageWidth(pw);
-      }, 200);
-    });
+          if (window.innerWidth < 800) return;
+          const z = safeStorage.get("proton-zoom") || "100";
+          this.applyZoom(z);
+          const pw = parseInt(safeStorage.get("proton-page-width")) || 0;
+          this.applyPageWidth(pw);
+        }, 200);
+      });
+    };
+    window.addEventListener("resize", scheduledResize, { passive: true });
 
-    // Initialize floating alert messages
-    document.addEventListener("DOMContentLoaded", () => {
-      this.initFloatingAlerts();
+    this.whenDomReady(() => this.initFloatingAlerts());
+  },
+
+  maybeInitThemeSettings() {
+    if (!document.body.dataset.page?.includes("admin-system-system")) return;
+    this.ensureThemeSettingsModule().then((ok) => {
+      if (!ok) return;
+      this.initThemeSettings();
+      this.ensureLoginSettingsScript();
     });
-    setTimeout(() => this.initFloatingAlerts(), 100);
+  },
+
+  // header.ut подключает этот скрипт только при обычной загрузке страницы
+  // системы, поэтому при SPA-переходе его нужно догрузить вручную.
+  ensureLoginSettingsScript() {
+    if (document.querySelector('script[src*="login-animation-settings.js"]'))
+      return;
+
+    const media = L.env?.media;
+    if (!media) return;
+
+    const script = document.createElement("script");
+    script.src =
+      media +
+      "/js/login-animation-settings.js?v=" +
+      (L.env.resource_version || "");
+    document.head.appendChild(script);
   },
 
   loadAndApplyThemeSettings() {
@@ -126,19 +299,19 @@ return baseclass.extend({
       accentColor: localStorage.getItem("proton-accent-color") || "blue",
       borderRadius: localStorage.getItem("proton-border-radius") || "default",
       tabOutline: localStorage.getItem("proton-tab-outline") === "true",
+      tabsStyle: ["classic", "proton"].includes(
+        localStorage.getItem("proton-tab-style"),
+      )
+        ? localStorage.getItem("proton-tab-style")
+        : "modern",
       backgroundPattern:
         localStorage.getItem("proton-background-pattern") || "none",
       patternScale: localStorage.getItem("proton-pattern-scale") || "100",
       zoom: localStorage.getItem("proton-zoom") || defaultZoom,
       pageWidth: localStorage.getItem("proton-page-width") || "0",
+      menuMode: this.getMenuMode(),
       animations: localStorage.getItem("proton-animations") !== "false",
       transparency: localStorage.getItem("proton-transparency") !== "false",
-      servicesWidget:
-        localStorage.getItem("proton-services-widget-enabled") !== "false",
-      temperatureWidget:
-        localStorage.getItem("proton-temp-widget-enabled") !== "false",
-      servicesLog: localStorage.getItem("proton-services-log") === "true",
-      tableWrap: localStorage.getItem("proton-table-wrap") !== "false",
       logHighlight: localStorage.getItem("proton-log-highlight") !== "false",
       customFont: localStorage.getItem("proton-custom-font") !== "false",
     };
@@ -151,929 +324,10 @@ return baseclass.extend({
     if (typeof window.protonT === "function") {
       try {
         return window.protonT(key);
-      } catch (error) {
-        // Fall back to LuCI translation helpers below.
-      }
+      } catch (error) {}
     }
 
     return _(key);
-  },
-
-  focusSearchIndexPanel() {
-    const focusPanel = () => {
-      const panel = document.getElementById("proton-search-index-panel");
-      if (!panel) return false;
-
-      panel.scrollIntoView({ behavior: "smooth", block: "center" });
-      panel.classList.add("proton-search-index-panel-focus");
-
-      if (this._searchIndexPanelFocusTimer) {
-        clearTimeout(this._searchIndexPanelFocusTimer);
-      }
-
-      this._searchIndexPanelFocusTimer = setTimeout(() => {
-        panel.classList.remove("proton-search-index-panel-focus");
-      }, 1600);
-
-      const runButton = document.getElementById("proton-search-index-run");
-      if (runButton && typeof runButton.focus === "function") {
-        runButton.focus({ preventScroll: true });
-      }
-
-      return true;
-    };
-
-    if (focusPanel()) return true;
-
-    let attempts = 0;
-    const maxAttempts = 12;
-
-    const retryFocus = () => {
-      attempts += 1;
-      if (focusPanel() || attempts >= maxAttempts) return;
-      setTimeout(retryFocus, 160);
-    };
-
-    setTimeout(retryFocus, 120);
-    return false;
-  },
-
-  maybeFocusSearchIndexPanelFromHash() {
-    if (window.location.hash !== SEARCH_INDEX_PANEL_HASH) return false;
-    this.focusSearchIndexPanel();
-    return true;
-  },
-
-  normalizeSearchIndexActivityDetails(details) {
-    return Array.isArray(details)
-      ? details
-          .map((detail) =>
-            String(detail || "")
-              .replace(/\s+/g, " ")
-              .trim(),
-          )
-          .filter(Boolean)
-          .slice(0, SEARCH_INDEX_ACTIVITY_DETAILS_LIMIT)
-      : [];
-  },
-
-  normalizeSearchIndexActivityDetailsLabel(label) {
-    const normalizedLabel = String(label || "")
-      .replace(/\s+/g, " ")
-      .trim();
-    return normalizedLabel || "";
-  },
-
-  loadSearchIndexActivityEntries() {
-    if (Array.isArray(this._searchIndexActivityEntries)) {
-      return this._searchIndexActivityEntries;
-    }
-
-    let entries = [];
-
-    try {
-      const rawValue = localStorage.getItem(SEARCH_INDEX_ACTIVITY_LOG_KEY);
-      const parsed = rawValue ? JSON.parse(rawValue) : [];
-
-      if (Array.isArray(parsed)) {
-        entries = parsed
-          .filter((entry) => entry && typeof entry.message === "string")
-          .map((entry) => ({
-            timestamp: Number(entry.timestamp) || Date.now(),
-            tone: typeof entry.tone === "string" ? entry.tone : "info",
-            message: String(entry.message || "").trim(),
-            details: this.normalizeSearchIndexActivityDetails(entry.details),
-            detailsLabel: this.normalizeSearchIndexActivityDetailsLabel(
-              entry.detailsLabel,
-            ),
-          }))
-          .filter((entry) => entry.message)
-          .slice(0, SEARCH_INDEX_ACTIVITY_LOG_LIMIT);
-      }
-    } catch (error) {
-      entries = [];
-    }
-
-    this._searchIndexActivityEntries = entries;
-    return entries;
-  },
-
-  persistSearchIndexActivityEntries() {
-    try {
-      localStorage.setItem(
-        SEARCH_INDEX_ACTIVITY_LOG_KEY,
-        JSON.stringify(
-          (this._searchIndexActivityEntries || []).slice(
-            0,
-            SEARCH_INDEX_ACTIVITY_LOG_LIMIT,
-          ),
-        ),
-      );
-    } catch (error) {
-      // Ignore localStorage write failures.
-    }
-  },
-
-  loadSearchIndexActivityExpanded() {
-    if (typeof this._searchIndexActivityExpanded === "boolean") {
-      return this._searchIndexActivityExpanded;
-    }
-
-    let expanded = false;
-
-    try {
-      expanded =
-        localStorage.getItem(SEARCH_INDEX_ACTIVITY_LOG_EXPANDED_KEY) === "true";
-    } catch (error) {
-      expanded = false;
-    }
-
-    this._searchIndexActivityExpanded = expanded;
-    return expanded;
-  },
-
-  persistSearchIndexActivityExpanded() {
-    try {
-      localStorage.setItem(
-        SEARCH_INDEX_ACTIVITY_LOG_EXPANDED_KEY,
-        this._searchIndexActivityExpanded ? "true" : "false",
-      );
-    } catch (error) {
-      // Ignore localStorage write failures.
-    }
-  },
-
-  setSearchIndexActivityExpanded(expanded) {
-    const normalizedExpanded = expanded === true;
-    const rootNode = document.getElementById("proton-search-index-log-root");
-    const toggleNode = document.getElementById(
-      "proton-search-index-log-toggle",
-    );
-    const contentNode = document.getElementById(
-      "proton-search-index-log-content",
-    );
-
-    this._searchIndexActivityExpanded = normalizedExpanded;
-    this.persistSearchIndexActivityExpanded();
-
-    if (rootNode) {
-      rootNode.classList.toggle("is-expanded", normalizedExpanded);
-    }
-
-    if (toggleNode) {
-      toggleNode.setAttribute(
-        "aria-expanded",
-        normalizedExpanded ? "true" : "false",
-      );
-      toggleNode.classList.toggle("is-expanded", normalizedExpanded);
-    }
-
-    if (contentNode) {
-      contentNode.hidden = !normalizedExpanded;
-    }
-  },
-
-  formatSearchIndexActivityTime(timestamp) {
-    const date = new Date(Number(timestamp) || Date.now());
-
-    if (Number.isNaN(date.getTime())) {
-      return "--:--:--";
-    }
-
-    try {
-      return new Intl.DateTimeFormat("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      }).format(date);
-    } catch (error) {
-      const pad = (value) => String(value).padStart(2, "0");
-      return [
-        pad(date.getHours()),
-        pad(date.getMinutes()),
-        pad(date.getSeconds()),
-      ].join(":");
-    }
-  },
-
-  formatSearchIndexBytes(bytes) {
-    const value = Number(bytes) || 0;
-    if (value <= 0) return "0 B";
-
-    const units = ["B", "KB", "MB", "GB"];
-    let size = value;
-    let unitIndex = 0;
-
-    while (size >= 1024 && unitIndex < units.length - 1) {
-      size /= 1024;
-      unitIndex += 1;
-    }
-
-    return `${size >= 10 || unitIndex === 0 ? size.toFixed(0) : size.toFixed(1)} ${units[unitIndex]}`;
-  },
-
-  buildSearchIndexIssueSummary(state, options) {
-    const status = state?.status || {};
-    const routeErrorCount = Number(status.routeErrorCount) || 0;
-    const persistenceErrorCount = Number(status.persistenceErrorCount) || 0;
-    const totalErrorCount = Number(status.errorCount) || 0;
-    const details = [];
-
-    if (options?.includeRouteErrors && routeErrorCount > 0) {
-      details.push(
-        routeErrorCount === 1
-          ? "1 route error"
-          : `${routeErrorCount} route errors`,
-      );
-    }
-
-    if (options?.includePersistenceErrors && persistenceErrorCount > 0) {
-      details.push(
-        persistenceErrorCount === 1
-          ? "cache persistence failed"
-          : `${persistenceErrorCount} cache persistence issues`,
-      );
-    }
-
-    if (
-      !details.length &&
-      options?.includeGenericErrors &&
-      totalErrorCount > 0
-    ) {
-      details.push(
-        totalErrorCount === 1
-          ? "1 index issue"
-          : `${totalErrorCount} index issues`,
-      );
-    }
-
-    return details.join(", ");
-  },
-
-  buildSearchIndexActivitySummary(state, options) {
-    const status = state?.status || {};
-    const routeCount = Number(status.routeCount) || 0;
-    const indexedRouteCount = Number(status.indexedRouteCount) || routeCount;
-    const cachedEntryCount = Number(state?.cachedEntryCount) || 0;
-    const cacheBytes = Number(state?.cacheBytes) || 0;
-    const durationMs = Number(options?.durationMs) || 0;
-    const details = [];
-
-    if (routeCount > 0) {
-      details.push(`${indexedRouteCount}/${routeCount} routes`);
-    }
-
-    if (cachedEntryCount > 0) {
-      details.push(`${cachedEntryCount} cached entries`);
-    }
-
-    if (cacheBytes > 0) {
-      details.push(this.formatSearchIndexBytes(cacheBytes));
-    }
-
-    if (durationMs > 0) {
-      details.push(this.formatSearchIndexDuration(durationMs));
-    }
-
-    const issueSummary = this.buildSearchIndexIssueSummary(state, {
-      includeRouteErrors: options?.includeErrors === true,
-      includePersistenceErrors: options?.includeErrors === true,
-      includeGenericErrors: options?.includeErrors === true,
-    });
-    if (issueSummary) {
-      details.push(issueSummary);
-    }
-
-    return details.join(", ");
-  },
-
-  appendSearchIndexActivityEntry(message, tone, key, details, detailsLabel) {
-    const normalizedMessage = String(message || "").trim();
-    const normalizedDetails = this.normalizeSearchIndexActivityDetails(details);
-    const normalizedDetailsLabel =
-      this.normalizeSearchIndexActivityDetailsLabel(detailsLabel);
-    if (!normalizedMessage) {
-      return;
-    }
-
-    if (key && key === this._lastSearchIndexActivityEventKey) {
-      return;
-    }
-
-    if (key) {
-      this._lastSearchIndexActivityEventKey = key;
-    }
-
-    const entries = this.loadSearchIndexActivityEntries().slice();
-    entries.unshift({
-      timestamp: Date.now(),
-      tone: tone || "info",
-      message: normalizedMessage,
-      details: normalizedDetails,
-      detailsLabel: normalizedDetailsLabel,
-    });
-
-    this._searchIndexActivityEntries = entries.slice(
-      0,
-      SEARCH_INDEX_ACTIVITY_LOG_LIMIT,
-    );
-    this.persistSearchIndexActivityEntries();
-    this.renderSearchIndexActivity(this._lastObservedSearchIndexState);
-  },
-
-  recordSearchIndexCleared() {
-    this.appendSearchIndexActivityEntry(
-      "Cached index cleared.",
-      "muted",
-      `clear:${Date.now()}`,
-    );
-  },
-
-  buildSearchIndexErrorDetails(state, options) {
-    const status = state?.status || {};
-    const details = this.normalizeSearchIndexActivityDetails(
-      status.recentErrors,
-    );
-    const fallbackMessage = String(options?.errorMessage || "")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    if (!fallbackMessage) {
-      return details;
-    }
-
-    if (details.indexOf(fallbackMessage) !== -1) {
-      return details;
-    }
-
-    return [fallbackMessage]
-      .concat(details)
-      .slice(0, SEARCH_INDEX_ACTIVITY_DETAILS_LIMIT);
-  },
-
-  buildSearchIndexIndexedPageDetails(state) {
-    return this.normalizeSearchIndexActivityDetails(
-      state?.status?.indexedPages,
-    );
-  },
-
-  buildSearchIndexLiveMessage(state) {
-    const status = state?.status || {};
-    if (!status.inProgress) {
-      return "";
-    }
-
-    const routeCount = Number(status.routeCount) || 0;
-    const indexedRouteCount = Number(status.indexedRouteCount) || 0;
-    const cachedEntryCount = Number(state?.cachedEntryCount) || 0;
-    const routeErrorCount = Number(status.routeErrorCount) || 0;
-    const details = [];
-
-    if (routeCount > 0) {
-      details.push(`${indexedRouteCount}/${routeCount} routes indexed`);
-    } else {
-      details.push("preparing route list");
-    }
-
-    if (cachedEntryCount > 0) {
-      details.push(`${cachedEntryCount} cached entries ready`);
-    }
-
-    if (routeErrorCount > 0) {
-      details.push(
-        routeErrorCount === 1
-          ? "1 route error"
-          : `${routeErrorCount} route errors`,
-      );
-    }
-
-    return `Running now: ${details.join(" · ")}.`;
-  },
-
-  buildSearchIndexActivityEntriesKey(entries) {
-    if (!Array.isArray(entries) || !entries.length) {
-      return "";
-    }
-
-    return entries
-      .map(
-        (entry) =>
-          `${Number(entry?.timestamp) || 0}|${String(entry?.tone || "info")}|${String(entry?.message || "")}|${this.normalizeSearchIndexActivityDetails(entry?.details).join("||")}|${this.normalizeSearchIndexActivityDetailsLabel(entry?.detailsLabel)}`,
-      )
-      .join("\n");
-  },
-
-  renderSearchIndexActivity(state) {
-    const liveNode = document.getElementById("proton-search-index-log-live");
-    const listNode = document.getElementById("proton-search-index-log-list");
-    const emptyNode = document.getElementById("proton-search-index-log-empty");
-
-    if (!liveNode || !listNode || !emptyNode) {
-      return;
-    }
-
-    const liveMessage = this.buildSearchIndexLiveMessage(state);
-    liveNode.textContent = liveMessage;
-    liveNode.hidden = !liveMessage;
-    liveNode.classList.toggle("is-visible", !!liveMessage);
-
-    const entries = this.loadSearchIndexActivityEntries();
-    const entriesKey = this.buildSearchIndexActivityEntriesKey(entries);
-
-    if (entriesKey === this._searchIndexActivityRenderKey) {
-      emptyNode.hidden = entries.length > 0;
-      return;
-    }
-
-    this._searchIndexActivityRenderKey = entriesKey;
-    listNode.textContent = "";
-
-    entries.forEach((entry) => {
-      const itemNode = document.createElement("div");
-      itemNode.className = `proton-search-index-log-entry proton-search-index-log-entry-${entry.tone || "info"}`;
-
-      const timeNode = document.createElement("div");
-      timeNode.className = "proton-search-index-log-time";
-      timeNode.textContent = this.formatSearchIndexActivityTime(
-        entry.timestamp,
-      );
-
-      const contentNode = document.createElement("div");
-      contentNode.className = "proton-search-index-log-entry-body";
-
-      const messageNode = document.createElement("div");
-      messageNode.className = "proton-search-index-log-message";
-      messageNode.textContent = entry.message;
-
-      contentNode.appendChild(messageNode);
-
-      const entryDetails = this.normalizeSearchIndexActivityDetails(
-        entry.details,
-      );
-      if (entryDetails.length) {
-        const detailsNode = document.createElement("details");
-        detailsNode.className = "proton-search-index-log-entry-details";
-
-        const summaryNode = document.createElement("summary");
-        summaryNode.className = "proton-search-index-log-entry-details-toggle";
-        const detailsLabel =
-          this.normalizeSearchIndexActivityDetailsLabel(entry.detailsLabel) ||
-          "Details";
-        summaryNode.textContent =
-          entryDetails.length > 1
-            ? `${detailsLabel} (${entryDetails.length})`
-            : detailsLabel;
-
-        const detailsListNode = document.createElement("ul");
-        detailsListNode.className =
-          "proton-search-index-log-entry-details-list";
-
-        entryDetails.forEach((detail) => {
-          const detailNode = document.createElement("li");
-          detailNode.className = "proton-search-index-log-entry-detail";
-          detailNode.textContent = detail;
-          detailsListNode.appendChild(detailNode);
-        });
-
-        detailsNode.appendChild(summaryNode);
-        detailsNode.appendChild(detailsListNode);
-        contentNode.appendChild(detailsNode);
-      }
-
-      itemNode.appendChild(timeNode);
-      itemNode.appendChild(contentNode);
-      listNode.appendChild(itemNode);
-    });
-
-    emptyNode.hidden = entries.length > 0;
-  },
-
-  maybeRecordSearchIndexActivity(previousState, currentState, options) {
-    const previousStatus = previousState?.status || {};
-    const status = currentState?.status || {};
-    const forceError = options?.forceError === true;
-
-    if (status.inProgress && !previousStatus.inProgress) {
-      const routeCount = Number(status.routeCount) || 0;
-      const message =
-        routeCount > 0
-          ? `Index run started: ${routeCount} routes queued.`
-          : "Index run started.";
-
-      this.appendSearchIndexActivityEntry(
-        message,
-        "info",
-        `start:${this._searchIndexRunStartedAt || Date.now()}:${routeCount}`,
-      );
-      return;
-    }
-
-    const completedTransition =
-      !!previousStatus.inProgress && !status.inProgress;
-
-    if (!completedTransition && !forceError) {
-      return;
-    }
-
-    if (status.canceled) {
-      const routeCount = Number(status.routeCount) || 0;
-      const indexedRouteCount = Number(status.indexedRouteCount) || 0;
-      const message =
-        routeCount > 0
-          ? `Index run canceled: ${indexedRouteCount}/${routeCount} routes processed.`
-          : "Index run canceled.";
-
-      this.appendSearchIndexActivityEntry(
-        message,
-        "warning",
-        `cancel:${Number(status.lastIndexedAt) || 0}:${indexedRouteCount}:${routeCount}`,
-      );
-      return;
-    }
-
-    if (forceError) {
-      const errorCount = Number(status.errorCount) || 0;
-      const errorDetails = this.buildSearchIndexErrorDetails(
-        currentState,
-        options,
-      );
-      const summary = this.buildSearchIndexActivitySummary(currentState, {
-        includeErrors: errorCount > 0,
-      });
-      const issueSummary = this.buildSearchIndexIssueSummary(currentState, {
-        includeRouteErrors: true,
-        includePersistenceErrors: true,
-        includeGenericErrors: true,
-      });
-      const message = summary
-        ? `Index run failed: ${summary}.`
-        : issueSummary
-          ? `Index run failed: ${issueSummary}.`
-          : "Index run failed before completion.";
-
-      this.appendSearchIndexActivityEntry(
-        message,
-        "error",
-        `fail:${Number(status.lastIndexedAt) || 0}:${errorCount}:${Number(currentState?.cachedEntryCount) || 0}`,
-        errorDetails,
-        errorDetails.length ? "Error details" : "",
-      );
-      return;
-    }
-
-    const errorCount = Number(status.errorCount) || 0;
-    const indexedPageDetails =
-      this.buildSearchIndexIndexedPageDetails(currentState);
-    const errorDetails =
-      errorCount > 0
-        ? this.buildSearchIndexErrorDetails(currentState, options)
-        : [];
-    const summary = this.buildSearchIndexActivitySummary(currentState, {
-      durationMs: options?.durationMs,
-      includeErrors: errorCount > 0,
-    });
-    const message =
-      errorCount > 0
-        ? summary
-          ? `Index run completed with warnings: ${summary}.`
-          : "Index run completed with warnings."
-        : summary
-          ? `Index run completed: ${summary}.`
-          : "Index run completed.";
-
-    this.appendSearchIndexActivityEntry(
-      message,
-      errorCount > 0 ? "warning" : "success",
-      `complete:${Number(status.lastIndexedAt) || 0}:${errorCount}:${Number(currentState?.cachedEntryCount) || 0}`,
-      errorCount > 0 ? errorDetails : indexedPageDetails,
-      errorCount > 0
-        ? errorDetails.length
-          ? "Error details"
-          : ""
-        : indexedPageDetails.length
-          ? "Indexed pages"
-          : "",
-    );
-  },
-
-  ensureSearchIndexFeedbackUi() {
-    let progressRoot = document.getElementById("proton-search-index-progress");
-    if (!progressRoot) {
-      progressRoot = document.createElement("div");
-      progressRoot.id = "proton-search-index-progress";
-      progressRoot.className = "proton-search-index-progress";
-      progressRoot.hidden = true;
-
-      const progressBar = document.createElement("div");
-      progressBar.className = "proton-search-index-progress-bar";
-      progressRoot.appendChild(progressBar);
-      document.body.appendChild(progressRoot);
-    }
-
-    let toastRoot = document.getElementById("proton-search-index-toast");
-    if (!toastRoot) {
-      toastRoot = document.createElement("div");
-      toastRoot.id = "proton-search-index-toast";
-      toastRoot.className = "proton-search-index-toast";
-      toastRoot.hidden = true;
-      toastRoot.innerHTML =
-        '<div class="proton-search-index-toast-content"><div class="proton-search-index-toast-title"></div><div class="proton-search-index-toast-body"></div></div>';
-      document.body.appendChild(toastRoot);
-    }
-
-    let hudRoot = document.getElementById("proton-search-index-hud");
-    if (!hudRoot) {
-      hudRoot = document.createElement("div");
-      hudRoot.id = "proton-search-index-hud";
-      hudRoot.className = "proton-search-index-hud";
-      hudRoot.hidden = true;
-      hudRoot.innerHTML =
-        '<div class="proton-search-index-hud-content"><div class="proton-search-index-hud-title"></div><div class="proton-search-index-hud-body"></div></div><button type="button" class="proton-search-index-hud-cancel cbi-button cbi-button-negative"></button>';
-      document.body.appendChild(hudRoot);
-    }
-
-    const hudCancelButton = hudRoot.querySelector(
-      ".proton-search-index-hud-cancel",
-    );
-    if (hudCancelButton && !hudCancelButton.dataset.boundCancel) {
-      hudCancelButton.dataset.boundCancel = "1";
-      hudCancelButton.addEventListener("click", () => {
-        if (
-          window.protonSearchIndex &&
-          typeof window.protonSearchIndex.cancel === "function"
-        ) {
-          window.protonSearchIndex.cancel("user");
-        }
-      });
-    }
-
-    return {
-      progressRoot: progressRoot,
-      progressBar: progressRoot.querySelector(
-        ".proton-search-index-progress-bar",
-      ),
-      toastRoot: toastRoot,
-      toastTitle: toastRoot.querySelector(".proton-search-index-toast-title"),
-      toastBody: toastRoot.querySelector(".proton-search-index-toast-body"),
-      hudRoot: hudRoot,
-      hudTitle: hudRoot.querySelector(".proton-search-index-hud-title"),
-      hudBody: hudRoot.querySelector(".proton-search-index-hud-body"),
-      hudCancelButton: hudCancelButton,
-    };
-  },
-
-  setSearchIndexFeedbackState(state) {
-    const ui = this.ensureSearchIndexFeedbackUi();
-    const status = state?.status || {};
-    const t = this.translateThemeText.bind(this);
-
-    window.clearTimeout(this._searchIndexProgressHideTimer);
-
-    if (status.inProgress) {
-      const routeCount = Number(status.routeCount) || 0;
-      const indexedRouteCount = Number(status.indexedRouteCount) || 0;
-      const progress =
-        routeCount > 0 ? Math.max(indexedRouteCount / routeCount, 0.06) : 0.08;
-
-      ui.progressRoot.hidden = false;
-      ui.progressRoot.classList.add("is-visible");
-      ui.progressRoot.classList.remove("is-complete");
-      ui.progressBar.style.transform = `scaleX(${Math.min(progress, 0.94)})`;
-
-      if (ui.hudTitle) {
-        ui.hudTitle.textContent = t("Indexing in progress...");
-      }
-      if (ui.hudBody) {
-        ui.hudBody.textContent =
-          routeCount > 0
-            ? `${t("Indexed routes")}: ${indexedRouteCount}/${routeCount}`
-            : t("Search index is ready to be built.");
-      }
-      if (ui.hudCancelButton) {
-        ui.hudCancelButton.textContent = t("Cancel Indexing");
-      }
-      if (ui.hudRoot) {
-        ui.hudRoot.hidden = false;
-        ui.hudRoot.classList.add("is-visible");
-        requestAnimationFrame(() => this.repositionAlerts());
-      }
-      return;
-    }
-
-    if (ui.hudRoot) {
-      ui.hudRoot.classList.remove("is-visible");
-      ui.hudRoot.hidden = true;
-      this.repositionAlerts();
-    }
-
-    if (ui.progressRoot.hidden) {
-      return;
-    }
-
-    ui.progressRoot.classList.add("is-complete");
-    ui.progressBar.style.transform = "scaleX(1)";
-    this._searchIndexProgressHideTimer = window.setTimeout(() => {
-      ui.progressRoot.classList.remove("is-visible", "is-complete");
-      ui.progressRoot.hidden = true;
-      ui.progressBar.style.transform = "scaleX(0)";
-    }, 520);
-  },
-
-  showSearchIndexFeedbackToast(message, isError) {
-    const ui = this.ensureSearchIndexFeedbackUi();
-
-    window.clearTimeout(this._searchIndexToastHideTimer);
-    ui.toastTitle.textContent = this.translateThemeText("Search Page Index");
-    ui.toastBody.textContent = message;
-    ui.toastRoot.hidden = false;
-    ui.toastRoot.classList.toggle("is-error", !!isError);
-
-    window.requestAnimationFrame(() => {
-      ui.toastRoot.classList.add("is-visible");
-      this.repositionAlerts();
-    });
-
-    this._searchIndexToastHideTimer = window.setTimeout(() => {
-      ui.toastRoot.classList.remove("is-visible");
-      this.repositionAlerts();
-      window.setTimeout(() => {
-        if (!ui.toastRoot.classList.contains("is-visible")) {
-          ui.toastRoot.hidden = true;
-        }
-      }, 220);
-    }, 7000);
-  },
-
-  buildSearchIndexToastPayload(state, options) {
-    const status = state?.status || {};
-    const routeCount = Number(status.routeCount) || 0;
-    const indexedRouteCount = Number(status.indexedRouteCount) || routeCount;
-    const errorCount = Number(status.errorCount) || 0;
-    const cachedEntryCount = Number(state?.cachedEntryCount) || 0;
-    const durationMs = Number(options?.durationMs) || 0;
-    const forceError = options?.forceError === true;
-    const t = this.translateThemeText.bind(this);
-
-    if (status.canceled) {
-      const details = [];
-
-      if (routeCount > 0) {
-        details.push(
-          `${t("Indexed routes")}: ${indexedRouteCount}/${routeCount}`,
-        );
-      }
-
-      details.push(t("You can start indexing again at any time."));
-
-      return {
-        key: `canceled:${Number(status.lastIndexedAt) || 0}:${routeCount}:${indexedRouteCount}`,
-        message: `${t("Indexing canceled.")} ${details.join(" · ")}`,
-        isError: false,
-      };
-    }
-
-    if (forceError || errorCount > 0) {
-      return {
-        key: `error:${Number(status.lastIndexedAt) || 0}:${routeCount}:${indexedRouteCount}:${Math.max(errorCount, 1)}`,
-        message:
-          errorCount > 0
-            ? `${t("Index errors")}: ${errorCount}`
-            : t("Index errors"),
-        isError: true,
-      };
-    }
-
-    return {
-      key: `success:${Number(status.lastIndexedAt) || 0}:${routeCount}:${indexedRouteCount}:${Number(state?.cachedEntryCount) || 0}`,
-      message: (() => {
-        const details = [];
-
-        if (routeCount > 0) {
-          details.push(
-            `${t("Indexed routes")}: ${indexedRouteCount}/${routeCount}`,
-          );
-        }
-
-        if (cachedEntryCount > 0) {
-          details.push(`${t("Cached entries")}: ${cachedEntryCount}`);
-        }
-
-        if (durationMs > 0) {
-          details.push(this.formatSearchIndexDuration(durationMs));
-        }
-
-        return details.length
-          ? `${t("Search index updated successfully.")} ${details.join(" · ")}`
-          : t("Search index updated successfully.");
-      })(),
-      isError: false,
-    };
-  },
-
-  formatSearchIndexDuration(durationMs) {
-    const t = this.translateThemeText.bind(this);
-    const totalSeconds = Math.max(
-      Math.round(Number(durationMs || 0) / 1000),
-      0,
-    );
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-
-    if (minutes <= 0) {
-      return `${totalSeconds} ${t("s")}`;
-    }
-
-    if (seconds === 0) {
-      return `${minutes} ${t("min")}`;
-    }
-
-    return `${minutes} ${t("min")} ${seconds} ${t("s")}`;
-  },
-
-  maybeNotifySearchIndexCompletion(previousState, currentState, options) {
-    const previousStatus = previousState?.status || {};
-    const status = currentState?.status || {};
-    const forceError = options?.forceError === true;
-    const completedTransition =
-      !!previousStatus.inProgress && !status.inProgress;
-
-    if (!completedTransition && !forceError) {
-      return;
-    }
-
-    const toastPayload = this.buildSearchIndexToastPayload(
-      currentState,
-      options,
-    );
-    if (!toastPayload) {
-      return;
-    }
-
-    if (!forceError && toastPayload.key === this._lastSearchIndexToastKey) {
-      return;
-    }
-
-    this._lastSearchIndexToastKey = toastPayload.key;
-    this.showSearchIndexFeedbackToast(
-      toastPayload.message,
-      toastPayload.isError,
-    );
-  },
-
-  initSearchIndexFeedback() {
-    if (this._searchIndexFeedbackInit) {
-      return;
-    }
-
-    this._searchIndexFeedbackInit = true;
-    this._searchIndexProgressHideTimer = 0;
-    this._searchIndexToastHideTimer = 0;
-    this._lastSearchIndexToastKey = "";
-    this._lastSearchIndexActivityEventKey = "";
-    this._searchIndexActivityRenderKey = "";
-    this._lastObservedSearchIndexState = null;
-    this._searchIndexRunStartedAt = 0;
-    this.loadSearchIndexActivityEntries();
-
-    window.addEventListener("proton-search-index-state", (event) => {
-      const previousState = this._lastObservedSearchIndexState;
-      const previousStatus = previousState?.status || {};
-      const nextState = event.detail || {};
-      const nextStatus = nextState?.status || {};
-      let durationMs = 0;
-
-      if (nextStatus.inProgress && !previousStatus.inProgress) {
-        this._searchIndexRunStartedAt = Date.now();
-      }
-
-      if (
-        !nextStatus.inProgress &&
-        previousStatus.inProgress &&
-        this._searchIndexRunStartedAt > 0
-      ) {
-        durationMs = Math.max(
-          (Number(nextStatus.lastIndexedAt) || Date.now()) -
-            this._searchIndexRunStartedAt,
-          0,
-        );
-        this._searchIndexRunStartedAt = 0;
-      }
-
-      this.maybeNotifySearchIndexCompletion(
-        previousState,
-        nextState,
-        durationMs > 0 ? { durationMs: durationMs } : undefined,
-      );
-      this.maybeRecordSearchIndexActivity(
-        previousState,
-        nextState,
-        durationMs > 0 ? { durationMs: durationMs } : undefined,
-      );
-      this._lastObservedSearchIndexState = nextState;
-      this.setSearchIndexFeedbackState(nextState);
-      this.renderSearchIndexActivity(nextState);
-    });
   },
 
   updateAssoclistTitles() {
@@ -1089,7 +343,10 @@ return baseclass.extend({
         const badge = td.querySelector(".ifacebadge");
         if (badge) {
           const text = (badge.innerText || badge.textContent || "").trim();
-          if (text && text.length >= 10) {
+          // LuCI иногда сам ставит более подробный title (сигнал/шум/SNR) —
+          // затираем только если наш текст информативнее.
+          const current = badge.getAttribute("title") || "";
+          if (text && text.length >= 10 && current.length <= text.length) {
             badge.setAttribute("title", text);
 
             const inner = badge.querySelector("span");
@@ -1105,16 +362,10 @@ return baseclass.extend({
       });
     });
 
-    // Обновляем индикаторы сигнала
     this.updateSignalIndicators();
   },
 
-  /**
-   * Обновляет индикаторы сигнала в таблице Associated Stations.
-   * Устанавливает data-signal атрибут и CSS переменные для визуализации.
-   */
   updateSignalIndicators() {
-    // Ищем все ifacebadge которые содержат dBm значения
     const badges = document.querySelectorAll(
       "table.assoclist .ifacebadge, #wifi_assoclist_table .ifacebadge",
     );
@@ -1122,40 +373,31 @@ return baseclass.extend({
     badges.forEach((badge) => {
       const text = (badge.innerText || badge.textContent || "").trim();
 
-      // Ищем паттерн dBm: -XX dBm или просто -XX
       const match = text.match(/(-\d+)\s*(?:dBm|дБм)?/i);
       if (!match) return;
 
       const signalValue = parseInt(match[1], 10);
       if (isNaN(signalValue)) return;
 
-      // Устанавливаем data-signal атрибут
       badge.setAttribute("data-signal", signalValue.toString());
 
-      // Добавляем CSS класс для стилизации
       badge.classList.add("proton-signal-badge");
 
-      // Устанавливаем CSS переменные напрямую для надёжности
       let strength, color;
 
       if (signalValue >= -50) {
-        // Отличный сигнал
         strength = "100%";
         color = "#4caf50";
       } else if (signalValue >= -60) {
-        // Хороший сигнал
         strength = "80%";
         color = "#8bc34a";
       } else if (signalValue >= -70) {
-        // Средний сигнал
         strength = "60%";
         color = "#ffc107";
       } else if (signalValue >= -80) {
-        // Плохой сигнал
         strength = "40%";
         color = "#ff9800";
       } else {
-        // Очень плохой сигнал
         strength = "20%";
         color = "#f44336";
       }
@@ -1163,7 +405,6 @@ return baseclass.extend({
       badge.style.setProperty("--signal-strength", strength);
       badge.style.setProperty("--signal-color", color);
 
-      // Добавляем класс на родительскую ячейку td для CSS селекторов
       const td = badge.closest("td");
       if (td) {
         td.classList.add("proton-signal-cell");
@@ -1185,12 +426,141 @@ return baseclass.extend({
     };
 
     this._assoclistTitleObserver = new MutationObserver(scheduleUpdate);
-    this._assoclistTitleObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
+
+    // Таблица подключённых клиентов есть и на «Беспроводная сеть», и в «Обзоре»
+    // (status include 60_wifi) — наблюдаем на обеих страницах, иначе в «Обзоре»
+    // бейдж сигнала остаётся без индикатора уровня.
+    const assoclistPages = ["admin-network-wireless", "admin-status-overview"];
+
+    this._assoclistAttached = false;
+    const syncAssoclistObserver = () => {
+      const dp = document.body.dataset.page || "";
+      const want = assoclistPages.some((p) => dp.indexOf(p) !== -1);
+      if (want === this._assoclistAttached) return;
+      this._assoclistAttached = want;
+      if (want) {
+        this._assoclistTitleObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+        });
+        scheduleUpdate();
+      } else {
+        this._assoclistTitleObserver.disconnect();
+      }
+    };
+    syncAssoclistObserver();
+
+    this._assoclistNavObserver = new MutationObserver((mutations) => {
+      for (let i = 0; i < mutations.length; i++) {
+        if (mutations[i].attributeName === "data-page") {
+          syncAssoclistObserver();
+          return;
+        }
+      }
+    });
+    this._assoclistNavObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-page"],
     });
 
-    scheduleUpdate();
+    window.addEventListener(
+      "pagehide",
+      () => {
+        if (this._assoclistTitleObserver) {
+          this._assoclistTitleObserver.disconnect();
+          this._assoclistTitleObserver = null;
+        }
+        if (this._assoclistNavObserver) {
+          this._assoclistNavObserver.disconnect();
+          this._assoclistNavObserver = null;
+        }
+      },
+      { once: true },
+    );
+  },
+
+  getMenuMode() {
+    try {
+      return localStorage.getItem("proton-menu-mode") === "side"
+        ? "side"
+        : "top";
+    } catch (e) {
+      return "top";
+    }
+  },
+
+  getMenuCollapsed() {
+    try {
+      return localStorage.getItem("proton-menu-collapsed") === "true";
+    } catch (e) {
+      return false;
+    }
+  },
+
+  ensureMenuToggle() {
+    const mainmenu = document.querySelector("#mainmenu");
+    if (!mainmenu) return null;
+
+    let btn = mainmenu.querySelector("#proton-menu-toggle");
+    if (!btn) {
+      const icon = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg",
+      );
+      icon.setAttribute("viewBox", "0 0 24 24");
+      icon.setAttribute("aria-hidden", "true");
+      icon.innerHTML =
+        '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>';
+
+      btn = E("button", { id: "proton-menu-toggle", type: "button" }, [
+        icon,
+        E("span", {}, []),
+      ]);
+      btn.addEventListener("click", () => {
+        this.applyMenuCollapsed(!this.getMenuCollapsed(), true);
+      });
+    }
+
+    if (btn !== mainmenu.lastElementChild) mainmenu.appendChild(btn);
+    this.updateMenuToggleLabel(btn);
+    return btn;
+  },
+
+  updateMenuToggleLabel(btn) {
+    const el = btn || document.querySelector("#proton-menu-toggle");
+    if (!el) return;
+    const collapsed = this.getMenuCollapsed();
+    const label = this.translateThemeText(
+      collapsed ? "Expand menu" : "Collapse menu",
+    );
+    const span = el.querySelector("span");
+    if (span) span.textContent = label;
+    el.setAttribute("aria-label", label);
+    el.setAttribute("title", label);
+    el.setAttribute("aria-expanded", collapsed ? "false" : "true");
+  },
+
+  applyMenuCollapsed(collapsed, persist) {
+    const on = collapsed === true || collapsed === "true";
+    document.documentElement.classList.toggle("proton-menu-collapsed", on);
+
+    if (persist) {
+      try {
+        localStorage.setItem("proton-menu-collapsed", on ? "true" : "false");
+      } catch (e) {}
+    }
+
+    this.updateMenuToggleLabel();
+  },
+
+  buildMenuIcon(name) {
+    const id = PROTON_MENU_ICON_MAP[String(name || "")] || "box";
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "proton-menu-icon");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.innerHTML = PROTON_MENU_ICONS[id];
+    return svg;
   },
 
   ensureMenuPlacement(isMobile) {
@@ -1200,14 +570,15 @@ return baseclass.extend({
     if (!menubar || !mainmenu) return;
 
     if (isMobile) {
-      // On some browsers, position:fixed inside backdrop-filter'ed header may
-      // behave like position:absolute and get clipped to header height.
-      // Move #mainmenu out of #menubar for mobile slide-out panel.
       if (menubar.contains(mainmenu)) {
         menubar.insertAdjacentElement("afterend", mainmenu);
       }
+    } else if (this.getMenuMode() === "side") {
+      const container = document.querySelector("#maincontainer");
+      if (container && mainmenu.parentNode !== container) {
+        container.insertAdjacentElement("afterbegin", mainmenu);
+      }
     } else {
-      // Keep #mainmenu inside the header on desktop (top navigation)
       if (!menubarInner.contains(mainmenu)) {
         const indicators =
           menubarInner.querySelector("#indicators") ||
@@ -1219,25 +590,194 @@ return baseclass.extend({
     }
   },
 
+  initIndicatorBadges() {
+    const container = document.querySelector("#indicators");
+    if (!container) return;
+
+    const KNOWN_TYPES = [
+      {
+        match: (el) =>
+          /changes|apply|save/i.test(
+            (el.getAttribute("href") || "") +
+              " " +
+              (el.id || "") +
+              " " +
+              (el.className || ""),
+          ),
+        icon: "changes",
+        label: () => _("Unsaved changes"),
+      },
+    ];
+
+    const detectType = (el) => {
+      for (const t of KNOWN_TYPES) if (t.match(el)) return t;
+      return null;
+    };
+
+    const extractCount = (text) => {
+      const m = text.match(/[:：(]\s*(\d{1,3})\s*\)?\s*$/);
+      return m ? parseInt(m[1], 10) : null;
+    };
+
+    const transform = (el) => {
+      if (!(el instanceof HTMLElement)) return;
+      if (el.dataset.protonBadge === "done") {
+        if (!el.querySelector(".proton-indicator-label")) {
+          delete el.dataset.protonBadge;
+          el.classList.remove("proton-indicator-badge", "has-count", "has-dot");
+        } else {
+          sync(el);
+          return;
+        }
+      }
+
+      const original = (el.textContent || "").trim();
+      if (!original) return;
+
+      const typeInfo = detectType(el);
+      const count = extractCount(original);
+
+      if (!typeInfo && count === null) return;
+
+      el.dataset.protonBadge = "done";
+      el.classList.add("proton-indicator-badge");
+      if (typeInfo) el.dataset.indicatorType = typeInfo.icon;
+
+      const labelSpan = document.createElement("span");
+      labelSpan.className = "proton-indicator-label";
+      labelSpan.textContent = original;
+
+      const icon = document.createElement("span");
+      icon.className = "proton-indicator-glyph";
+      icon.setAttribute("aria-hidden", "true");
+
+      const badge = document.createElement("span");
+      badge.className = "proton-indicator-num";
+      badge.setAttribute("aria-hidden", "true");
+
+      el.textContent = "";
+      el.appendChild(icon);
+      el.appendChild(labelSpan);
+      el.appendChild(badge);
+
+      sync(el);
+    };
+
+    const sync = (el) => {
+      const labelSpan = el.querySelector(".proton-indicator-label");
+      const badge = el.querySelector(".proton-indicator-num");
+      if (!labelSpan || !badge) return;
+
+      const text = (labelSpan.textContent || "").trim();
+      const count = extractCount(text);
+
+      if (el.title !== text) el.title = text;
+      if (el.getAttribute("aria-label") !== text)
+        el.setAttribute("aria-label", text);
+
+      if (count !== null && count > 0) {
+        const badgeText = count > 99 ? "99+" : String(count);
+        if (badge.textContent !== badgeText) badge.textContent = badgeText;
+        if (badge.hidden) badge.hidden = false;
+        el.classList.add("has-count");
+        el.classList.remove("has-dot");
+      } else if (text) {
+        if (badge.textContent !== "") badge.textContent = "";
+        if (!badge.hidden) badge.hidden = true;
+        el.classList.remove("has-count");
+        el.classList.add("has-dot");
+      } else {
+        if (badge.textContent !== "") badge.textContent = "";
+        if (!badge.hidden) badge.hidden = true;
+        el.classList.remove("has-count", "has-dot");
+      }
+    };
+
+    const transformAll = () => {
+      Array.from(container.children).forEach(transform);
+    };
+
+    transformAll();
+
+    if (this._indicatorBadgeObserver) {
+      this._indicatorBadgeObserver.disconnect();
+      this._indicatorBadgeObserver = null;
+    }
+
+    this._indicatorBadgeObserver = new MutationObserver((mutations) => {
+      let relevant = false;
+
+      for (const m of mutations) {
+        if (m.type === "characterData") {
+          const parent = m.target.parentElement;
+          if (parent && parent.classList.contains("proton-indicator-label")) {
+            relevant = true;
+            break;
+          }
+          continue;
+        }
+
+        for (const node of m.addedNodes) {
+          if (
+            node instanceof HTMLElement &&
+            node.parentElement === container &&
+            node.dataset.protonBadge !== "done"
+          ) {
+            relevant = true;
+            break;
+          }
+        }
+        if (relevant) break;
+      }
+
+      if (relevant) transformAll();
+    });
+    this._indicatorBadgeObserver.observe(container, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    window.addEventListener(
+      "pagehide",
+      () => {
+        if (this._indicatorBadgeObserver) {
+          this._indicatorBadgeObserver.disconnect();
+          this._indicatorBadgeObserver = null;
+        }
+      },
+      { once: true },
+    );
+  },
+
   render(tree) {
     let node = tree;
     let url = "";
 
+    this._menuTree = tree;
+
     const mq = window.matchMedia("(max-width: 800px)");
+    const onViewportChange = (isMobile) => {
+      this.ensureMenuPlacement(isMobile);
+      this.applyMenuCollapsed(
+        !isMobile && this.getMenuMode() === "side" && this.getMenuCollapsed(),
+        false,
+      );
+    };
     this.ensureMenuPlacement(mq.matches);
     if (typeof mq.addEventListener === "function")
-      mq.addEventListener("change", (ev) =>
-        this.ensureMenuPlacement(ev.matches),
-      );
+      mq.addEventListener("change", (ev) => onViewportChange(ev.matches));
     else if (typeof mq.addListener === "function")
-      mq.addListener((ev) => this.ensureMenuPlacement(ev.matches));
+      mq.addListener((ev) => onViewportChange(ev.matches));
 
-    // Добавляем кнопку закрытия в мобильное меню
     if (mq.matches) {
+      this.ensureMobileMenuIcon();
       this.addMobileMenuCloseButton();
     }
 
     this.renderModeMenu(node);
+
+    this.ensureMenuToggle();
 
     if (L.env.dispatchpath.length >= 3) {
       for (var i = 0; i < 3 && node; i++) {
@@ -1267,54 +807,33 @@ return baseclass.extend({
       });
     });
 
-    // LuCI is SPA-like: views update the DOM after initial load.
-    // Add hover-to-reveal titles for assoclist (Associated Stations).
     this.installAssoclistTitleObserver();
 
-    // Setup mobile table data-title attributes
+    this.initIndicatorBadges();
+
     this.setupMobileTableTitles();
 
-    // Setup wireless actions dropdown menu (⋮) for desktop
-    this.setupWirelessActionsDropdown();
-
-    // Setup network interface actions dropdown menu (⋮) for desktop
-    this.setupNetworkInterfaceActionsDropdown();
-
-    // Setup network devices actions dropdown menu (⋮) for desktop
-    this.setupDevicesActionsDropdown();
-
-    // Global handler for all dropdowns - close on outside click
-    this.setupGlobalDropdownHandlers();
+    this.maybeSetupActionDropdowns();
   },
 
-  /**
-   * Global dropdown handlers (click outside & Escape)
-   * Shared by WiFi, Interfaces, and Devices dropdowns
-   */
-  setupGlobalDropdownHandlers() {
-    // Prevent duplicate initialization
-    if (this._globalDropdownHandlersInit) return;
-    this._globalDropdownHandlersInit = true;
+  maybeSetupActionDropdowns() {
+    const path = (L.env && L.env.dispatchpath) || [];
+    const route = path.join("/");
+    const needsDropdowns =
+      route.indexOf("admin/network/wireless") === 0 ||
+      route.indexOf("admin/network/network") === 0 ||
+      document.querySelector("#cbi-wireless") ||
+      document.querySelector("#cbi-network-interface") ||
+      document.querySelector("#cbi-network-device");
 
-    // Close all dropdowns on outside click
-    document.addEventListener("click", (ev) => {
-      if (
-        !ev.target.closest(".actions-dropdown") &&
-        !ev.target.closest(".actions-toggle")
-      ) {
-        document.querySelectorAll(".actions-dropdown.open").forEach((d) => {
-          d.classList.remove("open");
-        });
-      }
-    });
+    if (!needsDropdowns) return;
 
-    // Close all dropdowns on Escape key
-    document.addEventListener("keydown", (ev) => {
-      if (ev.key === "Escape") {
-        document.querySelectorAll(".actions-dropdown.open").forEach((d) => {
-          d.classList.remove("open");
-        });
-      }
+    this.ensureDropdownsModule().then((ok) => {
+      if (!ok) return;
+      this.setupWirelessActionsDropdown();
+      this.setupNetworkInterfaceActionsDropdown();
+      this.setupDevicesActionsDropdown();
+      this.setupGlobalDropdownHandlers();
     });
   },
 
@@ -1327,11 +846,9 @@ return baseclass.extend({
     const isTouchLike = window.matchMedia(
       "(hover: none), (pointer: coarse)",
     ).matches;
+    const isSideMode = !isMobile && this.getMenuMode() === "side";
 
-    // On desktop with mouse/hover, do not toggle persistent dropdown state.
-    // Rely on CSS :hover to show submenus. This avoids "frozen" dropdowns and
-    // prevents multiple submenus from being open at the same time.
-    if (!isMobile && !isTouchLike) {
+    if (!isMobile && !isTouchLike && !isSideMode) {
       document.querySelectorAll("ul.mainmenu.l1.active").forEach((ul) => {
         ul.classList.remove("active");
       });
@@ -1345,21 +862,17 @@ return baseclass.extend({
       return;
     }
 
-    // Close other open dropdowns
     document.querySelectorAll("ul.mainmenu.l1 > li.active").forEach((item) => {
       if (item !== li) item.classList.remove("active");
     });
 
     if (!ul2) {
-      // No submenu - allow normal navigation
-      // On mobile, close the sidebar after click
       if (isMobile) {
         this.closeMobileMenu();
       }
       return;
     }
 
-    // Toggle submenu
     if (li.classList.contains("active")) {
       li.classList.remove("active");
       ul1.classList.remove("active");
@@ -1370,8 +883,9 @@ return baseclass.extend({
     }
 
     if (
+      !isSideMode &&
       ul2.parentNode.offsetLeft + ul2.offsetWidth <=
-      ul1.offsetLeft + ul1.offsetWidth
+        ul1.offsetLeft + ul1.offsetWidth
     )
       ul2.classList.add("align-left");
 
@@ -1397,14 +911,11 @@ return baseclass.extend({
         isActive ? " selected" : "",
       );
 
-      // Для родительских пунктов (l == 1) ссылка ведёт на первый дочерний элемент
       const childChildren = ui.menu.getChildren(child);
       let menuHref;
       if (l == 1 && childChildren.length > 0) {
-        // Ссылка на первый дочерний элемент
         menuHref = L.url(url, child.name, childChildren[0].name);
       } else {
-        // Обычная ссылка на сам пункт
         menuHref = L.url(url, child.name);
       }
 
@@ -1414,9 +925,15 @@ return baseclass.extend({
             "a",
             {
               href: menuHref,
+              title: l == 1 ? _(child.title) : null,
               click: l == 1 ? ui.createHandlerFn(this, "handleMenuExpand") : "",
             },
-            [_(child.title)],
+            l == 1
+              ? [
+                  this.buildMenuIcon(child.name),
+                  E("span", { class: "proton-menu-label" }, [_(child.title)]),
+                ]
+              : [_(child.title)],
           ),
           this.renderMainMenu(child, url + "/" + child.name, l),
         ]),
@@ -1491,6 +1008,58 @@ return baseclass.extend({
     return ul;
   },
 
+  updateActiveMenu(pathSegments) {
+    try {
+      const L = window.L;
+      if (!Array.isArray(pathSegments) || !pathSegments.length) return;
+
+      if (L && L.env) {
+        L.env.dispatchpath = pathSegments.slice();
+        L.env.requestpath = pathSegments.slice();
+      }
+
+      const applySelected = (selector, level) => {
+        document.querySelectorAll(selector).forEach((li) => {
+          const m = (li.className || "").match(/mainmenu-item-([^\s]+)/);
+          const name = m ? m[1] : null;
+          const active = !!name && pathSegments[level] === name;
+          li.classList.toggle("selected", active);
+        });
+      };
+      applySelected("#mainmenu ul.mainmenu.l1 > li", 1);
+      applySelected("#mainmenu ul.mainmenu.l2 > li", 2);
+
+      const modemenu = document.querySelector("#modemenu");
+      if (modemenu && pathSegments[0]) {
+        modemenu.querySelectorAll("div").forEach((div) => {
+          const a = div.querySelector("a");
+          const href = a ? a.getAttribute("href") || "" : "";
+          const active = href
+            .replace(/\/+$/, "")
+            .endsWith("/" + pathSegments[0]);
+          div.classList.toggle("active", active);
+        });
+      }
+
+      const container = document.querySelector("#tabmenu");
+      if (container) {
+        container.innerHTML = "";
+        container.style.display = "none";
+        if (this._menuTree && pathSegments.length >= 3) {
+          let node = this._menuTree;
+          let url = "";
+          for (let i = 0; i < 3 && node; i++) {
+            node = node.children && node.children[pathSegments[i]];
+            url = url + (url ? "/" : "") + pathSegments[i];
+          }
+          if (node) this.renderTabMenu(node, url);
+        }
+      }
+    } catch (e) {
+      console.warn("[Proton2025 menu] updateActiveMenu:", e);
+    }
+  },
+
   handleSidebarToggle(ev) {
     const btn = ev.currentTarget;
     const bar = document.querySelector("#mainmenu");
@@ -1507,6 +1076,21 @@ return baseclass.extend({
       overlay.classList.add("active");
       document.body.style.overflow = "hidden";
     }
+    this.updateMobileMenuIcon(btn.classList.contains("active"));
+  },
+
+  ensureMobileMenuIcon() {
+    const toggle = document.querySelector("#menubar .navigation");
+    if (!toggle || toggle.querySelector(".proton-mobile-menu-icon")) return;
+
+    toggle.appendChild(this.buildMobileMenuIcon(false));
+  },
+
+  updateMobileMenuIcon(close) {
+    const toggle = document.querySelector("#menubar .navigation");
+    const icon = toggle?.querySelector(".proton-mobile-menu-icon");
+    if (!toggle || !icon) return;
+    icon.replaceWith(this.buildMobileMenuIcon(close));
   },
 
   getOrCreateOverlay() {
@@ -1531,18 +1115,18 @@ return baseclass.extend({
     if (bar) bar.classList.remove("active");
     if (overlay) overlay.classList.remove("active");
     document.body.style.overflow = "";
+    this.updateMobileMenuIcon(false);
   },
 
   addMobileMenuCloseButton() {
     const mainmenu = document.querySelector("#mainmenu");
     if (!mainmenu) return;
 
-    // Проверяем, не добавлена ли уже кнопка
     if (mainmenu.querySelector(".menu-close")) return;
 
     const closeBtn = document.createElement("button");
     closeBtn.className = "menu-close";
-    closeBtn.innerHTML = "✕";
+    closeBtn.appendChild(this.buildMobileMenuIcon(true));
     closeBtn.setAttribute("aria-label", "Close menu");
     closeBtn.addEventListener("click", () => {
       this.closeMobileMenu();
@@ -1551,12 +1135,22 @@ return baseclass.extend({
     mainmenu.insertBefore(closeBtn, mainmenu.firstChild);
   },
 
+  buildMobileMenuIcon(close) {
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.classList.add("proton-mobile-menu-icon");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("aria-hidden", "true");
+    icon.innerHTML = close
+      ? '<line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/>'
+      : '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>';
+    return icon;
+  },
+
   setupMobileTableTitles() {
     const updateTitles = () => {
       if (window.innerWidth > 800) return;
 
       document.querySelectorAll("table").forEach((table) => {
-        // Skip tables that are already processed or empty
         if (table.classList.contains("mobile-titles-set")) return;
 
         const headers = [];
@@ -1587,1944 +1181,39 @@ return baseclass.extend({
       });
     };
 
-    // Run initially
     updateTitles();
 
-    // Run on window resize
-    window.addEventListener("resize", updateTitles);
+    let updateTitlesRaf = false;
+    const scheduleTitles = () => {
+      if (updateTitlesRaf) return;
+      updateTitlesRaf = true;
+      requestAnimationFrame(() => {
+        updateTitlesRaf = false;
+        updateTitles();
+      });
+    };
+    window.addEventListener("resize", scheduleTitles, { passive: true });
 
-    // Run on DOM changes (for dynamic content)
+    let titlesScheduled = 0;
     const observer = new MutationObserver(() => {
-      setTimeout(updateTitles, 100);
+      clearTimeout(titlesScheduled);
+      titlesScheduled = setTimeout(updateTitles, 100);
     });
 
     observer.observe(document.body, {
       childList: true,
       subtree: true,
     });
-  },
 
-  /**
-   * Wireless actions dropdown menu (⋮)
-   * Converts action buttons in #cbi-wireless into a compact dropdown
-   */
-  setupWirelessActionsDropdown() {
-    // Prevent duplicate initialization
-    if (this._wirelessDropdownInit) return;
-    this._wirelessDropdownInit = true;
-
-    const installDropdowns = () => {
-      const wirelessSection = document.querySelector("#cbi-wireless");
-      if (!wirelessSection) return;
-
-      const positionDropdown = (toggle, dropdown) => {
-        if (!toggle || !dropdown || !dropdown.classList.contains("open")) {
-          return;
-        }
-
-        dropdown.classList.remove("open-up");
-
-        requestAnimationFrame(() => {
-          const scrollContainer =
-            toggle.closest("#cbi-wireless-wifi-device") ||
-            document.getElementById("maincontent");
-          const toggleRect = toggle.getBoundingClientRect();
-          const containerRect = scrollContainer
-            ? scrollContainer.getBoundingClientRect()
-            : document.documentElement.getBoundingClientRect();
-
-          const visibleTop = Math.max(containerRect.top, 0);
-          const visibleBottom = Math.min(
-            containerRect.bottom,
-            window.innerHeight,
-          );
-          const availableAbove = toggleRect.top - visibleTop;
-          const availableBelow = visibleBottom - toggleRect.bottom;
-          const dropdownHeight = Math.max(
-            dropdown.offsetHeight,
-            dropdown.scrollHeight,
-            dropdown.getBoundingClientRect().height,
-          );
-
-          if (
-            availableBelow < dropdownHeight + 4 &&
-            availableAbove >= dropdownHeight + 4
-          ) {
-            dropdown.classList.add("open-up");
-          }
-        });
-      };
-
-      // Find all action cells in wireless table
-      const actionCells = wirelessSection.querySelectorAll(
-        "td.cbi-section-actions",
-      );
-
-      actionCells.forEach((cell) => {
-        // Skip if already processed
-        if (cell.classList.contains("actions-dropdown-ready")) return;
-
-        // Buttons are inside a div wrapper
-        const wrapper = cell.querySelector("div");
-        if (!wrapper) return;
-
-        const buttons = Array.from(
-          wrapper.querySelectorAll("button, input[type='button'], .cbi-button"),
-        );
-        if (buttons.length === 0) return;
-
-        // Create toggle button (⋮)
-        const toggle = document.createElement("button");
-        toggle.className = "actions-toggle";
-        toggle.innerHTML = "⋮";
-        toggle.setAttribute("aria-label", "Actions menu");
-        toggle.setAttribute("type", "button");
-
-        // Create dropdown container
-        const dropdown = document.createElement("div");
-        dropdown.className = "actions-dropdown";
-
-        // MOVE original buttons into dropdown (not clone!) to preserve event handlers
-        buttons.forEach((btn) => {
-          dropdown.appendChild(btn);
-        });
-
-        // Hide original empty wrapper
-        wrapper.style.display = "none";
-
-        // Toggle dropdown on click
-        toggle.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          ev.preventDefault();
-
-          // Close other open dropdowns
-          document.querySelectorAll(".actions-dropdown.open").forEach((d) => {
-            if (d !== dropdown) d.classList.remove("open");
-            if (d !== dropdown) d.classList.remove("open-up");
-          });
-
-          dropdown.classList.toggle("open");
-
-          if (dropdown.classList.contains("open")) {
-            positionDropdown(toggle, dropdown);
-          } else {
-            dropdown.classList.remove("open-up");
-          }
-        });
-
-        // Close dropdown after button click
-        dropdown.addEventListener("click", (ev) => {
-          if (ev.target.matches("button, input[type='button'], .cbi-button")) {
-            setTimeout(() => {
-              dropdown.classList.remove("open");
-              dropdown.classList.remove("open-up");
-            }, 100);
-          }
-        });
-
-        cell.appendChild(toggle);
-        cell.appendChild(dropdown);
-        cell.classList.add("actions-dropdown-ready");
-      });
-    };
-
-    // Run initially with delay for LuCI to render
-    setTimeout(installDropdowns, 300);
-
-    // Run on window resize
-    window.addEventListener("resize", installDropdowns);
-
-    // Run on DOM changes (for dynamic content like LuCI updates)
-    const observer = new MutationObserver(() => {
-      setTimeout(installDropdowns, 150);
-    });
-
-    const wirelessContainer =
-      document.querySelector("#cbi-wireless") || document.body;
-    observer.observe(wirelessContainer, {
-      childList: true,
-      subtree: true,
-    });
-  },
-
-  /**
-   * Network interface actions dropdown menu (⋮)
-   * Converts action buttons in #cbi-network-interface into a compact dropdown
-   */
-  setupNetworkInterfaceActionsDropdown() {
-    // Prevent duplicate initialization
-    if (this._interfaceDropdownInit) return;
-    this._interfaceDropdownInit = true;
-
-    const installDropdowns = () => {
-      const networkSection = document.querySelector("#cbi-network-interface");
-      if (!networkSection) return;
-
-      // Find all action cells in network interface table
-      const actionCells = networkSection.querySelectorAll(
-        "table.cbi-section-table td.cbi-section-actions",
-      );
-
-      actionCells.forEach((cell) => {
-        // Skip if already processed
-        if (cell.classList.contains("actions-dropdown-ready")) return;
-
-        // Buttons are inside a div wrapper
-        const wrapper = cell.querySelector("div");
-        if (!wrapper) return;
-
-        const buttons = Array.from(
-          wrapper.querySelectorAll("button, input[type='button'], .cbi-button"),
-        );
-        if (buttons.length === 0) return;
-
-        // Create toggle button (⋮)
-        const toggle = document.createElement("button");
-        toggle.className = "actions-toggle";
-        toggle.innerHTML = "⋮";
-        toggle.setAttribute("aria-label", "Actions menu");
-        toggle.setAttribute("type", "button");
-
-        // Create dropdown container
-        const dropdown = document.createElement("div");
-        dropdown.className = "actions-dropdown";
-
-        // MOVE original buttons into dropdown (not clone!) to preserve event handlers
-        buttons.forEach((btn) => {
-          dropdown.appendChild(btn);
-        });
-
-        // Hide original empty wrapper
-        wrapper.style.display = "none";
-
-        // Toggle dropdown on click
-        toggle.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          ev.preventDefault();
-
-          // Close other open dropdowns
-          document.querySelectorAll(".actions-dropdown.open").forEach((d) => {
-            if (d !== dropdown) d.classList.remove("open");
-          });
-
-          dropdown.classList.toggle("open");
-        });
-
-        // Close dropdown after button click
-        dropdown.addEventListener("click", (ev) => {
-          if (ev.target.matches("button, input[type='button'], .cbi-button")) {
-            setTimeout(() => {
-              dropdown.classList.remove("open");
-            }, 100);
-          }
-        });
-
-        cell.appendChild(toggle);
-        cell.appendChild(dropdown);
-        cell.classList.add("actions-dropdown-ready");
-      });
-    };
-
-    // Run initially with delay for LuCI to render
-    setTimeout(installDropdowns, 300);
-
-    // Run on window resize
-    window.addEventListener("resize", installDropdowns);
-
-    // Run on DOM changes (for dynamic content like LuCI updates)
-    const observer = new MutationObserver(() => {
-      setTimeout(installDropdowns, 150);
-    });
-
-    const networkContainer =
-      document.querySelector("#cbi-network-interface") || document.body;
-    observer.observe(networkContainer, {
-      childList: true,
-      subtree: true,
-    });
-  },
-
-  /**
-   * Network devices actions dropdown menu (⋮)
-   * Converts action buttons in #cbi-network-device into a compact dropdown
-   * Only for desktop (width >= 800px)
-   */
-  setupDevicesActionsDropdown() {
-    // Prevent duplicate initialization
-    if (this._devicesDropdownInit) return;
-    this._devicesDropdownInit = true;
-
-    const installDropdowns = () => {
-      // Only for desktop
-      if (window.innerWidth < 800) return;
-
-      const devicesSection = document.querySelector("#cbi-network-device");
-      if (!devicesSection) return;
-
-      // Find all action cells in network devices table
-      const actionCells = devicesSection.querySelectorAll(
-        "td.cbi-section-actions",
-      );
-
-      actionCells.forEach((cell) => {
-        // Skip if already processed
-        if (cell.classList.contains("actions-dropdown-ready")) return;
-
-        // Try to find buttons directly or inside a div wrapper
-        let buttons = Array.from(
-          cell.querySelectorAll("button, input[type='button'], .cbi-button"),
-        );
-
-        // Filter out already created toggle buttons
-        buttons = buttons.filter(
-          (btn) => !btn.classList.contains("actions-toggle"),
-        );
-
-        if (buttons.length === 0) return;
-
-        // Find or create wrapper
-        let wrapper = cell.querySelector("div");
-        if (!wrapper) {
-          wrapper = document.createElement("div");
-          buttons.forEach((btn) => wrapper.appendChild(btn));
-          cell.insertBefore(wrapper, cell.firstChild);
-        }
-
-        // Create toggle button (⋮)
-        const toggle = document.createElement("button");
-        toggle.className = "actions-toggle";
-        toggle.innerHTML = "⋮";
-        toggle.setAttribute("aria-label", "Actions menu");
-        toggle.setAttribute("type", "button");
-
-        // Create dropdown container
-        const dropdown = document.createElement("div");
-        dropdown.className = "actions-dropdown";
-
-        // MOVE original buttons into dropdown (not clone!) to preserve event handlers
-        buttons.forEach((btn) => {
-          dropdown.appendChild(btn);
-        });
-
-        // Hide original empty wrapper
-        wrapper.style.display = "none";
-
-        // Toggle dropdown on click
-        toggle.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          ev.preventDefault();
-
-          // Close other open dropdowns
-          document.querySelectorAll(".actions-dropdown.open").forEach((d) => {
-            if (d !== dropdown) d.classList.remove("open");
-          });
-
-          dropdown.classList.toggle("open");
-        });
-
-        // Close dropdown after button click
-        dropdown.addEventListener("click", (ev) => {
-          if (ev.target.matches("button, input[type='button'], .cbi-button")) {
-            setTimeout(() => {
-              dropdown.classList.remove("open");
-            }, 100);
-          }
-        });
-
-        cell.appendChild(toggle);
-        cell.appendChild(dropdown);
-        cell.classList.add("actions-dropdown-ready");
-      });
-    };
-
-    // Run initially with delay for LuCI to render
-    setTimeout(installDropdowns, 300);
-    setTimeout(installDropdowns, 600); // Additional attempt after longer delay
-    setTimeout(installDropdowns, 1000); // Final attempt for slow-loading content
-
-    // Run on window resize
-    window.addEventListener("resize", installDropdowns);
-
-    // Run on DOM changes (for dynamic content like LuCI updates)
-    const observer = new MutationObserver(() => {
-      setTimeout(installDropdowns, 150);
-    });
-
-    const devicesContainer =
-      document.querySelector("#cbi-network-device") || document.body;
-    observer.observe(devicesContainer, {
-      childList: true,
-      subtree: true,
-    });
-
-    // Watch for tab activation
-    const tabObserver = new MutationObserver(() => {
-      const devicesSection = document.querySelector("#cbi-network-device");
-      if (devicesSection && devicesSection.dataset.tabActive === "true") {
-        setTimeout(installDropdowns, 200);
-      }
-    });
-
-    const cbiNetwork = document.querySelector("#cbi-network");
-    if (cbiNetwork) {
-      tabObserver.observe(cbiNetwork, {
-        attributes: true,
-        attributeFilter: ["data-tab-active"],
-        subtree: true,
-      });
-    }
-  },
-
-  initThemeSettings() {
-    // Only run on System settings page
-    if (!document.body.dataset.page?.includes("admin-system-system")) return;
-
-    // Ensure we attach only once per page
-    if (this._themeSettingsInit) return;
-    this._themeSettingsInit = true;
-
-    const tryMount = () => {
-      if (document.getElementById("proton-theme-settings")) {
-        this.maybeFocusSearchIndexPanelFromHash();
-        return true;
-      }
-      const designField = document.querySelector('[data-name="_mediaurlbase"]');
-      if (!designField) return false;
-
-      // Get the parent container
-      const parentContainer = designField.closest(".cbi-section-node");
-      if (!parentContainer) return false;
-
-      // Newer LuCI versions render the built-in "Table Filters" field after
-      // the design selector. Keep Proton custom settings after that field when
-      // present, but gracefully fall back for older LuCI builds where it does
-      // not exist.
-      const tableFiltersField = parentContainer.querySelector(
-        '[data-name="_tablefilters"]',
-      );
-      const insertAfterField = tableFiltersField || designField;
-
-      // Load saved settings
-      const defaultZoom = "100";
-      const storedThemeMode = localStorage.getItem("proton-theme-mode");
-      const settings = {
-        themeMode:
-          storedThemeMode === "light" || storedThemeMode === "dark"
-            ? storedThemeMode
-            : "auto",
-        accentColor: localStorage.getItem("proton-accent-color") || "blue",
-        accentCustom:
-          localStorage.getItem("proton-accent-custom") || "#5e9eff",
-        borderRadius: localStorage.getItem("proton-border-radius") || "default",
-        tabOutline: localStorage.getItem("proton-tab-outline") === "true",
-        backgroundPattern: (
-          localStorage.getItem("proton-background-pattern") || "none"
-        ).replace(/^noise$/, "stars"),
-        patternScale: parseInt(localStorage.getItem("proton-pattern-scale") || "100"),
-        zoom: parseInt(localStorage.getItem("proton-zoom") || defaultZoom),
-        pageWidth: parseInt(localStorage.getItem("proton-page-width") || "0"),
-        animations: localStorage.getItem("proton-animations") !== "false",
-        transparency: localStorage.getItem("proton-transparency") !== "false",
-        servicesWidget:
-          localStorage.getItem("proton-services-widget-enabled") !== "false",
-        temperatureWidget:
-          localStorage.getItem("proton-temp-widget-enabled") !== "false",
-        servicesLog: localStorage.getItem("proton-services-log") === "true",
-        tableWrap: localStorage.getItem("proton-table-wrap") !== "false",
-        logHighlight: localStorage.getItem("proton-log-highlight") !== "false",
-        customFont: localStorage.getItem("proton-custom-font") !== "false",
-        modemTemp: localStorage.getItem("proton-modem-temp") === "true",
-      };
-
-      // Helper function for translations
-      const t = (key) => (window.protonT ? window.protonT(key) : key);
-
-      // Create theme settings HTML
-      const settingsHTML = `
-        <div id="proton-theme-settings" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
-          <h4 style="margin: 0 0 1rem 0; font-size: 0.95rem; font-weight: 600; color: var(--proton-accent); opacity: 0.9;">${t(
-            "Proton2025 Theme Settings",
-          )}</h4>
-          
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-mode-select">${t(
-              "Theme Mode",
-            )}</label>
-            <div class="cbi-value-field">
-              <select id="proton-mode-select" class="cbi-input-select">
-                <option value="auto" ${
-                  settings.themeMode === "auto" ? "selected" : ""
-                }>${t("Auto")} (${t("System")})</option>
-                <option value="dark" ${
-                  settings.themeMode === "dark" ? "selected" : ""
-                }>${t("Dark")}</option>
-                <option value="light" ${
-                  settings.themeMode === "light" ? "selected" : ""
-                }>${t("Light")}</option>
-              </select>
-              <div class="cbi-value-description">${t(
-                "Choose light, dark, or follow system theme",
-              )}</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-accent-select">${t(
-              "Accent Color",
-            )}</label>
-            <div class="cbi-value-field">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <select id="proton-accent-select" class="cbi-input-select" style="flex: 1 1 auto; min-width: 0;">
-                  <option value="default" ${
-                    settings.accentColor === "default" ? "selected" : ""
-                  }>${t("Neutral")}</option>
-                  <option value="blue" ${
-                    settings.accentColor === "blue" ? "selected" : ""
-                  }>${t("Blue")} (${t("Default")})</option>
-                  <option value="purple" ${
-                    settings.accentColor === "purple" ? "selected" : ""
-                  }>${t("Purple")}</option>
-                  <option value="green" ${
-                    settings.accentColor === "green" ? "selected" : ""
-                  }>${t("Green")}</option>
-                  <option value="orange" ${
-                    settings.accentColor === "orange" ? "selected" : ""
-                  }>${t("Orange")}</option>
-                  <option value="red" ${
-                    settings.accentColor === "red" ? "selected" : ""
-                  }>${t("Red")}</option>
-                  <option value="custom" ${
-                    settings.accentColor === "custom" ? "selected" : ""
-                  }>${t("Custom")}</option>
-                </select>
-                <span id="proton-accent-custom-row" style="display: ${
-                  settings.accentColor === "custom" ? "inline-flex" : "none"
-                }; align-items: center; gap: 8px; flex: 0 0 auto;">
-                  <input type="color" id="proton-accent-custom-color" value="${
-                    settings.accentCustom
-                  }" title="${t(
-                    "Custom Color",
-                  )}" class="proton-accent-color-input" style="width: 40px; height: 34px; cursor: pointer; border-radius: var(--proton-radius-sm);">
-                  <input type="text" id="proton-accent-custom-hex" value="${
-                    settings.accentCustom
-                  }" maxlength="7" spellcheck="false" autocomplete="off" placeholder="#5e9eff" style="width: 90px; flex: 0 0 auto; font-family: monospace; text-transform: lowercase;">
-                </span>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Choose theme accent color",
-              )}</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-radius-select">${t(
-              "Border Radius",
-            )}</label>
-            <div class="cbi-value-field">
-              <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                <select id="proton-radius-select" class="cbi-input-select" style="flex: 1 1 auto; min-width: 0;">
-                  <option value="sharp" ${
-                    settings.borderRadius === "sharp" ? "selected" : ""
-                  }>${t("Sharp")}</option>
-                  <option value="default" ${
-                    settings.borderRadius === "default" ? "selected" : ""
-                  }>${t("Rounded")} (${t("Default")})</option>
-                  <option value="extra" ${
-                    settings.borderRadius === "extra" ? "selected" : ""
-                  }>${t("Extra Rounded")}</option>
-                </select>
-                <label for="proton-tab-outline-check" style="display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; cursor: pointer; flex: 0 0 auto; font-size: 0.85rem; color: var(--proton-fg-secondary);">
-                  <input id="proton-tab-outline-check" type="checkbox" ${
-                    settings.tabOutline ? "checked" : ""
-                  }>
-                  ${t("Tab outlines")}
-                </label>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Corner rounding style",
-              )}</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-background-pattern-select">${t(
-              "Background Pattern",
-            )}</label>
-            <div class="cbi-value-field">
-              <select id="proton-background-pattern-select" class="cbi-input-select">
-                <option value="none" ${
-                  settings.backgroundPattern === "none" ? "selected" : ""
-                }>${t("None")}</option>
-                <option value="grid" ${
-                  settings.backgroundPattern === "grid" ? "selected" : ""
-                }>${t("Grid")}</option>
-                <option value="dots" ${
-                  settings.backgroundPattern === "dots" ? "selected" : ""
-                }>${t("Dots")}</option>
-                <option value="stars" ${
-                  settings.backgroundPattern === "stars" ? "selected" : ""
-                }>${t("Stars")}</option>
-              </select>
-              <div class="cbi-value-description">${t(
-                "Background texture behind the interface",
-              )}</div>
-            </div>
-          </div>
-
-          <div class="cbi-value" id="proton-pattern-size-row" style="display: ${settings.backgroundPattern !== "none" ? "flex" : "none"};">
-            <label class="cbi-value-title" for="proton-pattern-scale-range">${t(
-              "Pattern size",
-            )} <span id="proton-pattern-scale-value">${settings.patternScale}%</span></label>
-            <div class="cbi-value-field">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <button type="button" id="proton-pattern-scale-minus" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">−</button>
-                <input type="range" id="proton-pattern-scale-range" min="50" max="200" step="10" value="${
-                  settings.patternScale
-                }" style="flex: 1; accent-color: var(--proton-accent);">
-                <button type="button" id="proton-pattern-scale-plus" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">+</button>
-                <button type="button" id="proton-pattern-scale-reset" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">${t(
-                  "Reset",
-                )}</button>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Size of the background pattern",
-              )} (50% - 200%)</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-zoom-range">${t(
-              "Zoom",
-            )} <span id="proton-zoom-value">${settings.zoom}%</span></label>
-            <div class="cbi-value-field">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <button type="button" id="proton-zoom-minus" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">−</button>
-                <input type="range" id="proton-zoom-range" min="75" max="150" step="5" value="${
-                  settings.zoom
-                }" style="flex: 1; accent-color: var(--proton-accent);">
-                <button type="button" id="proton-zoom-plus" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">+</button>
-                <button type="button" id="proton-zoom-reset" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">${t(
-                  "Reset",
-                )}</button>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Interface scale",
-              )} (75% - 150%)</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-page-width-check">${t(
-              "Page Width",
-            )} <span id="proton-page-width-value">${
-              settings.pageWidth >= 100
-                ? "100% (" + t("Full width") + ")"
-                : settings.pageWidth > 0
-                  ? settings.pageWidth + "%"
-                  : ""
-            }</span></label>
-            <div class="cbi-value-field">
-              <div class="cbi-checkbox" style="margin-bottom: 8px;">
-                <input id="proton-page-width-check" type="checkbox" ${
-                  settings.pageWidth > 0 ? "checked" : ""
-                }>
-                <label for="proton-page-width-check"></label>
-              </div>
-              <div id="proton-page-width-slider" style="display: ${settings.pageWidth > 0 ? "flex" : "none"}; align-items: center; gap: 12px; margin-top: 8px;">
-                <button type="button" id="proton-page-width-minus" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">−</button>
-                <input type="range" id="proton-page-width-range" min="50" max="100" step="5" value="${
-                  settings.pageWidth > 0 ? settings.pageWidth : 80
-                }" style="flex: 1; accent-color: var(--proton-accent);">
-                <button type="button" id="proton-page-width-plus" class="cbi-button" style="padding: 0.4rem 0.8rem; min-width: auto;">+</button>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Content area width",
-              )} (50% - 100%)</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-animations-check">${t(
-              "Animations",
-            )}</label>
-            <div class="cbi-value-field">
-              <div class="cbi-checkbox">
-                <input id="proton-animations-check" type="checkbox" ${
-                  settings.animations ? "checked" : ""
-                }>
-                <label for="proton-animations-check"></label>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Enable smooth transitions and effects",
-              )}</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-transparency-check">${t(
-              "Transparency",
-            )}</label>
-            <div class="cbi-value-field">
-              <div class="cbi-checkbox">
-                <input id="proton-transparency-check" type="checkbox" ${
-                  settings.transparency ? "checked" : ""
-                }>
-                <label for="proton-transparency-check"></label>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Enable blur and transparency effects",
-              )}</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-services-widget-check">${t(
-              "Services Widget",
-            )}</label>
-            <div class="cbi-value-field">
-              <div class="cbi-checkbox">
-                <input id="proton-services-widget-check" type="checkbox" ${
-                  settings.servicesWidget ? "checked" : ""
-                }>
-                <label for="proton-services-widget-check"></label>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Show services monitor on Overview page",
-              )}</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-temp-widget-check">${t(
-              "Temperature Widget",
-            )}</label>
-            <div class="cbi-value-field">
-              <div class="cbi-checkbox">
-                <input id="proton-temp-widget-check" type="checkbox" ${
-                  settings.temperatureWidget ? "checked" : ""
-                }>
-                <label for="proton-temp-widget-check"></label>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Show temperature monitor on Overview page",
-              )}</div>
-            </div>
-          </div>
-
-          <!-- Показывается только если установлен luci-app-5gmodem: строку
-               раскрывает revealModemTempRow() после ответа getIntegrations. -->
-          <div class="cbi-value" id="proton-modem-temp-row" style="display:none">
-            <label class="cbi-value-title" for="proton-modem-temp-check">${t(
-              "Modem Temperature",
-            )}</label>
-            <div class="cbi-value-field">
-              <div class="cbi-checkbox">
-                <input id="proton-modem-temp-check" type="checkbox" ${
-                  settings.modemTemp ? "checked" : ""
-                }>
-                <label for="proton-modem-temp-check"></label>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Show the modem temperature in the temperature block",
-              )}</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-services-log-check">${t(
-              "Widget Log",
-            )}</label>
-            <div class="cbi-value-field">
-              <div class="cbi-checkbox">
-                <input id="proton-services-log-check" type="checkbox" ${
-                  settings.servicesLog ? "checked" : ""
-                }>
-                <label for="proton-services-log-check"></label>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Show activity log under the widget",
-              )}</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-table-wrap-check">${t(
-              "Table Text Wrap",
-            )}</label>
-            <div class="cbi-value-field">
-              <div class="cbi-checkbox">
-                <input id="proton-table-wrap-check" type="checkbox" ${
-                  settings.tableWrap ? "checked" : ""
-                }>
-                <label for="proton-table-wrap-check"></label>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Wrap long AP names in Associated Stations table. Disable to truncate with ellipsis.",
-              )}</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-log-highlight-check">${t(
-              "Log Highlighting",
-            )}</label>
-            <div class="cbi-value-field">
-              <div class="cbi-checkbox">
-                <input id="proton-log-highlight-check" type="checkbox" ${
-                  settings.logHighlight ? "checked" : ""
-                }>
-                <label for="proton-log-highlight-check"></label>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Custom log viewer with syntax highlighting, line numbers, and toolbar on System Log and Kernel Log pages.",
-              )}</div>
-            </div>
-          </div>
-
-          <div class="cbi-value">
-            <label class="cbi-value-title" for="proton-custom-font-check">${t(
-              "Custom Font (Inter)",
-            )}</label>
-            <div class="cbi-value-field">
-              <div class="cbi-checkbox">
-                <input id="proton-custom-font-check" type="checkbox" ${
-                  settings.customFont ? "checked" : ""
-                }>
-                <label for="proton-custom-font-check"></label>
-              </div>
-              <div class="cbi-value-description">${t(
-                "Use the built-in Inter font for consistent typography across all devices. Disable to use the default system font.",
-              )}</div>
-            </div>
-          </div>
-
-          <div class="cbi-value proton-update-setting">
-            <label class="cbi-value-title" for="proton-update-check">${t(
-              "Proton2025 Update",
-            )}</label>
-            <div class="cbi-value-field">
-              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px;">
-                <button type="button" id="proton-update-check" class="cbi-button cbi-button-action">${t(
-                  "Check for Updates",
-                )}</button>
-                <button type="button" id="proton-update-install" class="cbi-button cbi-button-positive" style="display: none;">${t(
-                  "Install Update",
-                )}</button>
-                <a id="proton-update-release" class="cbi-button" href="https://github.com/ChesterGoodiny/luci-theme-proton2025/releases/latest" target="_blank" rel="noopener noreferrer" style="display: none;">${t(
-                  "Open Release Page",
-                )}</a>
-              </div>
-              <div class="cbi-value-description">
-                <div>${t("Current version")}: <strong id="proton-update-current">—</strong></div>
-                <div>${t("Latest version")}: <strong id="proton-update-latest">—</strong></div>
-                <div id="proton-update-status" style="margin-top: 4px;">${t(
-                  "Click the button to check for a new Proton2025 release.",
-                )}</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="cbi-value proton-search-index-setting">
-            <label class="cbi-value-title" for="proton-search-index-run">${t(
-              "Search Page Index",
-            )}</label>
-            <div class="cbi-value-field">
-              <div class="cbi-value-description">${t(
-                "Build or clear the cached LuCI search index manually when menu pages change.",
-              )}</div>
-            </div>
-          </div>
-
-          <div id="proton-search-index-panel" class="proton-search-index-panel">
-            <div class="proton-search-index-toolbar">
-              <button type="button" id="proton-search-index-run" class="cbi-button cbi-button-action proton-search-index-btn proton-search-index-btn-primary">${t(
-                "Index Pages Now",
-              )}</button>
-              <div class="proton-search-index-field proton-search-index-field-size">
-                <div class="proton-search-index-label">${t(
-                  "Indexed Data Size",
-                )}</div>
-                <div id="proton-search-index-size" class="proton-search-index-size">0 B</div>
-              </div>
-              <button type="button" id="proton-search-index-clear" class="cbi-button proton-search-index-btn proton-search-index-btn-secondary proton-search-index-btn-icon" title="${t(
-                "Clear Indexed Data",
-              )}" aria-label="${t("Clear Indexed Data")}">
-                <svg class="proton-search-index-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-              </button>
-            </div>
-            <div id="proton-search-index-status" class="cbi-value-description proton-search-index-status" aria-live="polite">${t(
-              "Search index is ready to be built.",
-            )}</div>
-            <div id="proton-search-index-log-root" class="proton-search-index-log">
-              <button type="button" id="proton-search-index-log-toggle" class="proton-search-index-log-toggle" aria-expanded="false" aria-controls="proton-search-index-log-content">
-                <span class="proton-search-index-log-title">Activity Log</span>
-                <svg class="proton-search-index-log-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
-              </button>
-              <div id="proton-search-index-log-content" class="proton-search-index-log-content" aria-live="polite" hidden>
-                <div id="proton-search-index-log-live" class="proton-search-index-log-live" hidden></div>
-                <div id="proton-search-index-log-list" class="proton-search-index-log-list"></div>
-                <div id="proton-search-index-log-empty" class="proton-search-index-log-empty">No activity recorded yet.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      // Backup & Restore section - отдельный блок
-      const backupHTML = `
-        <div id="proton-backup-restore" class="proton-backup-section" style="margin-top: 1.5rem; padding: 1.5rem; background: var(--proton-bg-card); border: 1px solid var(--proton-border); border-radius: var(--proton-radius); box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-          <div style="max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; margin-bottom: 1.25rem;">
-              <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 600; color: var(--proton-accent);">${t(
-                "Backup & Restore",
-              )}</h4>
-              <div class="cbi-value-description" style="opacity: 0.7;">${t(
-                "Export your theme settings to a file or import from a previously saved backup.",
-              )}</div>
-            </div>
-            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-              <button type="button" id="proton-export-settings" class="cbi-button cbi-button-action proton-backup-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="proton-backup-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>${t(
-                  "Export Settings",
-                )}
-              </button>
-              <button type="button" id="proton-import-settings" class="cbi-button proton-backup-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="proton-backup-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>${t(
-                  "Import Settings",
-                )}
-              </button>
-              <button type="button" id="proton-reset-settings" class="cbi-button cbi-button-negative proton-backup-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="proton-backup-icon"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>${t(
-                  "Reset to Defaults",
-                )}
-              </button>
-              <input type="file" id="proton-import-file" accept=".json" style="display: none;">
-            </div>
-          </div>
-        </div>
-      `;
-
-      // Insert after the last built-in LuCI field in this group.
-      insertAfterField.insertAdjacentHTML("afterend", settingsHTML);
-
-      // Insert backup section after settings
-      const settingsBlock = document.getElementById("proton-theme-settings");
-      if (settingsBlock) {
-        settingsBlock.insertAdjacentHTML("afterend", backupHTML);
-      }
-
-      // Apply current settings
-      this.applyThemeSettings(settings);
-
-      // Add event listeners
-      const modeSelect = document.getElementById("proton-mode-select");
-      const accentSelect = document.getElementById("proton-accent-select");
-      const radiusSelect = document.getElementById("proton-radius-select");
-      const fontsizeSelect = document.getElementById("proton-fontsize-select");
-      const animationsCheck = document.getElementById(
-        "proton-animations-check",
-      );
-      const transparencyCheck = document.getElementById(
-        "proton-transparency-check",
-      );
-
-      modeSelect?.addEventListener("change", (e) => {
-        const mode = e.target.value;
-        localStorage.setItem("proton-theme-mode", mode);
-        this.applyThemeMode(mode);
-        if (zoomRange) updateSliderFill(zoomRange);
-        if (pageWidthRange) updateSliderFill(pageWidthRange);
-        if (patternScaleRange) updateSliderFill(patternScaleRange);
-      });
-
-      const accentCustomRow = document.getElementById(
-        "proton-accent-custom-row",
-      );
-      const accentCustomColor = document.getElementById(
-        "proton-accent-custom-color",
-      );
-      const accentCustomHex = document.getElementById(
-        "proton-accent-custom-hex",
-      );
-
-      accentSelect?.addEventListener("change", (e) => {
-        const color = e.target.value;
-        localStorage.setItem("proton-accent-color", color);
-        if (color === "custom") {
-          // Persist the custom hex too (not only after the picker is
-          // touched), so the value is written everywhere — localStorage
-          // AND UCI — and the next page's UCI sync can't revert it.
-          const hex =
-            this.normalizeHex(accentCustomColor && accentCustomColor.value) ||
-            this.normalizeHex(localStorage.getItem("proton-accent-custom")) ||
-            "#5e9eff";
-          localStorage.setItem("proton-accent-custom", hex);
-          if (accentCustomColor) accentCustomColor.value = hex;
-          if (accentCustomHex) accentCustomHex.value = hex;
-        }
-        if (accentCustomRow) {
-          accentCustomRow.style.display =
-            color === "custom" ? "inline-flex" : "none";
-        }
-        this.applyAccentColor(color);
-        if (zoomRange) updateSliderFill(zoomRange);
-        if (pageWidthRange) updateSliderFill(pageWidthRange);
-        if (patternScaleRange) updateSliderFill(patternScaleRange);
-      });
-
-      // Apply a custom HEX accent from the picker / text field.
-      const applyCustomAccent = (raw, syncColor, syncHex) => {
-        const hex = this.normalizeHex(raw);
-        if (!hex) return;
-        localStorage.setItem("proton-accent-custom", hex);
-        // Re-affirm the custom *mode* together with the hex, so the
-        // accent ("custom") is also (re)written to localStorage + UCI.
-        // Without this, changing only the colour leaves UCI's accent at
-        // its old value, and the next page's sync reverts it to grey.
-        localStorage.setItem("proton-accent-color", "custom");
-        if (syncColor && accentCustomColor) accentCustomColor.value = hex;
-        if (syncHex && accentCustomHex) accentCustomHex.value = hex;
-        this.applyAccentColor("custom");
-        if (zoomRange) updateSliderFill(zoomRange);
-        if (pageWidthRange) updateSliderFill(pageWidthRange);
-        if (patternScaleRange) updateSliderFill(patternScaleRange);
-      };
-
-      accentCustomColor?.addEventListener("input", (e) => {
-        applyCustomAccent(e.target.value, false, true);
-      });
-
-      accentCustomHex?.addEventListener("input", (e) => {
-        // Only act once the field holds a complete, valid colour.
-        if (this.normalizeHex(e.target.value)) {
-          applyCustomAccent(e.target.value, true, false);
-        }
-      });
-
-      // Normalise / restore the text field when focus leaves it.
-      accentCustomHex?.addEventListener("blur", (e) => {
-        const hex =
-          this.normalizeHex(e.target.value) ||
-          localStorage.getItem("proton-accent-custom") ||
-          "#5e9eff";
-        e.target.value = hex;
-        if (accentCustomColor) accentCustomColor.value = hex;
-      });
-
-      radiusSelect?.addEventListener("change", (e) => {
-        const radius = e.target.value;
-        localStorage.setItem("proton-border-radius", radius);
-        this.applyBorderRadius(radius);
-      });
-
-      const patternSelect = document.getElementById(
-        "proton-background-pattern-select",
-      );
-      patternSelect?.addEventListener("change", (e) => {
-        const pattern = e.target.value;
-        localStorage.setItem("proton-background-pattern", pattern);
-        this.applyBackgroundPattern(pattern);
-        if (pattern === "stars") this.refreshStarfield();
-        const sizeRow = document.getElementById("proton-pattern-size-row");
-        if (sizeRow)
-          sizeRow.style.display = pattern !== "none" ? "flex" : "none";
-      });
-
-      const tabOutlineCheck = document.getElementById(
-        "proton-tab-outline-check",
-      );
-      tabOutlineCheck?.addEventListener("change", (e) => {
-        const enabled = e.target.checked;
-        localStorage.setItem("proton-tab-outline", enabled);
-        this.applyTabOutline(enabled);
-      });
-
-      const zoomRange = document.getElementById("proton-zoom-range");
-      const zoomValue = document.getElementById("proton-zoom-value");
-      const zoomMinus = document.getElementById("proton-zoom-minus");
-      const zoomPlus = document.getElementById("proton-zoom-plus");
-      const zoomReset = document.getElementById("proton-zoom-reset");
-
-      // Update slider fill (progress indicator)
-      const updateSliderFill = (slider) => {
-        if (!slider) return;
-        const min = parseFloat(slider.min) || 0;
-        const max = parseFloat(slider.max) || 100;
-        const val = parseFloat(slider.value) || 0;
-        const percent = ((val - min) / (max - min)) * 100;
-        const isLight =
-          document.documentElement.getAttribute("data-theme") === "light";
-        const fillColor = getComputedStyle(document.documentElement)
-          .getPropertyValue("--proton-accent")
-          .trim();
-        const trackColor = isLight
-          ? "rgba(0,0,0,0.12)"
-          : "rgba(255,255,255,0.05)";
-        slider.style.background = `linear-gradient(to right, ${fillColor} 0%, ${fillColor} ${percent}%, ${trackColor} ${percent}%, ${trackColor} 100%)`;
-      };
-
-      // Initial fill update
-      if (zoomRange) updateSliderFill(zoomRange);
-
-      const updateZoom = (displayValue) => {
-        displayValue = Math.max(75, Math.min(150, parseInt(displayValue)));
-        zoomRange.value = displayValue;
-        zoomValue.textContent = displayValue + "%";
-        localStorage.setItem("proton-zoom", displayValue);
-        this.applyZoom(displayValue);
-        updateSliderFill(zoomRange);
-
-        // Trigger sync to UCI
-        window.dispatchEvent(
-          new CustomEvent("proton-setting-changed", {
-            detail: { key: "proton-zoom", value: displayValue },
-          }),
-        );
-      };
-
-      zoomRange?.addEventListener("input", (e) => updateZoom(e.target.value));
-      zoomMinus?.addEventListener("click", () =>
-        updateZoom(parseInt(zoomRange.value) - 5),
-      );
-      zoomPlus?.addEventListener("click", () =>
-        updateZoom(parseInt(zoomRange.value) + 5),
-      );
-      zoomReset?.addEventListener("click", () => updateZoom(100));
-
-      // Background-pattern size slider (only meaningful while a pattern is on)
-      const patternScaleRange = document.getElementById(
-        "proton-pattern-scale-range",
-      );
-      const patternScaleValue = document.getElementById(
-        "proton-pattern-scale-value",
-      );
-      const patternScaleMinus = document.getElementById(
-        "proton-pattern-scale-minus",
-      );
-      const patternScalePlus = document.getElementById(
-        "proton-pattern-scale-plus",
-      );
-      const patternScaleReset = document.getElementById(
-        "proton-pattern-scale-reset",
-      );
-
-      if (patternScaleRange) updateSliderFill(patternScaleRange);
-
-      const updatePatternScale = (displayValue) => {
-        displayValue = Math.max(50, Math.min(200, parseInt(displayValue)));
-        patternScaleRange.value = displayValue;
-        patternScaleValue.textContent = displayValue + "%";
-        localStorage.setItem("proton-pattern-scale", displayValue);
-        this.applyPatternScale(displayValue);
-        this.refreshStarfield(); // reshuffle the sky on each size change
-        updateSliderFill(patternScaleRange);
-
-        window.dispatchEvent(
-          new CustomEvent("proton-setting-changed", {
-            detail: { key: "proton-pattern-scale", value: displayValue },
-          }),
-        );
-      };
-
-      patternScaleRange?.addEventListener("input", (e) =>
-        updatePatternScale(e.target.value),
-      );
-      patternScaleMinus?.addEventListener("click", () =>
-        updatePatternScale(parseInt(patternScaleRange.value) - 10),
-      );
-      patternScalePlus?.addEventListener("click", () =>
-        updatePatternScale(parseInt(patternScaleRange.value) + 10),
-      );
-      patternScaleReset?.addEventListener("click", () =>
-        updatePatternScale(100),
-      );
-
-      // Page width: checkbox + slider
-      const pageWidthCheck = document.getElementById("proton-page-width-check");
-      const pageWidthSlider = document.getElementById(
-        "proton-page-width-slider",
-      );
-      const pageWidthRange = document.getElementById("proton-page-width-range");
-      const pageWidthValue = document.getElementById("proton-page-width-value");
-      const pageWidthMinus = document.getElementById("proton-page-width-minus");
-      const pageWidthPlus = document.getElementById("proton-page-width-plus");
-
-      if (pageWidthRange) updateSliderFill(pageWidthRange);
-
-      const updatePageWidth = (val) => {
-        val = Math.max(50, Math.min(100, parseInt(val)));
-        pageWidthRange.value = val;
-        pageWidthValue.textContent =
-          val >= 100 ? "100% (" + t("Full width") + ")" : val + "%";
-        localStorage.setItem("proton-page-width", val);
-        this.applyPageWidth(val);
-        updateSliderFill(pageWidthRange);
-      };
-
-      pageWidthCheck?.addEventListener("change", (e) => {
-        const enabled = e.target.checked;
-        if (pageWidthSlider)
-          pageWidthSlider.style.display = enabled ? "flex" : "none";
-        if (enabled) {
-          const val = parseInt(pageWidthRange?.value) || 75;
-          updatePageWidth(val);
-        } else {
-          pageWidthValue.textContent = "";
-          localStorage.setItem("proton-page-width", "0");
-          this.applyPageWidth(0);
-        }
-      });
-
-      pageWidthRange?.addEventListener("input", (e) =>
-        updatePageWidth(e.target.value),
-      );
-      pageWidthMinus?.addEventListener("click", () =>
-        updatePageWidth(parseInt(pageWidthRange.value) - 5),
-      );
-      pageWidthPlus?.addEventListener("click", () =>
-        updatePageWidth(parseInt(pageWidthRange.value) + 5),
-      );
-
-      animationsCheck?.addEventListener("change", (e) => {
-        const enabled = e.target.checked;
-        localStorage.setItem("proton-animations", enabled);
-        this.applyAnimations(enabled);
-      });
-
-      transparencyCheck?.addEventListener("change", (e) => {
-        const enabled = e.target.checked;
-        localStorage.setItem("proton-transparency", enabled);
-        this.applyTransparency(enabled);
-      });
-
-      const servicesWidgetCheck = document.getElementById(
-        "proton-services-widget-check",
-      );
-      servicesWidgetCheck?.addEventListener("change", (e) => {
-        const enabled = e.target.checked;
-        localStorage.setItem("proton-services-widget-enabled", enabled);
-        // Показываем уведомление о применении
-        const msg = enabled
-          ? _("Services widget enabled. Visit Status → Overview to see it.")
-          : _("Services widget disabled.");
-        if (typeof L !== "undefined" && L.ui && L.ui.addNotification) {
-          const notif = L.ui.addNotification(null, E("p", msg), "info");
-          if (notif) notif.dataset.protonManaged = "true";
-        } else {
-          alert(msg);
-        }
-      });
-
-      const tempWidgetCheck = document.getElementById(
-        "proton-temp-widget-check",
-      );
-      tempWidgetCheck?.addEventListener("change", (e) => {
-        const enabled = e.target.checked;
-        localStorage.setItem("proton-temp-widget-enabled", enabled);
-        // Показываем уведомление о применении
-        const msg = enabled
-          ? _("Temperature widget enabled. Visit Status → Overview to see it.")
-          : _("Temperature widget disabled.");
-        if (typeof L !== "undefined" && L.ui && L.ui.addNotification) {
-          const notif = L.ui.addNotification(null, E("p", msg), "info");
-          if (notif) notif.dataset.protonManaged = "true";
-        } else {
-          alert(msg);
-        }
-      });
-
-      // Температура модема (нужен luci-app-5gmodem). Пишем в localStorage;
-      // settings-sync сохранит в uci proton2025.modem_temp (ключ есть в
-      // SETTINGS_MAP), а бекенд getSensors добавит датчик модема в блок.
-      const modemTempCheck = document.getElementById("proton-modem-temp-check");
-      modemTempCheck?.addEventListener("change", (e) => {
-        const enabled = e.target.checked;
-        localStorage.setItem("proton-modem-temp", enabled ? "true" : "false");
-        const msg = enabled
-          ? _("Modem temperature enabled. It appears in the router temperature block.")
-          : _("Modem temperature disabled.");
-        if (typeof L !== "undefined" && L.ui && L.ui.addNotification) {
-          const notif = L.ui.addNotification(null, E("p", msg), "info");
-          if (notif) notif.dataset.protonManaged = "true";
-        } else {
-          alert(msg);
-        }
-      });
-      // Строку с этим тумблером показываем ТОЛЬКО когда установлен пакет модема:
-      // спрашиваем бекенд (getIntegrations). Нет пакета/бекенда - строка скрыта.
-      (function revealModemTempRow() {
-        try {
-          if (!(window.L && L.rpc)) return;
-          const probe = L.rpc.declare({
-            object: "luci.proton-temp",
-            method: "getIntegrations",
-            expect: {},
-          });
-          probe()
-            .then((r) => {
-              if (r && r.modem) {
-                const row = document.getElementById("proton-modem-temp-row");
-                if (row) row.style.display = "";
-              }
-            })
-            .catch(() => {});
-        } catch (e) {
-          /* нет rpc - тумблер просто не показываем */
-        }
-      })();
-
-      const servicesLogCheck = document.getElementById(
-        "proton-services-log-check",
-      );
-      servicesLogCheck?.addEventListener("change", (e) => {
-        const enabled = e.target.checked;
-        localStorage.setItem("proton-services-log", enabled);
-        // Сразу применяем - показываем/скрываем лог
-        const logEl = document.getElementById("proton-services-log");
-        if (logEl) {
-          logEl.style.display = enabled ? "" : "none";
-        }
-      });
-
-      const tableWrapCheck = document.getElementById("proton-table-wrap-check");
-      tableWrapCheck?.addEventListener("change", (e) => {
-        const enabled = e.target.checked;
-        localStorage.setItem("proton-table-wrap", enabled);
-        this.applyTableWrap(enabled);
-      });
-
-      const logHighlightCheck = document.getElementById(
-        "proton-log-highlight-check",
-      );
-      logHighlightCheck?.addEventListener("change", (e) => {
-        const enabled = e.target.checked;
-        localStorage.setItem("proton-log-highlight", enabled);
-      });
-
-      const customFontCheck = document.getElementById(
-        "proton-custom-font-check",
-      );
-      customFontCheck?.addEventListener("change", (e) => {
-        const enabled = e.target.checked;
-        localStorage.setItem("proton-custom-font", enabled);
-        this.applyCustomFont(enabled);
-      });
-
-      const callProtonSettingsRpc = async (method, args = {}) => {
-        const rpcPath = (window.L && L.env && L.env.ubuspath) || "/ubus/";
-        const sessionId =
-          (window.L && L.env && L.env.sessionid) ||
-          "00000000000000000000000000000000";
-
-        const response = await fetch(rpcPath, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: Date.now(),
-            method: "call",
-            params: [sessionId, "luci.proton-settings", method, args || {}],
-          }),
-        });
-
-        const result = await response.json();
-        return result?.result?.[1] || null;
-      };
-
-      const updateCheckButton = document.getElementById("proton-update-check");
-      const updateInstallButton = document.getElementById(
-        "proton-update-install",
-      );
-      const updateReleaseLink = document.getElementById(
-        "proton-update-release",
-      );
-      const updateCurrent = document.getElementById("proton-update-current");
-      const updateLatest = document.getElementById("proton-update-latest");
-      const updateStatus = document.getElementById("proton-update-status");
-
-      const setUpdateStatus = (message, isError) => {
-        if (!updateStatus) return;
-        updateStatus.textContent = message;
-        updateStatus.style.color = isError ? "#ff6b6b" : "";
-      };
-
-      const setUpdateInstallVisible = (visible) => {
-        if (!updateInstallButton) return;
-        updateInstallButton.style.display = visible ? "" : "none";
-      };
-
-      const loadInstalledThemeVersion = async () => {
-        if (updateCurrent) {
-          updateCurrent.textContent = t("Loading...");
-        }
-
-        try {
-          const payload = await callProtonSettingsRpc("getVersion");
-
-          if (!payload) {
-            throw new Error("Empty RPC response");
-          }
-
-          if (updateCurrent) {
-            updateCurrent.textContent = payload.current_version || "—";
-          }
-
-          if (updateReleaseLink && payload.release_url) {
-            updateReleaseLink.href = payload.release_url;
-          }
-
-          if (!payload.success && updateCurrent) {
-            updateCurrent.textContent = "—";
-          }
-        } catch (error) {
-          if (updateCurrent) {
-            updateCurrent.textContent = "—";
-          }
-        }
-      };
-
-      loadInstalledThemeVersion();
-
-      updateInstallButton?.addEventListener("click", async () => {
-        updateInstallButton.disabled = true;
-        updateCheckButton.disabled = true;
-        updateInstallButton.textContent = t("Installing...");
-        setUpdateStatus(t("Installing Proton2025 update..."), false);
-
-        try {
-          const payload = await callProtonSettingsRpc("installUpdate");
-
-          if (!payload) {
-            throw new Error("Empty RPC response");
-          }
-
-          if (updateCurrent) {
-            updateCurrent.textContent =
-              payload.installed_version || payload.current_version || "—";
-          }
-
-          if (updateLatest) {
-            updateLatest.textContent =
-              payload.latest_version || payload.latest_tag || "—";
-          }
-
-          if (updateReleaseLink && payload.release_url) {
-            updateReleaseLink.href = payload.release_url;
-            updateReleaseLink.style.display = "";
-          }
-
-          if (!payload.success) {
-            setUpdateInstallVisible(true);
-            setUpdateStatus(
-              payload.error || t("Failed to install update."),
-              true,
-            );
-            return;
-          }
-
-          if (payload.update_available) {
-            setUpdateInstallVisible(true);
-            setUpdateStatus(
-              t("Update installed, but a newer version is still available.") +
-                ` ${payload.current_version || "—"} → ${payload.latest_version || "—"}`,
-              true,
-            );
-          } else {
-            setUpdateInstallVisible(false);
-            setUpdateStatus(t("Proton2025 update installed."), false);
-          }
-        } catch (error) {
-          setUpdateInstallVisible(true);
-          setUpdateStatus(
-            t("Failed to install update.") +
-              " " +
-              (error && error.message ? error.message : String(error || "")),
-            true,
-          );
-        } finally {
-          updateInstallButton.disabled = false;
-          updateCheckButton.disabled = false;
-          updateInstallButton.textContent = t("Install Update");
-        }
-      });
-
-      updateCheckButton?.addEventListener("click", async () => {
-        updateCheckButton.disabled = true;
-        updateCheckButton.textContent = t("Checking...");
-        setUpdateStatus(t("Checking latest Proton2025 release..."), false);
-        setUpdateInstallVisible(false);
-
-        try {
-          const payload = await callProtonSettingsRpc("checkUpdate");
-
-          if (!payload) {
-            throw new Error("Empty RPC response");
-          }
-
-          if (updateCurrent) {
-            updateCurrent.textContent = payload.current_version || "—";
-          }
-
-          if (updateLatest) {
-            updateLatest.textContent =
-              payload.latest_version || payload.latest_tag || "—";
-          }
-
-          if (updateReleaseLink && payload.release_url) {
-            updateReleaseLink.href = payload.release_url;
-            updateReleaseLink.style.display = "";
-          }
-
-          if (!payload.success) {
-            setUpdateInstallVisible(false);
-            setUpdateStatus(
-              payload.error || t("Failed to check for updates."),
-              true,
-            );
-            return;
-          }
-
-          if (payload.update_available) {
-            setUpdateInstallVisible(true);
-            setUpdateStatus(
-              t("A new Proton2025 version is available.") +
-                ` ${payload.current_version} → ${payload.latest_version}`,
-              false,
-            );
-          } else {
-            setUpdateInstallVisible(false);
-            setUpdateStatus(t("Proton2025 is up to date."), false);
-          }
-        } catch (error) {
-          setUpdateStatus(
-            t("Failed to check for updates.") +
-              " " +
-              (error && error.message ? error.message : String(error || "")),
-            true,
-          );
-        } finally {
-          updateCheckButton.disabled = false;
-          updateCheckButton.textContent = t("Check for Updates");
-        }
-      });
-
-      const formatBytes = (bytes) => {
-        const value = Number(bytes) || 0;
-        if (value <= 0) return "0 B";
-
-        const units = ["B", "KB", "MB", "GB"];
-        let size = value;
-        let unitIndex = 0;
-
-        while (size >= 1024 && unitIndex < units.length - 1) {
-          size /= 1024;
-          unitIndex += 1;
-        }
-
-        return `${size >= 10 || unitIndex === 0 ? size.toFixed(0) : size.toFixed(1)} ${units[unitIndex]}`;
-      };
-
-      const formatIndexedDate = (timestamp) => {
-        if (!timestamp) return t("Not indexed yet");
-
-        try {
-          const date = new Date(timestamp);
-          if (Number.isNaN(date.getTime())) {
-            return t("Not indexed yet");
-          }
-
-          const locale = document.documentElement?.lang || undefined;
-          return new Intl.DateTimeFormat(locale, {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false,
-          }).format(date);
-        } catch (e) {
-          return t("Not indexed yet");
-        }
-      };
-
-      const getSearchIndexApi = () =>
-        window.protonSearchIndex &&
-        typeof window.protonSearchIndex.getState === "function"
-          ? window.protonSearchIndex
-          : null;
-
-      const searchIndexRunButton = document.getElementById(
-        "proton-search-index-run",
-      );
-      const searchIndexClearButton = document.getElementById(
-        "proton-search-index-clear",
-      );
-      const searchIndexSize = document.getElementById(
-        "proton-search-index-size",
-      );
-      const searchIndexStatus = document.getElementById(
-        "proton-search-index-status",
-      );
-      const searchIndexLogToggle = document.getElementById(
-        "proton-search-index-log-toggle",
-      );
-
-      this.setSearchIndexActivityExpanded(
-        this.loadSearchIndexActivityExpanded(),
-      );
-
-      const updateSearchIndexUi = (state) => {
-        const currentState = state || getSearchIndexApi()?.getState?.() || {};
-        const status = currentState.status || {};
-        const cachedEntryCount = Number(currentState.cachedEntryCount) || 0;
-        const routeCount = Number(status.routeCount) || 0;
-        const indexedRouteCount = Number(status.indexedRouteCount) || 0;
-        const errorCount = Number(status.errorCount) || 0;
-
-        if (searchIndexSize) {
-          searchIndexSize.textContent = formatBytes(
-            currentState.cacheBytes || 0,
-          );
-        }
-
-        if (searchIndexRunButton) {
-          const canCancel = !!status.inProgress && !!status.cancelable;
-          searchIndexRunButton.disabled = !!status.inProgress && !canCancel;
-          searchIndexRunButton.textContent = status.inProgress
-            ? canCancel
-              ? t("Cancel Indexing")
-              : t("Indexing in progress...")
-            : t("Index Pages Now");
-        }
-
-        if (searchIndexClearButton) {
-          searchIndexClearButton.disabled = !!status.inProgress;
-        }
-
-        if (searchIndexStatus) {
-          if (status.inProgress) {
-            searchIndexStatus.textContent =
-              t("Indexed routes") +
-              `: ${indexedRouteCount}/${routeCount || "?"} · ` +
-              t("Cached entries") +
-              `: ${cachedEntryCount}`;
-          } else if (status.canceled) {
-            searchIndexStatus.textContent =
-              t("Indexing canceled") +
-              ` · ${t("Indexed routes")}: ${indexedRouteCount}/${routeCount || "?"}`;
-          } else {
-            searchIndexStatus.textContent =
-              t("Cached entries") +
-              `: ${cachedEntryCount} · ` +
-              t("Last indexed") +
-              `: ${formatIndexedDate(status.lastIndexedAt)}${
-                errorCount > 0 ? ` · ${t("Index errors")}: ${errorCount}` : ""
-              }`;
-          }
-        }
-      };
-
-      searchIndexRunButton?.addEventListener("click", async () => {
-        const api = getSearchIndexApi();
-
-        if (api?.getState?.()?.status?.inProgress) {
-          if (typeof api?.cancel === "function") {
-            api.cancel("user");
-          }
-          return;
-        }
-
-        if (!api?.refresh) return;
-
-        try {
-          await api.refresh(true);
-        } catch (error) {
-          const previousState = this._lastObservedSearchIndexState;
-          const failedState = api.getState();
-          updateSearchIndexUi(failedState);
-          this.maybeRecordSearchIndexActivity(previousState, failedState, {
-            forceError: true,
-            errorMessage:
-              error && typeof error.message === "string"
-                ? error.message
-                : String(error || ""),
-          });
-          this.maybeNotifySearchIndexCompletion(null, failedState, {
-            forceError: true,
-          });
-        }
-      });
-
-      searchIndexClearButton?.addEventListener("click", async () => {
-        if (
-          !confirm(
-            t(
-              "Clear indexed search data? This removes cached search pages on the router until the next indexing run.",
-            ),
-          )
-        ) {
-          return;
-        }
-
-        const api = getSearchIndexApi();
-        if (api?.clear) {
-          await api.clear();
-          this.recordSearchIndexCleared();
-        } else {
-          updateSearchIndexUi({
-            cacheBytes: 0,
-            cachedEntryCount: 0,
-            status: {},
-          });
-          this.recordSearchIndexCleared();
-        }
-      });
-
-      searchIndexLogToggle?.addEventListener("click", () => {
-        this.setSearchIndexActivityExpanded(
-          !this.loadSearchIndexActivityExpanded(),
-        );
-      });
-
-      window.addEventListener("proton-search-index-state", (event) => {
-        updateSearchIndexUi(event.detail || {});
-      });
-
-      const initialSearchIndexState = getSearchIndexApi()?.getState?.() || {};
-      updateSearchIndexUi(initialSearchIndexState);
-      this.renderSearchIndexActivity(initialSearchIndexState);
-
-      // --- Backup & Restore ---
-      const PROTON_SETTINGS_KEYS = [
-        "proton-theme-mode",
-        "proton-accent-color",
-        "proton-accent-custom",
-        "proton-border-radius",
-        "proton-tab-outline",
-        "proton-zoom",
-        "proton-page-width",
-        "proton-animations",
-        "proton-transparency",
-        "proton-services-widget-enabled",
-        "proton-temp-widget-enabled",
-        "proton-services-log",
-        "proton-table-wrap",
-        "proton-log-highlight",
-        "proton-custom-font",
-      ];
-
-      const showBackupStatus = (msg, isError) => {
-        if (typeof L !== "undefined" && L.ui && L.ui.addNotification) {
-          const notif = L.ui.addNotification(
-            null,
-            E("p", msg),
-            isError ? "danger" : "info",
-          );
-          if (notif) notif.dataset.protonManaged = "true";
-        } else {
-          alert(msg);
-        }
-      };
-
-      // Export
-      document
-        .getElementById("proton-export-settings")
-        ?.addEventListener("click", () => {
-          const now = new Date();
-          const data = {
-            _proton_backup: true,
-            _version: "1.1.0",
-            _date: now.toISOString(),
-          };
-          PROTON_SETTINGS_KEYS.forEach((key) => {
-            const val = localStorage.getItem(key);
-            if (val !== null) data[key] = val;
-          });
-          const blob = new Blob([JSON.stringify(data, null, 2)], {
-            type: "application/json",
-          });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          // Генерируем имя файла с датой и временем
-          const dateStr =
-            now.getFullYear() +
-            "-" +
-            String(now.getMonth() + 1).padStart(2, "0") +
-            "-" +
-            String(now.getDate()).padStart(2, "0") +
-            "_" +
-            String(now.getHours()).padStart(2, "0") +
-            "-" +
-            String(now.getMinutes()).padStart(2, "0") +
-            "-" +
-            String(now.getSeconds()).padStart(2, "0");
-          a.download = `proton2025-settings-backup-${dateStr}.json`;
-          a.click();
-          URL.revokeObjectURL(url);
-          showBackupStatus(t("Settings exported successfully"), false);
-        });
-
-      // Reset to defaults
-      document
-        .getElementById("proton-reset-settings")
-        ?.addEventListener("click", async () => {
-          if (
-            !confirm(
-              t(
-                "Are you sure you want to reset all theme settings to defaults? This action cannot be undone.",
-              ),
-            )
-          ) {
-            return;
-          }
-
-          if (window.protonSettingsSync?.resetToDefaults) {
-            await window.protonSettingsSync.resetToDefaults();
-          } else {
-            // Fallback if sync module not loaded
-            const defaults = {
-              "proton-theme-mode": "auto",
-              "proton-accent-color": "blue",
-              "proton-accent-custom": "#5e9eff",
-              "proton-zoom": "100",
-              "proton-transparency": "true",
-              "proton-border-radius": "default",
-              "proton-tab-outline": "false",
-              "proton-animations": "true",
-              "proton-services-widget-enabled": "true",
-              "proton-temp-widget-enabled": "true",
-              "proton-services-log": "false",
-              "proton-table-wrap": "false",
-              "proton-log-highlight": "true",
-              "proton-page-width": "",
-              "proton-custom-font": "true",
-            };
-
-            Object.keys(defaults).forEach((key) => {
-              localStorage.removeItem(key);
-            });
-
-            Object.entries(defaults).forEach(([key, value]) => {
-              if (value) {
-                localStorage.setItem(key, value);
-              }
-            });
-
-            window.location.reload();
-          }
-        });
-
-      // Import
-      const importFileInput = document.getElementById("proton-import-file");
-      document
-        .getElementById("proton-import-settings")
-        ?.addEventListener("click", () => {
-          importFileInput?.click();
-        });
-
-      importFileInput?.addEventListener("change", (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          try {
-            const data = JSON.parse(ev.target.result);
-            if (!data._proton_backup) {
-              showBackupStatus(t("Invalid backup file"), true);
-              return;
-            }
-
-            let imported = 0;
-            PROTON_SETTINGS_KEYS.forEach((key) => {
-              if (key in data) {
-                localStorage.setItem(key, data[key]);
-                imported++;
-              }
-            });
-
-            if (imported === 0) {
-              showBackupStatus(t("No settings found in file"), true);
-              return;
-            }
-
-            // Re-apply all settings
-            this.loadAndApplyThemeSettings();
-
-            // Re-init settings UI to reflect new values
-            this._themeSettingsInit = false;
-            const panel = document.getElementById("proton-theme-settings");
-            if (panel) panel.remove();
-            const backupSection = document.getElementById(
-              "proton-backup-restore",
-            );
-            if (backupSection) backupSection.remove();
-            this.initThemeSettings();
-
-            showBackupStatus(
-              t("Settings imported successfully") + " (" + imported + ")",
-              false,
-            );
-          } catch (err) {
-            showBackupStatus(t("Failed to read backup file"), true);
-          }
-        };
-        reader.readAsText(file);
-        // Reset input so the same file can be re-imported
-        e.target.value = "";
-      });
-
-      this.maybeFocusSearchIndexPanelFromHash();
-
-      return true;
-    };
-
-    // Fallbacks: immediate + delayed attempts + observer for dynamic LuCI renders.
-    // Keep the observer alive because LuCI may re-render the form after Save/Apply
-    // and remove injected Proton2025 settings from the DOM.
-    const root = document.getElementById("maincontent") || document.body;
-
-    if (this._themeSettingsObserver) {
-      this._themeSettingsObserver.disconnect();
-    }
-
-    let remountTimer = null;
-    const observer = new MutationObserver(() => {
-      clearTimeout(remountTimer);
-      remountTimer = setTimeout(() => {
-        if (!document.body.dataset.page?.includes("admin-system-system")) {
-          return;
-        }
-
-        if (document.getElementById("proton-theme-settings")) {
-          return;
-        }
-
-        if (!document.querySelector('[data-name="_mediaurlbase"]')) {
-          return;
-        }
-
-        this._themeSettingsInit = false;
+    window.addEventListener(
+      "pagehide",
+      function () {
         observer.disconnect();
-        this._themeSettingsObserver = null;
-        this.initThemeSettings();
-        setTimeout(() => {
-          window.dispatchEvent(
-            new CustomEvent("proton-theme-settings-mounted"),
-          );
-        }, 200);
-      }, 150);
-    });
-
-    this._themeSettingsObserver = observer;
-    observer.observe(root, { childList: true, subtree: true });
-
-    // Immediate and delayed attempts
-    tryMount();
-    setTimeout(tryMount, 300);
-    setTimeout(tryMount, 800);
+        clearTimeout(titlesScheduled);
+        window.removeEventListener("resize", updateTitles);
+      },
+      { once: true },
+    );
   },
 
   installThemeModeObserver() {
@@ -3591,9 +1280,6 @@ return baseclass.extend({
       colorSchemeMeta.setAttribute("content", resolvedMode);
     }
 
-    // A JS-generated starfield is coloured for one theme; on a theme change drop
-    // it so the baked stars tile (which has both light and dark variants) takes
-    // over with the right colour. It re-shuffles again on the next size change.
     document.documentElement.style.removeProperty("--proton-pattern-image");
 
     return resolvedMode;
@@ -3607,21 +1293,17 @@ return baseclass.extend({
     this.applyAccentColor(settings.accentColor);
     this.applyBorderRadius(settings.borderRadius);
     this.applyTabOutline(settings.tabOutline);
+    this.applyTabsStyle(settings.tabsStyle);
     this.applyBackgroundPattern(settings.backgroundPattern);
     this.applyPatternScale(settings.patternScale);
     this.applyZoom(settings.zoom);
     this.applyPageWidth(settings.pageWidth);
+    this.applyMenuMode(settings.menuMode);
     this.applyAnimations(settings.animations);
     this.applyTransparency(settings.transparency);
-    this.applyTableWrap(settings.tableWrap);
     this.applyCustomFont(settings.customFont);
-    this.applyServicesWidget(settings.servicesWidget);
-    this.applyTemperatureWidget(settings.temperatureWidget);
-    this.applyServicesLog(settings.servicesLog);
   },
 
-  // Accept "#rgb" / "#rrggbb" (with or without leading #), return a
-  // canonical lowercase "#rrggbb" string, or null when invalid.
   normalizeHex(hex) {
     if (typeof hex !== "string") return null;
     let h = hex.trim().replace(/^#/, "");
@@ -3637,19 +1319,16 @@ return baseclass.extend({
     return null;
   },
 
-  // Derive the accent / hover / glow / rgb set from a single HEX colour.
   deriveAccent(hex) {
     const safe = this.normalizeHex(hex) || "#5e9eff";
     const r = parseInt(safe.slice(1, 3), 16);
     const g = parseInt(safe.slice(3, 5), 16);
     const b = parseInt(safe.slice(5, 7), 16);
-    // Hover = the accent lightened ~20% toward white (works on dark UI).
     const lighten = (v) => Math.round(v + (255 - v) * 0.2);
     const toHex = (v) => v.toString(16).padStart(2, "0");
     return {
       accent: safe,
-      hover:
-        "#" + toHex(lighten(r)) + toHex(lighten(g)) + toHex(lighten(b)),
+      hover: "#" + toHex(lighten(r)) + toHex(lighten(g)) + toHex(lighten(b)),
       glow: `rgba(${r}, ${g}, ${b}, 0.2)`,
       rgb: `${r}, ${g}, ${b}`,
     };
@@ -3726,6 +1405,35 @@ return baseclass.extend({
     );
   },
 
+  applyTabsStyle(style) {
+    const root = document.documentElement;
+    root.classList.toggle("proton-tabs-classic", style === "classic");
+    root.classList.toggle("proton-tabs-proton", style === "proton");
+  },
+
+  applyMenuMode(mode) {
+    const side = mode === "side";
+    document.documentElement.classList.toggle("proton-menu-side", side);
+
+    const isMobile = window.matchMedia("(max-width: 800px)").matches;
+    this.ensureMenuPlacement(isMobile);
+
+    if (side && !isMobile) this.ensureMenuToggle();
+    this.applyMenuCollapsed(
+      side && !isMobile && this.getMenuCollapsed(),
+      false,
+    );
+
+    if (!isMobile) {
+      document
+        .querySelectorAll("ul.mainmenu.l1.active, ul.mainmenu.l1 > li.active")
+        .forEach((el) => el.classList.remove("active"));
+      document
+        .querySelectorAll("ul.mainmenu.l2.align-left")
+        .forEach((el) => el.classList.remove("align-left"));
+    }
+  },
+
   applyBackgroundPattern(pattern) {
     const root = document.documentElement;
     root.classList.remove(
@@ -3737,10 +1445,8 @@ return baseclass.extend({
 
     if (pattern === "noise") pattern = "stars"; // pattern was renamed
 
-    // The starfield can be regenerated by JS as an inline --proton-pattern-image
-    // override; drop it for any non-stars pattern so the CSS grid/dots/none
-    // rules (or the baked stars tile) take over again.
-    if (pattern !== "stars") root.style.removeProperty("--proton-pattern-image");
+    if (pattern !== "stars")
+      root.style.removeProperty("--proton-pattern-image");
 
     if (pattern && pattern !== "none") {
       root.classList.add("proton-pattern-" + pattern);
@@ -3755,10 +1461,6 @@ return baseclass.extend({
     );
   },
 
-  // Build a random starfield (faint noise grain + scattered dim dots) as a
-  // background-image data-URI, coloured for the current theme. Stars near the
-  // tile edges are duplicated on the opposite side so the 200px tile repeats
-  // seamlessly. Kept dim, on par with the dots pattern.
   buildStarfield() {
     const isLight =
       document.documentElement.getAttribute("data-theme") === "light";
@@ -3772,11 +1474,24 @@ return baseclass.extend({
       radii = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6],
       c = [];
     const put = (x, y, r, o) =>
-      c.push("<circle cx='" + x + "' cy='" + y + "' r='" + r + "' opacity='" + o + "'/>");
+      c.push(
+        "<circle cx='" +
+          x +
+          "' cy='" +
+          y +
+          "' r='" +
+          r +
+          "' opacity='" +
+          o +
+          "'/>",
+      );
     for (let i = 0; i < 46; i++) {
       const x = +(Math.random() * W).toFixed(1),
         y = +(Math.random() * W).toFixed(1),
-        r = +(radii[(Math.random() * radii.length) | 0] * (0.8 + Math.random() * 0.3)).toFixed(2),
+        r = +(
+          radii[(Math.random() * radii.length) | 0] *
+          (0.8 + Math.random() * 0.3)
+        ).toFixed(2),
         o = +(0.06 + Math.random() * 0.2).toFixed(3);
       const xs = [x];
       if (x < r + m) xs.push(x + W);
@@ -3788,11 +1503,21 @@ return baseclass.extend({
         for (const yy of ys) put(+xx.toFixed(1), +yy.toFixed(1), r, o);
     }
     const svg =
-      "<svg xmlns='http://www.w3.org/2000/svg' width='" + W + "' height='" + W + "'>" +
+      "<svg xmlns='http://www.w3.org/2000/svg' width='" +
+      W +
+      "' height='" +
+      W +
+      "'>" +
       "<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/>" +
-      "<feColorMatrix type='matrix' values='" + mat + "'/></filter>" +
+      "<feColorMatrix type='matrix' values='" +
+      mat +
+      "'/></filter>" +
       "<rect width='100%' height='100%' filter='url(#n)'/>" +
-      "<g fill='" + color + "'>" + c.join("") + "</g></svg>";
+      "<g fill='" +
+      color +
+      "'>" +
+      c.join("") +
+      "</g></svg>";
     const uri = svg
       .replace(/%/g, "%25")
       .replace(/</g, "%3c")
@@ -3801,7 +1526,6 @@ return baseclass.extend({
     return 'url("data:image/svg+xml,' + uri + '")';
   },
 
-  // Shuffle the starfield (only meaningful while the stars pattern is active).
   refreshStarfield() {
     if (!document.documentElement.classList.contains("proton-pattern-stars"))
       return;
@@ -3812,19 +1536,16 @@ return baseclass.extend({
   },
 
   applyZoom(zoom) {
-    // На мобильных экранах не применяем zoom — конфликтует с viewport и pinch-to-zoom
     if (window.innerWidth < 800) {
       document.documentElement.style.zoom = "";
       return;
     }
     const scale = parseInt(zoom) / 100;
-    // Use CSS zoom on html element for true browser-like scaling
     document.documentElement.style.zoom = scale;
   },
 
   applyPageWidth(width) {
     const val = parseInt(width) || 0;
-    // На мобильных экранах не ограничиваем ширину — контент и так занимает 100%
     if (window.innerWidth < 800) {
       document.documentElement.style.setProperty(
         "--proton-page-max-width",
@@ -3842,7 +1563,7 @@ return baseclass.extend({
     } else {
       document.documentElement.style.setProperty(
         "--proton-page-max-width",
-        "990px",
+        "1200px",
         "important",
       );
     }
@@ -3864,42 +1585,6 @@ return baseclass.extend({
     }
   },
 
-  applyServicesWidget(enabled) {
-    const widget = document.getElementById("proton-services-widget");
-    if (widget) {
-      widget.style.display = enabled ? "" : "none";
-    }
-    if (typeof window.updateWidgetsSectionVisibility === "function") {
-      window.updateWidgetsSectionVisibility();
-    }
-  },
-
-  applyTemperatureWidget(enabled) {
-    const widget = document.querySelector(".proton-temp-widget");
-    if (widget) {
-      widget.style.display = enabled ? "" : "none";
-    }
-    if (typeof window.updateWidgetsSectionVisibility === "function") {
-      window.updateWidgetsSectionVisibility();
-    }
-  },
-
-  applyServicesLog(enabled) {
-    const logEl = document.getElementById("proton-services-log");
-    if (logEl) {
-      logEl.style.display = enabled ? "" : "none";
-    }
-  },
-
-  applyTableWrap(enabled) {
-    const root = document.documentElement;
-    if (enabled) {
-      root.classList.remove("proton-table-truncate");
-    } else {
-      root.classList.add("proton-table-truncate");
-    }
-  },
-
   applyCustomFont(enabled) {
     const root = document.documentElement;
     if (enabled) {
@@ -3909,12 +1594,127 @@ return baseclass.extend({
     }
   },
 
-  /**
-   * Initialize floating alert messages with close buttons
-   * Improved version with better error handling and memory management
-   */
+  protonConfirm(options) {
+    const opts = options || {};
+    const t = (key) => this.translateThemeText(key);
+
+    const openDialog = document.querySelector(
+      ".proton-confirm-modal-overlay:not(.is-closing)",
+    );
+    if (openDialog) {
+      openDialog
+        .querySelector(".cbi-button-negative, .cbi-button-action")
+        ?.focus();
+      return Promise.resolve(false);
+    }
+
+    this._protonConfirmSeq = (this._protonConfirmSeq || 0) + 1;
+    const uid = Date.now().toString(36) + "-" + this._protonConfirmSeq;
+
+    return new Promise((resolve) => {
+      const previousFocus = document.activeElement;
+      let settled = false;
+
+      const overlay = document.createElement("div");
+      overlay.className = "proton-confirm-modal-overlay";
+
+      const dialog = document.createElement("div");
+      dialog.className = "proton-confirm-modal";
+      dialog.setAttribute("role", "dialog");
+      dialog.setAttribute("aria-modal", "true");
+
+      const titleId = "proton-confirm-title-" + uid;
+      const bodyId = "proton-confirm-body-" + uid;
+
+      const title = document.createElement("h3");
+      title.id = titleId;
+      title.textContent = opts.title || t("Confirm");
+      dialog.setAttribute("aria-labelledby", titleId);
+      dialog.appendChild(title);
+
+      const message = document.createElement("p");
+      message.id = bodyId;
+      message.textContent = opts.message || "";
+      dialog.setAttribute("aria-describedby", bodyId);
+      dialog.appendChild(message);
+
+      const actions = document.createElement("div");
+      actions.className = "proton-confirm-modal-actions";
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.type = "button";
+      cancelBtn.className = "cbi-button cbi-button-neutral";
+      cancelBtn.textContent = opts.cancelLabel || t("Cancel");
+
+      const confirmBtn = document.createElement("button");
+      confirmBtn.type = "button";
+      confirmBtn.className =
+        "cbi-button " +
+        (opts.danger === false ? "cbi-button-action" : "cbi-button-negative");
+      confirmBtn.textContent = opts.confirmLabel || t("Confirm");
+
+      actions.appendChild(cancelBtn);
+      actions.appendChild(confirmBtn);
+      dialog.appendChild(actions);
+      overlay.appendChild(dialog);
+
+      const finish = (result) => {
+        if (settled) return;
+        settled = true;
+
+        document.removeEventListener("keydown", onKeyDown, true);
+        overlay.classList.add("is-closing");
+
+        if (previousFocus && typeof previousFocus.focus === "function") {
+          try {
+            previousFocus.focus();
+          } catch (e) {}
+        }
+
+        setTimeout(() => {
+          if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        }, 200);
+
+        resolve(result);
+      };
+
+      const onKeyDown = (event) => {
+        if (!overlay.isConnected) {
+          finish(false);
+          return;
+        }
+
+        if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          finish(false);
+          return;
+        }
+
+        if (event.key !== "Tab") return;
+
+        const focusable = [cancelBtn, confirmBtn];
+        const index = focusable.indexOf(document.activeElement);
+        event.preventDefault();
+        const next = event.shiftKey
+          ? focusable[(index <= 0 ? focusable.length : index) - 1]
+          : focusable[(index + 1) % focusable.length];
+        next.focus();
+      };
+
+      cancelBtn.addEventListener("click", () => finish(false));
+      confirmBtn.addEventListener("click", () => finish(true));
+      overlay.addEventListener("click", (event) => {
+        if (event.target === overlay) finish(false);
+      });
+      document.addEventListener("keydown", onKeyDown, true);
+
+      document.body.appendChild(overlay);
+      requestAnimationFrame(() => confirmBtn.focus());
+    });
+  },
+
   initFloatingAlerts() {
-    // Prevent multiple initializations
     if (this._alertsInitialized) return;
 
     const processAlerts = () => {
@@ -3925,10 +1725,17 @@ return baseclass.extend({
 
       alerts.forEach((alert, index) => {
         try {
-          // Mark as initialized
+          if (this.isDialogAlert(alert)) {
+            alert.dataset.floatingInit = "dialog";
+            alert.classList.remove(
+              "proton-alert-floating",
+              "proton-alert-native",
+            );
+            return;
+          }
+
           alert.dataset.floatingInit = "true";
 
-          // Floating alerts are opt-in. Unmarked LuCI system notifications stay native.
           if (!this.isManagedAlert(alert)) {
             alert.classList.remove("proton-alert-floating");
             alert.classList.add("proton-alert-native");
@@ -3938,24 +1745,23 @@ return baseclass.extend({
           alert.classList.remove("proton-alert-native");
           alert.classList.add("proton-alert-floating");
 
-          // Generate unique ID based on content hash
           const contentText = alert.textContent?.trim() || "";
           const alertId = `alert-${this.simpleHash(contentText)}`;
           alert.dataset.alertId = alertId;
 
-          // Check if alert was dismissed in this session
-          const dismissed = sessionStorage.getItem(
-            `proton-alert-dismissed-${alertId}`,
-          );
-          if (dismissed === "true") {
-            alert.remove();
-            return;
+          if (!this.isTransientAlert(alert)) {
+            const dismissed = sessionStorage.getItem(
+              `proton-alert-dismissed-${alertId}`,
+            );
+            if (dismissed === "true") {
+              alert.remove();
+              return;
+            }
           }
 
-          // Ensure proper structure before showing
+          this.removeCoreDismissButton(alert);
           this.ensureAlertStructure(alert);
 
-          // Add close button to header if not yet added
           if (!alert.querySelector(".alert-message-close")) {
             const closeBtn = this.createCloseButton(alert, alertId);
             const header = alert.querySelector(".alert-message-header");
@@ -3966,14 +1772,13 @@ return baseclass.extend({
             ).appendChild(closeBtn);
           }
 
-          // Set initial position: below all already-visible alerts
           this._positionAlert(alert, index);
 
-          // Show alert with staggered animation, then reposition using real heights
           requestAnimationFrame(() => {
             setTimeout(() => {
               alert.classList.add("is-visible");
               requestAnimationFrame(() => this.repositionAlerts());
+              this.scheduleAlertTimeout(alert, alertId);
             }, 50 * index);
           });
         } catch (error) {
@@ -3982,17 +1787,12 @@ return baseclass.extend({
       });
     };
 
-    // Initial processing — only explicitly managed alerts float on first paint.
     processAlerts();
 
-    // Watch for new alerts (with debouncing)
     if (!this._alertObserver) {
       let debounceTimer = null;
 
       this._alertObserver = new MutationObserver((mutations) => {
-        // Synchronously classify new alerts before the browser paints.
-        // Floating behavior is opt-in via proton-alert-floating, so both paths
-        // are tagged here before the debounce handler does the heavier setup.
         for (const mutation of mutations) {
           for (const node of mutation.addedNodes) {
             if (node.nodeType !== 1) continue;
@@ -4001,7 +1801,13 @@ return baseclass.extend({
               : Array.from(node.querySelectorAll?.(".alert-message") ?? []);
             for (const alert of candidates) {
               if (alert.dataset.floatingInit) continue;
-              if (this.isManagedAlert(alert)) {
+              if (this.isDialogAlert(alert)) {
+                alert.dataset.floatingInit = "dialog";
+                alert.classList.remove(
+                  "proton-alert-floating",
+                  "proton-alert-native",
+                );
+              } else if (this.isManagedAlert(alert)) {
                 alert.classList.remove("proton-alert-native");
                 alert.classList.add("proton-alert-floating");
               } else {
@@ -4023,6 +1829,18 @@ return baseclass.extend({
         childList: true,
         subtree: true,
       });
+
+      window.addEventListener(
+        "pagehide",
+        () => {
+          if (this._alertObserver) {
+            this._alertObserver.disconnect();
+            this._alertObserver = null;
+          }
+          clearTimeout(debounceTimer);
+        },
+        { once: true },
+      );
     }
 
     this._alertsInitialized = true;
@@ -4032,21 +1850,44 @@ return baseclass.extend({
     return alert?.dataset?.protonManaged === "true";
   },
 
-  /**
-   * Ensure alert has proper structure for styling
-   */
+  isTransientAlert(alert) {
+    return parseInt(alert?.dataset?.protonTimeout, 10) > 0;
+  },
+
+  scheduleAlertTimeout(alert, alertId) {
+    const timeout = parseInt(alert?.dataset?.protonTimeout, 10);
+    if (!(timeout > 0)) return;
+
+    alert._protonTimeoutId = setTimeout(() => {
+      alert._protonTimeoutId = null;
+      this.dismissAlert(alert, alertId, false);
+    }, timeout);
+  },
+
+  isDialogAlert(alert) {
+    return !!alert?.closest?.(
+      "#modal_overlay, .modal, .proton-reboot-modal-overlay, .proton-confirm-modal-overlay",
+    );
+  },
+
+  removeCoreDismissButton(alert) {
+    const wrapper = alert.lastElementChild;
+    if (!wrapper || wrapper.tagName !== "DIV" || wrapper.className) return;
+    if (wrapper.childNodes.length !== 1) return;
+    const btn = wrapper.firstElementChild;
+    if (btn?.tagName === "BUTTON" && btn.classList.contains("btn"))
+      wrapper.remove();
+  },
+
   ensureAlertStructure(alert) {
-    // Already structured — normalise if needed and return
     if (alert.querySelector(".alert-message-content")) {
       const content = alert.querySelector(".alert-message-content");
 
-      // Ensure header exists (needed for close button)
       if (!content.querySelector(".alert-message-header")) {
         const title = content.querySelector(":scope > h4");
         this._ensureHeader(content, title);
       }
 
-      // Move any loose buttons to footer
       const looseButtons = Array.from(
         content.querySelectorAll(
           ":scope > button:not(.alert-message-close), :scope > .cbi-button, :scope > .btn, :scope > a.cbi-button",
@@ -4064,14 +1905,12 @@ return baseclass.extend({
       return;
     }
 
-    // Build structure from raw children
     const title = alert.querySelector(":scope > h4");
     const childNodes = Array.from(alert.childNodes);
 
     const wrapper = document.createElement("div");
     wrapper.className = "alert-message-content";
 
-    // Always create header (close button will be appended here, even without a title)
     this._ensureHeader(wrapper, title);
 
     const footerButtons = [];
@@ -4132,10 +1971,6 @@ return baseclass.extend({
     alert.replaceChildren(wrapper);
   },
 
-  /**
-   * Always create .alert-message-header (even without a title) so close button
-   * always lands at the top of the card.
-   */
   _ensureHeader(wrapper, title) {
     const header = document.createElement("div");
     header.className = "alert-message-header";
@@ -4144,9 +1979,6 @@ return baseclass.extend({
     return header;
   },
 
-  /**
-   * Create close button for alert
-   */
   createCloseButton(alert, alertId) {
     const closeBtn = document.createElement("button");
     closeBtn.className = "alert-message-close";
@@ -4158,51 +1990,45 @@ return baseclass.extend({
     closeBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      this.dismissAlert(alert, alertId);
+      this.dismissAlert(alert, alertId, !this.isTransientAlert(alert));
     });
 
     return closeBtn;
   },
 
-  /**
-   * Dismiss alert with animation
-   */
-  dismissAlert(alert, alertId) {
+  dismissAlert(alert, alertId, persist = true) {
     try {
-      // Mark as dismissed for this session
-      sessionStorage.setItem(`proton-alert-dismissed-${alertId}`, "true");
+      if (alert._protonTimeoutId) {
+        clearTimeout(alert._protonTimeoutId);
+        alert._protonTimeoutId = null;
+      }
 
-      // Hide with animation
+      if (persist) {
+        sessionStorage.setItem(`proton-alert-dismissed-${alertId}`, "true");
+      }
+
       alert.classList.remove("is-visible");
       alert.classList.add("is-hidden");
 
-      // Remove from DOM after animation
       setTimeout(() => {
         if (alert.parentNode) {
           alert.remove();
         }
-        // Reposition remaining alerts
         this.repositionAlerts();
       }, 300);
     } catch (error) {
       console.error("Error dismissing alert:", error);
-      // Fallback: just remove it
       if (alert.parentNode) {
         alert.remove();
       }
     }
   },
 
-  /**
-   * Reposition all visible alerts using their real rendered heights.
-   * Includes proton-search-index-hud and -toast in the stack.
-   */
   repositionAlerts() {
     const gap = 12;
     const baseTop = window.matchMedia("(max-width: 800px)").matches ? 72 : 84;
     let top = baseTop;
 
-    // Unified stack: HUD → toast → alert-messages (in that priority order)
     const stacked = [
       document.querySelector(
         "#proton-search-index-hud.is-visible:not([hidden])",
@@ -4223,17 +2049,11 @@ return baseclass.extend({
     });
   },
 
-  /**
-   * Set preliminary top position for a not-yet-visible alert.
-   * Uses actual heights of already-visible alerts + a rough estimate
-   * (120px) for each unshown sibling in the current batch.
-   */
   _positionAlert(alert, batchIndex) {
     const gap = 12;
     const baseTop = window.matchMedia("(max-width: 800px)").matches ? 72 : 84;
     let top = baseTop;
 
-    // Account for HUD and toast already visible above
     [
       document.querySelector(
         "#proton-search-index-hud.is-visible:not([hidden])",
@@ -4258,9 +2078,6 @@ return baseclass.extend({
     alert.style.top = top + "px";
   },
 
-  /**
-   * Simple hash function for generating alert IDs
-   */
   simpleHash(str) {
     let hash = 0;
     if (!str || str.length === 0) return hash.toString();

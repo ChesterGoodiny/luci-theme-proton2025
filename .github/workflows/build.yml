@@ -142,14 +142,21 @@ jobs:
 
             ### Installation
 
-            **OpenWrt ≤ 23.05 (`.ipk` / `opkg`)**
+            One command over root SSH. The script detects the package manager
+            (`apk` or `opkg`), picks the matching asset from this release,
+            installs it and switches LuCI over to the theme.
+
             ```bash
-            opkg install luci-theme-proton2025_*.ipk
+            wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/install.sh | sh
             ```
 
-            **OpenWrt ≥ 24.10 (`.apk` / `apk`)**
+            ### Removal
+
             ```bash
-            apk add --allow-untrusted luci-theme-proton2025-*.apk
+            wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/uninstall.sh | sh
             ```
+
+            To install by hand, take the exact file name from the assets below:
+            `.apk` if `command -v apk` prints a path, `.ipk` otherwise.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

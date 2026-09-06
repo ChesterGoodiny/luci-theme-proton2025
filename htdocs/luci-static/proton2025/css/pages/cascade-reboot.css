@@ -1,0 +1,92 @@
+body[data-page="admin-system-reboot"] .cbi-section {
+    background: linear-gradient(135deg, var(--proton-bg-tertiary) 0%, var(--proton-bg-secondary) 100%);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius);
+    padding: 32px 28px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    text-align: center;
+}
+
+:root[data-theme="light"] body[data-page="admin-system-reboot"] .cbi-section {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.95) 100%);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+body[data-page="admin-system-reboot"] .cbi-section>h3,
+body[data-page="admin-system-reboot"] .cbi-section>legend {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--proton-fg);
+    margin: 0 0 16px;
+    padding-bottom: 0;
+    border-bottom: none;
+    letter-spacing: -0.02em;
+}
+
+body[data-page="admin-system-reboot"] .cbi-section-descr {
+    color: var(--proton-fg-secondary);
+    font-size: 1rem;
+    margin-bottom: 28px;
+    line-height: 1.6;
+}
+body[data-page="admin-system-reboot"] hr,
+body[data-page="admin-system-reboot"] .cbi-page-actions {
+    border-top: none !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+body[data-page="admin-system-reboot"] hr {
+    display: none;
+}
+body[data-page="admin-system-reboot"] .cbi-button-action,
+body[data-page="admin-system-reboot"] .cbi-button-apply {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 20px !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    background: var(--proton-danger) !important;
+    border: 2px solid var(--proton-danger) !important;
+    border-radius: var(--proton-radius) !important;
+    color: #fff !important;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(229, 62, 62, 0.3);
+}
+
+body[data-page="admin-system-reboot"] .cbi-button-action:hover,
+body[data-page="admin-system-reboot"] .cbi-button-apply:hover {
+    background: rgba(229, 62, 62, 0.9) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(229, 62, 62, 0.4);
+}
+
+body[data-page="admin-system-reboot"] .cbi-button-action:active,
+body[data-page="admin-system-reboot"] .cbi-button-apply:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(229, 62, 62, 0.3);
+}
+body[data-page="admin-system-reboot"] .cbi-button-action::before,
+body[data-page="admin-system-reboot"] .cbi-button-apply::before {
+    content: "⭮";
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+.proton-no-animations body[data-page="admin-system-reboot"] .cbi-button-action:hover,
+.proton-no-animations body[data-page="admin-system-reboot"] .cbi-button-apply:hover {
+    transform: none;
+}
+@media (max-width: 800px) {
+    body[data-page="admin-system-reboot"] .cbi-section {
+        padding: 24px 20px;
+    }
+
+    body[data-page="admin-system-reboot"] .cbi-button-action,
+    body[data-page="admin-system-reboot"] .cbi-button-apply {
+        width: 100%;
+        padding: 12px 20px !important;
+    }
+}

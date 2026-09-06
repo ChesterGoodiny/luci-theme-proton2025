@@ -1,0 +1,4 @@
+body[data-page="admin-system-system"] .cbi-value[data-name="_systime"] .cbi-value-field>span.control-group {
+    display: flex;
+    width: 100%;
+}

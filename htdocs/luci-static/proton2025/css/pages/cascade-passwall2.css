@@ -1,0 +1,7 @@
+body[data-page^="admin-services-passwall2"] font[color="red"],
+body[data-page^="admin-services-passwall2"] [style*="color: red"],
+body[data-page^="admin-services-passwall2"] [style*="color:red"],
+body[data-page^="admin-services-passwall2"] .red,
+body[data-page^="admin-services-passwall2"] .dl-remove {
+    color: var(--proton-danger) !important;
+}

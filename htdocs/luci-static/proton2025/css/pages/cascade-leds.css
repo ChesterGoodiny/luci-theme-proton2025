@@ -1,0 +1,198 @@
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-table {
+    background: var(--proton-bg-secondary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius);
+}
+
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-table-titles {
+    background: var(--proton-bg-tertiary);
+}
+
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-table-titles .th {
+    padding: 8px 10px;
+    font-weight: 600;
+    color: var(--proton-fg);
+    font-size: 0.82rem;
+    border-bottom: 1px solid var(--proton-border);
+}
+
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-table-row {
+    border-bottom: 1px solid var(--proton-border-subtle);
+    transition: var(--proton-transition);
+}
+
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-table-row:hover {
+    background: var(--proton-bg-tertiary);
+}
+
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-table-row:last-child {
+    border-bottom: none;
+}
+
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-table-row .td {
+    padding: 8px 10px;
+    vertical-align: middle;
+    font-size: 0.88rem;
+}
+body[data-page="admin-system-leds"] #cbi-system-led .td[data-title="Name"] {
+    font-weight: 600;
+    color: var(--proton-fg);
+}
+body[data-page="admin-system-leds"] #cbi-system-led .td[data-title="LED Name"] {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    color: var(--proton-accent);
+    font-size: 0.85rem;
+}
+body[data-page="admin-system-leds"] #cbi-system-led .td[data-title="Trigger"] {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    font-size: 0.85rem;
+    color: var(--proton-fg-secondary);
+}
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-actions {
+    white-space: nowrap;
+}
+
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-actions>div {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+body[data-page="admin-system-leds"] #cbi-system-led .drag-handle {
+    background: transparent !important;
+    border: none !important;
+    color: var(--proton-muted) !important;
+    font-size: 1.1rem !important;
+    padding: 4px 8px !important;
+    cursor: grab !important;
+    opacity: 0.5;
+    transition: var(--proton-transition);
+}
+
+body[data-page="admin-system-leds"] #cbi-system-led .drag-handle:hover {
+    opacity: 1;
+    color: var(--proton-accent) !important;
+}
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-button-edit {
+    background: var(--proton-accent) !important;
+    border-color: var(--proton-accent) !important;
+    color: #fff !important;
+    border-radius: var(--proton-radius-sm) !important;
+}
+
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-button-edit:hover {
+    filter: brightness(1.1);
+}
+
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-button-remove {
+    background: rgba(255, 107, 107, 0.1) !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+    color: var(--proton-danger) !important;
+    border-radius: var(--proton-radius-sm) !important;
+}
+
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-button-remove:hover {
+    background: var(--proton-danger) !important;
+    border-color: var(--proton-danger) !important;
+    color: #fff !important;
+}
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-create {
+    padding: 16px;
+    background: var(--proton-bg-secondary);
+    border: 1px solid var(--proton-border);
+    border-top: none;
+    border-radius: 0 0 var(--proton-radius) var(--proton-radius);
+    margin-top: -1px;
+}
+
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-button-add {
+    background: var(--proton-success) !important;
+    border-color: var(--proton-success) !important;
+    color: #fff !important;
+    padding: 10px 20px !important;
+    font-size: 0.9rem !important;
+}
+
+body[data-page="admin-system-leds"] #cbi-system-led .cbi-button-add:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px rgba(107, 207, 127, 0.3);
+}
+@media screen and (max-width: 768px) {
+    body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-table {
+        display: block;
+        border: none;
+        background: transparent;
+    }
+
+    body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-table-titles {
+        display: none;
+    }
+
+    body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-table-row {
+        display: flex;
+        flex-direction: column;
+        background: var(--proton-bg-secondary);
+        border: 1px solid var(--proton-border);
+        border-radius: var(--proton-radius);
+        padding: 16px;
+        margin-bottom: 10px;
+        gap: 10px;
+    }
+
+    body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-table-row:hover {
+        border-color: var(--proton-accent);
+    }
+
+    body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-table-row .td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0;
+        border: none !important;
+    }
+
+    body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-table-row .td::before {
+        content: attr(data-title);
+        font-weight: 600;
+        color: var(--proton-fg-secondary);
+        font-size: 0.7rem;
+        min-width: 80px;
+        flex-shrink: 0;
+    }
+    body[data-page="admin-system-leds"] #cbi-system-led .td[data-title="Name"] {
+        order: -2;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--proton-border-subtle) !important;
+        font-size: 1rem;
+    }
+
+    body[data-page="admin-system-leds"] #cbi-system-led .td[data-title="Name"]::before {
+        display: none;
+    }
+    body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-actions {
+        order: 10;
+        padding-top: 12px !important;
+        border-top: 1px solid var(--proton-border-subtle) !important;
+        justify-content: flex-end;
+    }
+
+    body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-actions::before {
+        display: none;
+    }
+
+    body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-actions>div {
+        gap: 10px;
+    }
+
+    body[data-page="admin-system-leds"] #cbi-system-led .cbi-button-edit,
+    body[data-page="admin-system-leds"] #cbi-system-led .cbi-button-remove {
+        padding: 10px 16px !important;
+        font-size: 0.9rem !important;
+    }
+    body[data-page="admin-system-leds"] #cbi-system-led .drag-handle {
+        display: none;
+    }
+    body[data-page="admin-system-leds"] #cbi-system-led .cbi-section-create {
+        border-radius: var(--proton-radius);
+        border: 1px solid var(--proton-border);
+    }
+}

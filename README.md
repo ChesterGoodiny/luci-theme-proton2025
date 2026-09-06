@@ -1,271 +1,243 @@
 # luci-theme-proton2025
 
-An elegant LuCI theme (OpenWrt 23.x+) with a dark design and optional light mode.
+A dark LuCI theme for OpenWrt 23.05+ (ucode) with an optional light mode, a
+built-in page search and theme settings inside the LuCI UI.
 
-![OpenWrt](https://img.shields.io/badge/OpenWrt-23.x%2B-blue)
+![OpenWrt](https://img.shields.io/badge/OpenWrt-23.05%2B-blue)
 ![LuCI](https://img.shields.io/badge/LuCI-ucode-green)
 ![License](https://img.shields.io/badge/License-Apache%202.0-orange)
 
-## Screenshots
-
-### Desktop
-
 <div align="center">
-  <img src="docs/status.png" alt="LuCI Status" width="48%" />
-  <img src="docs/widgets-dashboard.png" alt="Services Widget Dashboard" width="48%" />
-  <img src="docs/settings.png" alt="Theme Settings" width="48%" />
-  <img src="docs/wireless.png" alt="Wireless Networks" width="48%" />
-  <img src="docs/interfaces.png" alt="Network Interfaces" width="48%" />
-  <img src="docs/system-log.png" alt="System Log" width="48%" />
-  <img src="docs/temperature.png" alt="Temperature Page" width="48%" />
-  <img src="docs/login.png" alt="Login Page" width="48%" />
+  <img src="docs/status.png" alt="LuCI Status page with the Proton2025 theme" width="80%" />
+  <img src="docs/status-sidebar.png" alt="LuCI Status page with the Proton2025 side panel" width="80%" />
 </div>
 
-### Mobile
+<details>
+<summary>More screenshots</summary>
 
 <div align="center">
-  <img src="docs/status-mobile.png" alt="LuCI Status Mobile" width="23%" />
-  <img src="docs/widgets-dashboard-mobile.png" alt="Services Widget Dashboard Mobile" width="23%" />
-  <img src="docs/settings-mobile.png" alt="Theme Settings Mobile" width="23%" />
-  <img src="docs/login-mobile.png" alt="Login Page Mobile" width="23%" />
-  <img src="docs/wireless-mobile.png" alt="Wireless Networks Mobile" width="23%" />
-  <img src="docs/interfaces-mobile.png" alt="Network Interfaces Mobile" width="23%" />
-  <img src="docs/system-log-mobile.png" alt="System Log Mobile" width="23%" />
-  <img src="docs/temperature-mobile.png" alt="Temperature Page Mobile" width="23%" />
+  <img src="docs/settings.png" alt="Theme settings" width="48%" />
+  <img src="docs/temperature.png" alt="Temperature page" width="48%" />
+  <img src="docs/system-log.png" alt="System log with highlighting" width="48%" />
+  <img src="docs/wireless.png" alt="Wireless networks" width="48%" />
+  <img src="docs/interfaces.png" alt="Network interfaces" width="48%" />
+  <img src="docs/login.png" alt="Login page" width="48%" />
 </div>
 
-## Features
+<div align="center">
+  <img src="docs/status-mobile.png" alt="Status page on mobile" width="23%" />
+  <img src="docs/settings-mobile.png" alt="Theme settings on mobile" width="23%" />
+  <img src="docs/temperature-mobile.png" alt="Temperature page on mobile" width="23%" />
+  <img src="docs/login-mobile.png" alt="Login page on mobile" width="23%" />
+</div>
 
-- 🌙 Dark glass/blur design with optional light mode
-- 🎨 Customizable accent color, border radius, zoom
-- 📱 Responsive layout for mobile devices
-- ⚡ Compatible with LuCI ucode (OpenWrt 23.x+)
-- 📊 Services monitoring widget on Status → Overview page
-- 🌡️ Temperature monitoring widget with thermal sensors
-- 📈 Elegant Load Average visualization with color-coded progress bars
-- 🔎 Built-in semantic search with pre-indexed LuCI pages, transliteration, and typo-tolerant matching
-- 🔌 Automatic styling for third-party packages and custom pages
-- 🌐 Multi-language support (10 languages: EN, RU, ZH, DE, UK, ES, PT, PL, FR, IT)
-- 🔄 Settings sync across browsers/devices (localStorage + UCI)
+</details>
 
-## Widgets
+## Requirements
 
-### Services Widget
-
-The main page (Status → Overview) displays a widget showing system service statuses:
-
-- Status visualization (Running/Stopped)
-- Add services via modal or custom input
-- Settings saved in browser
-
-### Temperature Widget
-
-Real-time temperature monitoring on Status → Overview:
-
-- Reads data from `/sys/class/thermal/` and `/sys/class/hwmon/`
-- Color-coded levels (Normal, Warm, Hot, Critical)
-- Peak temperature tracking
-- Auto-refresh every 5 seconds
-- Built-in ucode RPC module (no external dependencies)
-
-## Search
-
-The top bar includes built-in LuCI search:
-
-- Semantic search across pages, tabs, and settings
-- Keyboard layout swap plus basic RU/LAT transliteration
-- Manual page indexing with cached search data stored on the router
-
-## Theme Settings
-
-Available at **System → System → Language and Style**:
-
-- Theme mode (Dark/Light)
-- Accent color (Blue, Purple, Green, Orange, Red)
-- Border radius
-- Interface zoom
-- Page width
-- Animations and transparency
-- Custom font (Inter)
-- Services widget (enable/disable, grouping, log)
-- Temperature widget (enable/disable)
-- Log highlighting
-- Search page index tools (build and clear cached data)
-- Table text wrap (wraps long AP names in Wireless Associated Stations table)
-
-### Settings Synchronization
-
-Theme settings are stored using a hybrid approach:
-
-- **localStorage** — instant application without flickering
-- **UCI** (`/etc/config/proton2025`) — persistent storage, syncs across browsers/devices
-
-Benefits:
-
-- Settings are included in router backup (`sysupgrade -b`)
-- Works across different browsers and devices
-- Instant UI updates without page reload
+- OpenWrt 23.05 or newer with the ucode-based LuCI (`luci-base`)
+- The package is architecture-independent, so one build fits every device
+- Root SSH access for the commands below
 
 ## Installation
 
-### Recommended: Install from IPK Package
+One command over root SSH. The script works out the rest itself: which package
+manager the build has (`apk` or `opkg`), the current release, the exact asset
+name for that format, then installs the package and switches LuCI over to the
+theme.
 
-**On your OpenWrt router** (via SSH), download and install the latest release:
+**Theme only:**
 
-> 📦 The `*_all.ipk` package is universal and works on any architecture
-
-```bash
-wget https://github.com/ChesterGoodiny/luci-theme-proton2025/releases/latest/download/luci-theme-proton2025_*_all.ipk
-opkg install luci-theme-proton2025_*_all.ipk
-```
-
-Or download manually from [GitHub Releases](https://github.com/ChesterGoodiny/luci-theme-proton2025/releases) and upload to your router.
-
-> 💡 **Tip:** If you updated and don't see changes (e.g. icons), do a hard refresh (Ctrl+F5) or clear the browser cache.
-
-**Benefits:**
-
-- ✅ Includes all translations
-- ✅ Proper package management (easy updates/removal)
-- ✅ Dependency tracking
-
-### Install on OpenWrt builds with apk
-
-**On your OpenWrt router** (via SSH), download the APK package from the latest release and install it:
-
-```bash
-wget https://github.com/ChesterGoodiny/luci-theme-proton2025/releases/latest/download/luci-theme-proton2025-*.apk
-apk add --allow-untrusted luci-theme-proton2025-*.apk
-```
-
-> 💡 Note: this only works with a valid OpenWrt `.apk` produced by the OpenWrt SDK/buildroot.
-
-### Quick Install (Testing Only)
-
-**On your OpenWrt router** (via SSH):
-
-> ⚠️ **Note:** This method is intended for testing purposes only.
-
-```bash
+```sh
 wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/install.sh | sh
 ```
 
-### Building Packages from Source
+**Theme with dashboard widgets:**
 
-**On your build machine** (where you have OpenWrt SDK/buildroot):
-
-```bash
-cd ~/openwrt
-git clone https://github.com/ChesterGoodiny/luci-theme-proton2025 package/luci-theme-proton2025
-./scripts/feeds update -a && ./scripts/feeds install -a
-make menuconfig  # LuCI -> Themes -> luci-theme-proton2025
-make package/luci-theme-proton2025/compile V=s
+```sh
+wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/install.sh | WITH_DASHBOARD=1 sh
 ```
 
-The compiled package will be in `bin/packages/*/`:
+The widgets on Status → Overview are no longer part of the theme; they are being
+split out into a separate package, `luci-app-proton2025-dashboard`. That package
+is not published yet, so the second command currently installs the theme only and
+tells you so. Once the package is released, the same command will pull it in.
 
-- `.ipk` when building with an `opkg`-based OpenWrt SDK/buildroot
-- `.apk` when building with an `apk`-based OpenWrt SDK/buildroot
+Reload LuCI in the browser afterwards (Ctrl+F5). If you prefer to install the
+package by hand, take the exact file name from the
+[Releases page](https://github.com/ChesterGoodiny/luci-theme-proton2025/releases) —
+`.apk` if `command -v apk` prints a path, `.ipk` otherwise.
 
-> ⚠️ Important: a valid OpenWrt `.apk` must be produced by the official OpenWrt SDK/buildroot. Simply packing the theme files into a `tar.gz` archive and renaming it to `.apk` does not produce a package that `apk add` can install.
+## Updating
+
+Re-run the install command, or let the theme update itself from **System →
+System → Language and Style → Tools → Check for updates**.
+
+Settings live in `/etc/config/proton2025` and survive an upgrade.
 
 ## Removal
 
-**On your OpenWrt router** (via SSH):
-
-```bash
-wget -O uninstall.sh https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/uninstall.sh
-chmod +x uninstall.sh
-./uninstall.sh
+```sh
+wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/uninstall.sh | sh
 ```
 
-Or simply remove the package:
+Switches LuCI back to the stock theme, removes the package and anything left
+behind, and restarts the web server. `/etc/config/proton2025` is kept, so a
+later reinstall picks your settings back up.
 
-```bash
-opkg remove luci-theme-proton2025
-```
+## Theme settings
 
-For systems with `apk`:
+**System → System → Language and Style**, in four tabs:
 
-```bash
-apk del luci-theme-proton2025
-```
+| Tab        | Contains                                                                                                                                                                                                                      |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Appearance | Theme mode (auto / dark / light), accent colour (Neutral, Blue, Purple, Green, Orange or a custom hex value), corner radius, tab outlines, background pattern (none / grid / dots / stars), animations, transparency and blur |
+| Layout     | Background pattern scale, interface zoom, page width (50–100%), desktop menu placement (top bar or sidebar)                                                                                                                   |
+| Features   | System log highlighting, bundled Inter font, client-side navigation (SPA — experimental, off by default)                                                                                                                      |
+| Tools      | Update check and install, search index (build, clear, size, activity log), settings backup and restore, reset to defaults                                                                                                     |
 
-### Revert to Default Theme
+Settings are written twice: to `localStorage`, so they apply without a flash of
+unstyled page, and to UCI (`/etc/config/proton2025`), so they follow the router
+rather than the browser and are captured by `sysupgrade -b`.
+
+## Search
+
+The top bar carries a search field covering LuCI pages, tabs and individual
+settings. It tolerates typos, swaps between RU and LAT keyboard layouts and
+transliterates. The page index is built on demand from **Tools → Search index**
+and cached on the router.
+
+## Other features
+
+- Status → Realtime → **Temperature** — a theme-provided page reading
+  `/sys/class/thermal/` and `/sys/class/hwmon/` through its own ucode RPC
+  module, with no external dependencies
+- Colour-coded Load Average bars on the status page
+- Automatic styling for third-party packages and custom pages
+- 10 interface languages: EN, RU, ZH, DE, UK, ES, PT, PL, FR, IT
+
+The service, temperature and throughput widgets on Status → Overview are no
+longer part of this theme — they are moving to a separate package,
+`luci-app-proton2025-dashboard`, which is not published yet. The theme only
+styles them and carries their settings through backup and restore.
+
+## Troubleshooting
+
+**`404 Not Found`, or `opkg`/`apk` reporting a missing file or `no such
+package`.** A hand-written URL contained a `*` — `wget` does not expand
+wildcards, so the literal `*` reaches GitHub. Use the install command above, or
+the exact asset name from the Releases page.
+
+**`API rate limit exceeded`.** 60 unauthenticated GitHub API requests per hour
+per IP. The script falls back to the releases feed, which is not rate limited;
+otherwise wait or download the file manually.
+
+**`SSL certificate verification failed` / `wget: bad address`.** The router has
+no CA bundle yet:
 
 ```sh
-uci set luci.main.mediaurlbase=/luci-static/bootstrap
+opkg update && opkg install ca-bundle ca-certificates
+```
+
+```sh
+apk update && apk add ca-bundle ca-certificates
+```
+
+**The old style or old icons still show after an update.** Browser cache.
+Hard-reload with Ctrl+F5 (Cmd+Shift+R on macOS).
+
+**LuCI still renders the stock theme.** Check what LuCI points at and that the
+files landed:
+
+```sh
+uci get luci.main.mediaurlbase   # expected: /luci-static/proton2025
+ls -l /www/luci-static/proton2025
+logread | grep -i uhttpd
+```
+
+If the path is wrong, set it and restart the web server:
+
+```sh
+uci set luci.main.mediaurlbase=/luci-static/proton2025
 uci commit luci
 /etc/init.d/uhttpd restart
 ```
 
-## Structure
+**`/bin/sh^M: bad interpreter`.** A script saved with Windows CRLF line endings.
+Fix it in place:
+
+```sh
+sed -i 's/\r$//' install.sh
+```
+
+**`apk` refuses the package.** Only packages produced by the OpenWrt
+SDK/buildroot are valid; a `tar.gz` renamed to `.apk` will never install.
+Releases before 1.1.2 contained such repacked files.
+
+**Checking what is installed:**
+
+```sh
+opkg list-installed | grep -i proton2025
+```
+
+```sh
+apk info -e luci-theme-proton2025
+```
+
+## Building from source
+
+```sh
+cd ~/openwrt
+git clone https://github.com/ChesterGoodiny/luci-theme-proton2025 package/luci-theme-proton2025
+./scripts/feeds update -a && ./scripts/feeds install -a
+make menuconfig   # LuCI -> Themes -> luci-theme-proton2025
+make package/luci-theme-proton2025/compile V=s
+```
+
+The package lands in `bin/packages/*/` — as `.ipk` with an opkg-based SDK, or as
+`.apk` with an apk-based SDK (`CONFIG_USE_APK=y`).
+
+## Project layout
 
 ```
-luci-theme-proton2025/
-├── docs/
-│   ├── status.png
-│   ├── status-mobile.png
-│   └── ...
-├── Makefile
-├── htdocs/luci-static/
-│   ├── proton2025/
-│   │   ├── cascade.css
-│   │   ├── custom-pages.js
-│   │   ├── search-proton2025-data.js
-│   │   ├── search-proton2025.js
-│   │   ├── services-widget.js
-│   │   ├── settings-sync.js
-│   │   ├── translations.js
-│   │   ├── fonts/
-│   │   ├── icons/
-│   │   ├── brand.svg
-│   │   ├── logo.svg
-│   │   └── spinner.svg
-│   └── resources/
-│       ├── menu-proton2025.js
-│       └── view/status/proton-temperature.js
-├── root/
-│   ├── etc/
-│   │   ├── config/proton2025
-│   │   └── uci-defaults/30_luci-theme-proton2025
-│   └── usr/share/
-│       ├── luci/menu.d/luci-theme-proton2025.json
-│       └── rpcd/
-│           ├── acl.d/luci-theme-proton2025.json
-│           └── ucode/
-│               ├── luci.proton-search-cache
-│               ├── luci.proton-settings
-│               ├── luci.proton-system
-│               └── luci.proton-temp
-└── ucode/template/themes/proton2025/
-    ├── header.ut
-    ├── footer.ut
-    └── sysauth.ut
+htdocs/luci-static/proton2025/     # theme assets: css/, js/, i18n/, img/, icons/, fonts/
+htdocs/luci-static/resources/      # LuCI-side modules: menu, dropdowns, search index,
+                                   # theme settings, SPA router,
+                                   # view/status/proton-temperature.js
+ucode/template/themes/proton2025/  # header.ut, footer.ut, sysauth.ut
+root/etc/config/proton2025         # UCI settings (a conffile — kept on upgrade)
+root/usr/share/luci/menu.d/        # menu entry for the Temperature page
+root/usr/share/rpcd/ucode/         # RPC: proton-search-cache, proton-settings,
+                                   # proton-system, proton-temp
+install.sh / uninstall.sh          # one-command install and removal
 ```
 
 ## License
 
-Apache-2.0
+Apache-2.0. Copyright 2025-2026 ChesterGoodiny. Project icons and bundled SVG
+assets are original first-party assets covered by Apache-2.0. See LICENSE and
+NOTICE for attribution details.
 
-Copyright 2025-2026 ChesterGoodiny.
+Third-party assets: the **Inter** font, Copyright 2020 The Inter Project Authors
+(https://github.com/rsms/inter), under SIL Open Font License 1.1 — license file
+at `htdocs/luci-static/proton2025/fonts/LICENSE.txt`.
 
-Project icons and bundled SVG assets are original first-party assets covered by Apache-2.0.
+## Acknowledgements
 
-See LICENSE and NOTICE for project attribution details.
+- The optional SPA (same-document navigation) mode borrows some of its ideas
+  from [luci-theme-footstrap](https://github.com/VizzleTF/luci-theme-footstrap),
+  which pioneered client-side navigation for LuCI themes. The idea to bring this
+  approach into this theme came from seeing it adopted by the Aurora and Shadcn
+  themes (eamonxg). proton2025's router is an independent implementation built on
+  the browser Navigation API.
+- The alias/firstchild resolution logic is ported from LuCI's own
+  `dispatcher.uc` (luci-base, Apache-2.0), so that a clicked link and a page
+  reload resolve to exactly the same view.
+- Thanks to [lastik9/openwrt-luci-theme-proton2025](https://github.com/lastik9/openwrt-luci-theme-proton2025)
+  for helping identify the installation documentation issues that prompted this
+  simpler installer flow.
 
-### Third-Party Assets
-
-This theme includes the following third-party assets:
-
-- **Inter Font** - Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
-  - Licensed under SIL Open Font License 1.1
-  - License file: `htdocs/luci-static/proton2025/fonts/LICENSE.txt`
-  - Used for consistent typography across all platforms
-
-## Stargazers over time
-
-## Star History
+## Star history
 
 <a href="https://www.star-history.com/?repos=ChesterGoodiny%2Fluci-theme-proton2025&type=date&legend=top-left">
  <picture>
@@ -274,4 +246,3 @@ This theme includes the following third-party assets:
    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ChesterGoodiny/luci-theme-proton2025&type=date&legend=top-left" />
  </picture>
 </a>
-

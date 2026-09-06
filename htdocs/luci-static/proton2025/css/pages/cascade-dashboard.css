@@ -1,0 +1,35 @@
+body[data-page^="admin-dashboard"] .Dashboard .dashboard-bg {
+    background: rgba(var(--proton-accent-rgb), 0.07) !important;
+    border: 1px solid var(--proton-border) !important;
+    box-shadow: var(--proton-shadow-sm) !important;
+}
+
+:root[data-theme="light"] body[data-page^="admin-dashboard"] .Dashboard .dashboard-bg {
+    background: rgba(0, 0, 0, 0.025) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+body[data-page^="admin-dashboard"] .cbi-section {
+    background: var(--proton-bg-secondary) !important;
+    border-color: var(--proton-border) !important;
+}
+
+:root[data-theme="light"] body[data-page^="admin-dashboard"] .cbi-section {
+    background: var(--proton-bg-secondary) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+html[class*="proton-pattern-"] body[data-page^="admin-dashboard"] .Dashboard .dashboard-bg,
+:root[data-theme="light"][class*="proton-pattern-"] body[data-page^="admin-dashboard"] .Dashboard .dashboard-bg {
+    background:
+        linear-gradient(180deg, rgba(var(--proton-accent-rgb), 0.06) 0%, rgba(var(--proton-accent-rgb), 0.12) 100%),
+        linear-gradient(180deg, rgba(var(--proton-card-rgb), 0.65) 0%, var(--proton-card-solid) 50%) !important;
+}
+body[data-page^="admin-dashboard"] .Dashboard .svgmonotone {
+    filter: invert(1);
+}
+
+:root[data-theme="light"] body[data-page^="admin-dashboard"] .Dashboard .svgmonotone {
+    filter: none;
+}

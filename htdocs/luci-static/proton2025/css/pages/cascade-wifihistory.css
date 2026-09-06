@@ -1,0 +1,13 @@
+body[data-page="admin-status-wifihistory"] #wifi_history_table {
+    max-width: 100%;
+}
+
+body[data-page="admin-status-wifihistory"] #wifi_history_table th:nth-child(6),
+body[data-page="admin-status-wifihistory"] #wifi_history_table th:nth-child(7),
+body[data-page="admin-status-wifihistory"] #wifi_history_table td:nth-child(6),
+body[data-page="admin-status-wifihistory"] #wifi_history_table td:nth-child(7),
+body[data-page="admin-status-wifihistory"] #wifi_history_table td:nth-child(6) .nowrap,
+body[data-page="admin-status-wifihistory"] #wifi_history_table td:nth-child(7) .nowrap {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+}

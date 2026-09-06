@@ -1,0 +1,201 @@
+body[data-page="admin-system-startup"] #view .table {
+    background: var(--proton-bg-secondary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius);
+    overflow: hidden;
+}
+
+body[data-page="admin-system-startup"] #view .table .tr.table-titles {
+    background: var(--proton-bg-tertiary);
+}
+
+body[data-page="admin-system-startup"] #view .table .tr.table-titles .th {
+    padding: 12px 16px;
+    font-weight: 600;
+    color: var(--proton-fg);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border-bottom: 1px solid var(--proton-border);
+}
+
+body[data-page="admin-system-startup"] #view .table .tr:not(.table-titles) {
+    border-bottom: 1px solid var(--proton-border-subtle);
+    transition: var(--proton-transition);
+}
+
+body[data-page="admin-system-startup"] #view .table .tr:not(.table-titles):hover {
+    background: var(--proton-bg-tertiary);
+}
+
+body[data-page="admin-system-startup"] #view .table .tr:last-child {
+    border-bottom: none;
+}
+
+body[data-page="admin-system-startup"] #view .table .td {
+    padding: 10px 16px;
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+body[data-page="admin-system-startup"] #view .table .td[data-title="Start priority"] {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    font-weight: 700;
+    color: var(--proton-accent);
+    font-size: 0.95rem;
+}
+body[data-page="admin-system-startup"] #view .table .td[data-title="Initscript"] {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    font-weight: 500;
+    color: var(--proton-fg);
+}
+body[data-page="admin-system-startup"] #view .table .td.cbi-section-actions {
+    white-space: nowrap;
+}
+
+body[data-page="admin-system-startup"] #view .table .td.cbi-section-actions>div {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+body[data-page="admin-system-startup"] #view .table .td.cbi-section-actions .btn {
+    padding: 6px 12px !important;
+    font-size: 0.75rem !important;
+    border-radius: var(--proton-radius-sm) !important;
+    font-weight: 500;
+}
+body[data-page="admin-system-startup"] #view .table .cbi-button-positive {
+    background: rgba(107, 207, 127, 0.15) !important;
+    border-color: rgba(107, 207, 127, 0.4) !important;
+    color: var(--proton-success) !important;
+    min-width: 75px;
+}
+
+body[data-page="admin-system-startup"] #view .table .cbi-button-positive:hover {
+    background: var(--proton-success) !important;
+    color: #fff !important;
+}
+body[data-page="admin-system-startup"] #view .table .cbi-button-negative {
+    background: rgba(255, 107, 107, 0.15) !important;
+    border-color: rgba(255, 107, 107, 0.4) !important;
+    color: var(--proton-danger) !important;
+    min-width: 75px;
+}
+
+body[data-page="admin-system-startup"] #view .table .cbi-button-negative:hover {
+    background: var(--proton-danger) !important;
+    color: #fff !important;
+}
+body[data-page="admin-system-startup"] #view .table .cbi-button-action {
+    background: var(--proton-bg-tertiary) !important;
+    border-color: var(--proton-border) !important;
+    color: var(--proton-fg-secondary) !important;
+}
+
+body[data-page="admin-system-startup"] #view .table .cbi-button-action:hover {
+    background: var(--proton-accent) !important;
+    border-color: var(--proton-accent) !important;
+    color: #fff !important;
+}
+@media screen and (max-width: 900px) {
+    body[data-page="admin-system-startup"] #view .table {
+        display: block;
+        border: none;
+        background: transparent;
+    }
+
+    body[data-page="admin-system-startup"] #view .table .tr.table-titles {
+        display: none;
+    }
+
+    body[data-page="admin-system-startup"] #view .table .tr:not(.table-titles) {
+        display: flex;
+        flex-direction: column;
+        background: var(--proton-bg-secondary);
+        border: 1px solid var(--proton-border);
+        border-radius: var(--proton-radius);
+        padding: 16px;
+        margin-bottom: 10px;
+        gap: 12px;
+    }
+
+    body[data-page="admin-system-startup"] #view .table .tr:not(.table-titles):hover {
+        border-color: var(--proton-accent);
+    }
+
+    body[data-page="admin-system-startup"] #view .table .td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0;
+        border: none !important;
+    }
+
+    body[data-page="admin-system-startup"] #view .table .td::before {
+        content: attr(data-title);
+        font-weight: 600;
+        color: var(--proton-fg-secondary);
+        font-size: 0.7rem;
+        min-width: 100px;
+        flex-shrink: 0;
+    }
+    body[data-page="admin-system-startup"] #view .table .td[data-title="Initscript"] {
+        order: -2;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--proton-border-subtle) !important;
+        font-size: 1rem;
+    }
+
+    body[data-page="admin-system-startup"] #view .table .td[data-title="Initscript"]::before {
+        display: none;
+    }
+    body[data-page="admin-system-startup"] #view .table .td[data-title="Start priority"] {
+        order: -1;
+    }
+    body[data-page="admin-system-startup"] #view .table .td.cbi-section-actions {
+        order: 10;
+        padding-top: 12px !important;
+        border-top: 1px solid var(--proton-border-subtle) !important;
+        justify-content: center;
+    }
+
+    body[data-page="admin-system-startup"] #view .table .td.cbi-section-actions::before {
+        display: none;
+    }
+
+    body[data-page="admin-system-startup"] #view .table .td.cbi-section-actions>div {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    body[data-page="admin-system-startup"] #view .table .td.cbi-section-actions .btn {
+        padding: 8px 14px !important;
+        font-size: 0.9rem !important;
+    }
+    body[data-page="admin-system-startup"] #view .table .cbi-button-positive,
+    body[data-page="admin-system-startup"] #view .table .cbi-button-negative {
+        min-width: 100px;
+    }
+}
+@media screen and (max-width: 480px) {
+    body[data-page="admin-system-startup"] #view .table .tr:not(.table-titles) {
+        padding: 12px;
+    }
+
+    body[data-page="admin-system-startup"] #view .table .td.cbi-section-actions>div {
+        width: 100%;
+    }
+
+    body[data-page="admin-system-startup"] #view .table .td.cbi-section-actions .btn {
+        flex: 1;
+        text-align: center;
+        min-width: unset;
+    }
+    body[data-page="admin-system-startup"] #view .table .cbi-button-positive,
+    body[data-page="admin-system-startup"] #view .table .cbi-button-negative {
+        width: 100%;
+        flex: none !important;
+    }
+}

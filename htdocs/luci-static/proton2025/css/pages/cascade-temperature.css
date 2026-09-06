@@ -1,0 +1,718 @@
+body[data-page="admin-status-realtime-temperature"] .proton-temp-realtime-page {
+    display: grid;
+    gap: 18px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-window-selector {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-window-btn {
+    appearance: none;
+    border: 1px solid var(--proton-border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--proton-bg-tertiary) 88%, transparent);
+    color: var(--proton-fg-secondary);
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--proton-transition);
+    white-space: nowrap;
+    line-height: 1.4;
+    text-align: center;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-window-btn:hover {
+    border-color: var(--proton-fg-secondary);
+    color: var(--proton-fg);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-window-btn[data-active="true"] {
+    border-color: var(--proton-accent);
+    color: var(--proton-accent);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-section,
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table-section {
+    background: var(--proton-bg-secondary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius);
+    padding: 16px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-title-wrap {
+    min-width: 0;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-toolbar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 6px 8px 6px 12px;
+    border: 1px solid var(--proton-border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--proton-bg-tertiary) 76%, transparent);
+    flex: 0 0 auto;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-toolbar-label {
+    color: var(--proton-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip {
+    --sensor-color: var(--proton-accent);
+    appearance: none;
+    border: 1px solid var(--proton-border);
+    border-radius: 999px;
+    background: var(--proton-bg-tertiary);
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: var(--proton-transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: inset 0 0 0 1px transparent;
+    max-width: 100%;
+    min-height: 34px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--sensor-color);
+    flex: 0 0 auto;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip:hover,
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip:focus-visible,
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip[data-active="true"] {
+    border-color: var(--sensor-color);
+    background: var(--proton-bg-hover);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip[data-active="true"] {
+    color: var(--proton-fg);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+        0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-label {
+    color: var(--proton-fg);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-meta {
+    color: var(--proton-fg-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-summary-card {
+    background: var(--proton-bg-tertiary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-summary-card.is-status .proton-temp-summary-value {
+    font-size: 1rem;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-summary-label {
+    color: var(--proton-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-summary-value {
+    color: var(--proton-fg);
+    font-size: 1.08rem;
+    font-variant-numeric: tabular-nums;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-title {
+    margin: 0;
+    font-size: 1.06rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-realtime-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-legend-item {
+    --sensor-color: var(--proton-accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border: 1px solid var(--proton-border);
+    border-radius: 999px;
+    background: var(--proton-bg-tertiary);
+    font-size: 12px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--sensor-color);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-legend-name {
+    color: var(--proton-fg-secondary);
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-legend-value {
+    color: var(--proton-fg);
+    font-variant-numeric: tabular-nums;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-wrap {
+    position: relative;
+    min-height: 340px;
+    border-radius: var(--proton-radius-sm);
+    overflow: hidden;
+    background:
+        radial-gradient(circle at top left, rgba(107, 207, 127, 0.12), transparent 28%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+    border: 1px solid var(--proton-border);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-svg {
+    display: block;
+    width: 100%;
+    height: 340px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-bg {
+    fill: transparent;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-grid-line {
+    stroke: rgba(255, 255, 255, 0.12);
+    stroke-dasharray: 4 6;
+    stroke-width: 1;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-axis-label {
+    font-size: 12px;
+    fill: var(--proton-fg-secondary);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-threshold-label {
+    font-size: 11px;
+    font-weight: 600;
+    fill: var(--proton-fg);
+    paint-order: stroke fill;
+    stroke: var(--proton-bg-secondary);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-series-label {
+    font-size: 11px;
+    fill: var(--proton-fg);
+    opacity: 0.85;
+    paint-order: stroke fill;
+    stroke: var(--proton-bg-secondary);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-threshold {
+    stroke-width: 1.5;
+    stroke-dasharray: 8 8;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-threshold-warm {
+    stroke: rgba(251, 191, 36, 0.8);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-threshold-hot {
+    stroke: rgba(249, 115, 22, 0.8);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-threshold-critical {
+    stroke: rgba(239, 68, 68, 0.8);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-average-line {
+    stroke: rgba(255, 255, 255, 0.24);
+    stroke-dasharray: 6 6;
+    stroke-width: 1.5;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-average-label {
+    font-size: 12px;
+    fill: var(--proton-fg-secondary);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-area {
+    opacity: 0.18;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-line {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-point {
+    stroke: rgba(255, 255, 255, 0.6);
+    stroke-width: 1.5;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-hover-layer {
+    fill: transparent;
+    pointer-events: all;
+    touch-action: none;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-hover-guide {
+    stroke: var(--proton-chart-guide);
+    stroke-dasharray: 4 6;
+    stroke-width: 1;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-hover-point {
+    stroke: var(--proton-chart-point-ring);
+    stroke-width: 1.8;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-tooltip {
+    position: absolute;
+    z-index: 2;
+    min-width: 176px;
+    max-width: min(280px, calc(100% - 16px));
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--proton-tooltip-border);
+    background: var(--proton-tooltip-bg);
+    box-shadow: var(--proton-tooltip-shadow);
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-tooltip[data-placement="top"] {
+    transform: translateY(-100%);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-title {
+    color: var(--proton-fg);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-time {
+    color: var(--proton-muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-body {
+    display: grid;
+    gap: 6px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-key {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-swatch {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--sensor-color);
+    flex: 0 0 auto;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-label {
+    color: var(--proton-fg-secondary);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-value {
+    color: var(--proton-fg);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--proton-muted);
+    font-size: 14px;
+    backdrop-filter: blur(4px);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-realtime-status {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: var(--proton-radius-sm);
+    font-size: 13px;
+    display: none;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-realtime-status[data-state="warning"] {
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.18);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table-title {
+    margin: 0 0 12px;
+    font-size: 1.02rem;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--proton-radius-sm);
+    overflow: hidden;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table thead th {
+    background: rgba(255, 255, 255, 0.035);
+    color: var(--proton-fg-secondary);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table th,
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table td {
+    padding: 10px 12px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table tbody tr {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-sensor-cell {
+    min-width: 180px;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-sensor-chip {
+    --sensor-color: var(--proton-accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--proton-fg);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-sensor-chip::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--sensor-color);
+    flex: 0 0 auto;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-sensor-path {
+    margin-top: 4px;
+    color: var(--proton-muted);
+    font-size: 12px;
+    word-break: break-all;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-metric-value {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-state-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 76px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-state-badge[data-level="normal"] {
+    color: var(--proton-success);
+    background: rgba(107, 207, 127, 0.1);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-state-badge[data-level="warm"] {
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.12);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-state-badge[data-level="hot"] {
+    color: #f97316;
+    background: rgba(249, 115, 22, 0.12);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-state-badge[data-level="critical"] {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.12);
+}
+
+body[data-page="admin-status-realtime-temperature"] .proton-temp-table-empty {
+    text-align: center;
+    color: var(--proton-muted);
+    padding: 24px 12px;
+}
+
+@media (max-width: 900px) {
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-toolbar {
+        width: fit-content;
+        max-width: 100%;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    body[data-page="admin-status-realtime-temperature"] .cbi-map>h2 {
+        font-size: 1.9rem;
+        line-height: 1.08;
+        margin-bottom: 14px;
+        overflow-wrap: anywhere;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .cbi-map>.cbi-map-descr {
+        font-size: 14px;
+        line-height: 1.55;
+        margin-bottom: 14px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-section,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table-section {
+        padding: 12px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-toolbar {
+        width: 100%;
+        justify-content: space-between;
+        padding: 8px 10px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-window-selector {
+        justify-content: flex-end;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-selector {
+        gap: 8px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-chip {
+        width: 100%;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 8px 10px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-label {
+        flex: 1 1 auto;
+        white-space: normal;
+        line-height: 1.25;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-selector-meta {
+        flex: 0 0 auto;
+        padding-left: 10px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-summary {
+        grid-template-columns: 1fr;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-wrap,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-svg {
+        min-height: 260px;
+        height: 260px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-axis-label,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-threshold-label {
+        font-size: 10px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-series-label {
+        display: none;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-chart-tooltip {
+        min-width: 160px;
+        max-width: calc(100% - 12px);
+        padding: 9px 10px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-tooltip-head {
+        gap: 8px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table table,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table tbody,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table tr,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table td {
+        display: block;
+        width: 100%;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table thead {
+        display: none;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table tbody {
+        display: grid;
+        gap: 12px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table tbody tr {
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: var(--proton-radius-sm);
+        background: var(--proton-bg-tertiary);
+        padding: 12px;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-table td {
+        padding: 0;
+        border: 0;
+        background: transparent;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-sensor-cell {
+        min-width: 0;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-metric-value,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-status-cell {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 7px 0;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-metric-value::before,
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-status-cell::before {
+        content: attr(data-label);
+        color: var(--proton-muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-status-cell {
+        padding-top: 10px;
+        margin-top: 4px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    body[data-page="admin-status-realtime-temperature"] .proton-temp-state-badge {
+        min-width: 0;
+    }
+}

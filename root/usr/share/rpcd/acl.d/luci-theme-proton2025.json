@@ -5,8 +5,7 @@
             "ubus": {
                 "luci.proton-temp": [
                     "getSensors",
-                    "resetPeaks",
-                    "getIntegrations"
+                    "resetPeaks"
                 ],
                 "luci.proton-system": [
                     "getSystemInfo"
@@ -19,8 +18,15 @@
                     "getVersion",
                     "checkUpdate"
                 ],
+                "system": [
+                    "board",
+                    "info"
+                ],
                 "network.interface": [
                     "dump"
+                ],
+                "network.device": [
+                    "status"
                 ],
                 "luci-rpc": [
                     "getDHCPLeases"
@@ -38,6 +44,9 @@
                 ],
                 "/bin/pidof": [
                     "exec"
+                ],
+                "/proc/cpuinfo": [
+                    "read"
                 ]
             }
         },

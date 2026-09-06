@@ -1,0 +1,7 @@
+[data-page*="logs"] textarea[readonly]:not([data-proton-visible]),
+[data-page*="syslog"] textarea[readonly]:not([data-proton-visible]),
+[data-page*="dmesg"] textarea[readonly]:not([data-proton-visible]) {
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+}

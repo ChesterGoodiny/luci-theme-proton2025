@@ -1,0 +1,29 @@
+body[data-page="admin-status-realtime-load"] .cbi-section>div[style*="background:#fff"],
+body[data-page="admin-status-realtime-bandwidth"] .cbi-section>div[style*="background:#fff"],
+body[data-page="admin-status-realtime-wireless"] .cbi-section>div[style*="background:#fff"],
+body[data-page="admin-status-realtime-connections"] .cbi-section>div[style*="background:#fff"],
+body[data-page="admin-status-realtime-temperature"] .cbi-section>div[style*="background:#fff"] {
+    background: var(--proton-bg-secondary) !important;
+}
+:root[data-theme="light"] body[data-page="admin-status-realtime-load"] .cbi-section>div[style*="background:#fff"],
+:root[data-theme="light"] body[data-page="admin-status-realtime-bandwidth"] .cbi-section>div[style*="background:#fff"],
+:root[data-theme="light"] body[data-page="admin-status-realtime-wireless"] .cbi-section>div[style*="background:#fff"],
+:root[data-theme="light"] body[data-page="admin-status-realtime-connections"] .cbi-section>div[style*="background:#fff"],
+:root[data-theme="light"] body[data-page="admin-status-realtime-temperature"] .cbi-section>div[style*="background:#fff"] {
+    background: #ffffff !important;
+}
+body[data-page^="admin-status-realtime"] .cbi-section svg line {
+    stroke: var(--proton-border) !important;
+}
+
+body[data-page^="admin-status-realtime"] .cbi-section svg text {
+    fill: var(--proton-fg-secondary) !important;
+}
+
+:root[data-theme="light"] body[data-page^="admin-status-realtime"] .cbi-section svg line {
+    stroke: rgba(0, 0, 0, 0.15) !important;
+}
+
+:root[data-theme="light"] body[data-page^="admin-status-realtime"] .cbi-section svg text {
+    fill: #4a5568 !important;
+}

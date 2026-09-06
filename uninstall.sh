@@ -21,12 +21,24 @@
 
 set -e
 
+PKG_NAME="luci-theme-proton2025"
 THEME_NAME="proton2025"
+
+PKG_IS_APK=0
+command -v apk >/dev/null 2>&1 && PKG_IS_APK=1
 
 info() { printf "[*] %s\n" "$1"; }
 ok() { printf "[+] %s\n" "$1"; }
 warn() { printf "[!] %s\n" "$1"; }
 err() { printf "[-] %s\n" "$1"; }
+
+pkg_is_installed() {
+    if [ "$PKG_IS_APK" -eq 1 ]; then
+        apk info -e "$PKG_NAME" 2>/dev/null | grep -q "$PKG_NAME"
+    else
+        opkg list-installed 2>/dev/null | grep -q "^${PKG_NAME} "
+    fi
+}
 
 printf "\n"
 printf "================================================\n"
@@ -38,7 +50,9 @@ info "Removing Proton2025 theme..."
 printf "\n"
 
 # Check if theme is installed
-if [ ! -d "/www/luci-static/$THEME_NAME" ] && [ ! -f "/www/luci-static/resources/menu-proton2025.js" ]; then
+if ! pkg_is_installed &&
+    [ ! -d "/www/luci-static/$THEME_NAME" ] &&
+    [ ! -f "/www/luci-static/resources/menu-proton2025.js" ]; then
     warn "Theme is not installed"
     exit 0
 fi
@@ -61,6 +75,18 @@ if command -v uci >/dev/null 2>&1; then
     ok "Theme removed from registry"
 fi
 
+# Installed as a package: let the package manager do the work.
+if pkg_is_installed; then
+    info "Removing package ${PKG_NAME}..."
+    if [ "$PKG_IS_APK" -eq 1 ]; then
+        apk del "$PKG_NAME" >/dev/null 2>&1 || true
+    else
+        opkg remove "$PKG_NAME" >/dev/null 2>&1 || true
+    fi
+    ok "Package removed"
+fi
+
+# Leftovers from a package removal or from a manual/script install.
 info "Removing theme files..."
 
 # Remove static files
@@ -69,6 +95,11 @@ ok "Removed static files"
 
 # Remove JS
 rm -f "/www/luci-static/resources/menu-proton2025.js"
+rm -f "/www/luci-static/resources/menu-proton2025.core.js"
+rm -f "/www/luci-static/resources/menu-search-index.js"
+rm -f "/www/luci-static/resources/menu-dropdowns.js"
+rm -f "/www/luci-static/resources/menu-theme-settings.js"
+rm -f "/www/luci-static/resources/router-proton2025.js"
 rm -f "/www/luci-static/resources/view/status/proton-temperature.js"
 ok "Removed JavaScript"
 

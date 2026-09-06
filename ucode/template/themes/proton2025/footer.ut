@@ -12,7 +12,7 @@
 <footer class="proton-footer">
 	{{ _('Powered by') }} <a href="https://github.com/openwrt/luci">LuCI</a> ({{ version.luciversion }})
 	/ {{ version.distname }} ({{ version.distversion }}) {{ version.distrevision }}
-	/ Proton2025 Theme v1.3.0
+	/ Proton2025 Theme v1.4.0
 	/ <a href="https://github.com/ChesterGoodiny/luci-theme-proton2025" target="_blank" rel="noopener noreferrer">GitHub</a>
 </footer>
 
@@ -20,8 +20,30 @@
 (function() {
 	'use strict';
 
+	// Мост «ядро темы → внешние пакеты» (luci-app-proton2025-dashboard и др.).
+	// Флаг нужен для скриптов, подключившихся ПОСЛЕ события: они читают
+	// window.protonCoreReady вместо того, чтобы ждать событие, которое уже прошло.
+	function signalCoreReady() {
+		if (window.protonCoreReady)
+			return;
+
+		window.protonCoreReady = true;
+
+		try {
+			window.dispatchEvent(new CustomEvent('proton-core-ready', {
+				detail: { version: '{{ version.luciversion }}' }
+			}));
+		} catch (e) {
+			// IE-совместимый путь: CustomEvent как конструктор недоступен
+			var ev = document.createEvent('CustomEvent');
+			ev.initCustomEvent('proton-core-ready', false, false, {});
+			window.dispatchEvent(ev);
+		}
+	}
+
 	if (window.L && typeof window.L.require === 'function') {
 		window.L.require('menu-proton2025');
+		signalCoreReady();
 		return;
 	}
 

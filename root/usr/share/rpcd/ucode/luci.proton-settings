@@ -21,6 +21,7 @@ const VALID_OPTIONS = {
 	transparency: { default: '1', values: ['0', '1'] },
 	border_radius: { default: 'default', values: ['default', 'sharp', 'extra'] },
 	tab_outline: { default: '0', values: ['0', '1'] },
+        tab_style: { default: 'modern', values: ['modern', 'classic', 'proton'] },
 	login_branding: { default: '0', values: ['0', '1'] },
 	login_name: { default: '', pattern: 'any', maxlen: 128 },
 	// Custom login logo as a data URI. A ~200 KB image becomes a ~270 KB
@@ -30,12 +31,11 @@ const VALID_OPTIONS = {
 	animations: { default: '1', values: ['0', '1'] },
 	services_widget: { default: '1', values: ['0', '1'] },
 	temp_widget: { default: '1', values: ['0', '1'] },
-	// показывать температуру модема в блоке температуры (нужен luci-app-5gmodem)
-	modem_temp: { default: '0', values: ['0', '1'] },
 	services_log: { default: '0', values: ['0', '1'] },
-	table_wrap: { default: '1', values: ['0', '1'] },
 	log_highlight: { default: '1', values: ['0', '1'] },
 	page_width: { default: '0', min: 0, max: 100 },
+	menu_mode: { default: 'top', values: ['top', 'side'] },
+	menu_collapsed: { default: '0', values: ['0', '1'] },
 	background_pattern: { default: 'none', values: ['none', 'grid', 'dots', 'stars', 'noise'] },
 	pattern_scale: { default: '100', min: 50, max: 200 },
 	custom_font: { default: '1', values: ['0', '1'] },
@@ -63,7 +63,7 @@ const VALID_OPTIONS = {
 function validateOption(name, value) {
 	const opt = VALID_OPTIONS[name];
 	if (!opt) return false;
-	
+
 	if (opt.values) {
 		return index(opt.values, value) >= 0;
 	}
@@ -81,7 +81,7 @@ function validateOption(name, value) {
 		const num = +value;
 		return num == num && num >= opt.min && num <= opt.max;
 	}
-	
+
 	return true;
 }
 
@@ -89,14 +89,14 @@ function validateOption(name, value) {
 function getSettings() {
 	const uci = cursor();
 	uci.load(CONFIG_NAME);
-	
+
 	let settings = {};
-	
+
 	for (let name in VALID_OPTIONS) {
 		let value = uci.get(CONFIG_NAME, SECTION_NAME, name);
 		settings[name] = value ?? VALID_OPTIONS[name].default;
 	}
-	
+
 	return { settings: settings };
 }
 
@@ -104,76 +104,76 @@ function getSettings() {
 function setSetting(req) {
 	const name = req.args?.name;
 	const value = req.args?.value;
-	
+
 	if (!name || value == null) {
 		return { error: 'Missing name or value' };
 	}
-	
+
 	if (!VALID_OPTIONS[name]) {
 		return { error: 'Unknown option: ' + name };
 	}
-	
+
 	const strValue = '' + value;
-	
+
 	if (!validateOption(name, strValue)) {
 		return { error: 'Invalid value for ' + name + ': ' + strValue };
 	}
-	
+
 	const uci = cursor();
 	uci.load(CONFIG_NAME);
-	
+
 	// Ensure section exists
 	if (!uci.get(CONFIG_NAME, SECTION_NAME)) {
 		uci.set(CONFIG_NAME, SECTION_NAME, 'theme');
 	}
-	
+
 	uci.set(CONFIG_NAME, SECTION_NAME, name, strValue);
 	uci.commit(CONFIG_NAME);
-	
+
 	return { success: true, name: name, value: strValue };
 }
 
 // Set multiple settings at once
 function setSettings(req) {
 	const settings = req.args?.settings;
-	
+
 	if (!settings || type(settings) != 'object') {
 		return { error: 'Missing or invalid settings object' };
 	}
-	
+
 	const uci = cursor();
 	uci.load(CONFIG_NAME);
-	
+
 	// Ensure section exists
 	if (!uci.get(CONFIG_NAME, SECTION_NAME)) {
 		uci.set(CONFIG_NAME, SECTION_NAME, 'theme');
 	}
-	
+
 	let updated = [];
 	let errors = [];
-	
+
 	for (let name in settings) {
 		if (!VALID_OPTIONS[name]) {
 			push(errors, 'Unknown option: ' + name);
 			continue;
 		}
-		
+
 		const strValue = '' + settings[name];
-		
+
 		if (!validateOption(name, strValue)) {
 			push(errors, 'Invalid value for ' + name + ': ' + strValue);
 			continue;
 		}
-		
+
 		uci.set(CONFIG_NAME, SECTION_NAME, name, strValue);
 		push(updated, name);
 	}
-	
+
 	if (length(updated) > 0) {
 		uci.commit(CONFIG_NAME);
 	}
-	
-	return { 
+
+	return {
 		success: length(errors) == 0,
 		updated: updated,
 		errors: errors
@@ -184,18 +184,18 @@ function setSettings(req) {
 function resetSettings() {
 	const uci = cursor();
 	uci.load(CONFIG_NAME);
-	
+
 	// Ensure section exists
 	if (!uci.get(CONFIG_NAME, SECTION_NAME)) {
 		uci.set(CONFIG_NAME, SECTION_NAME, 'theme');
 	}
-	
+
 	for (let name in VALID_OPTIONS) {
 		uci.set(CONFIG_NAME, SECTION_NAME, name, VALID_OPTIONS[name].default);
 	}
-	
+
 	uci.commit(CONFIG_NAME);
-	
+
 	return { success: true };
 }
 

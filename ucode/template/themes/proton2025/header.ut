@@ -8,8 +8,16 @@
 {%
 	import { getuid, getspnam } from 'luci.core';
 
-	const boardinfo = ubus.call('system', 'board');
+	// `|| {}` на оба ubus-вызова: если ubus недоступен (rpcd перезапускается,
+	// нет прав в acl) call() отдаёт null, и дальнейшая индексация уронила бы
+	// рендер ВСЕЙ страницы — вместо интерфейса пользователь увидел бы 500.
+	const boardinfo = ubus.call('system', 'board') || {};
 	const wirelessStatus = ubus.call('network.wireless', 'status') || {};
+
+	// Раскладка меню нужна ДО первой отрисовки, иначе свежий браузер рисует
+	// верхнее меню и через ~1 с перекидывает его на бок (см. инлайн-скрипт ниже).
+	const protonResp = ubus.call('uci', 'get', { config: 'proton2025', section: 'settings' });
+	const protonSettings = (protonResp && protonResp.values) ? protonResp.values : {};
 
 	// Строим карту wireless-устройств из ubus:
 	// { radioName: { band: "2g"|"5g"|"6g", interfaces: ["default_radio0", ...] }, ... }
@@ -65,7 +73,7 @@
 		document.documentElement.setAttribute('data-theme', 'dark');
 		document.documentElement.setAttribute('data-darkmode', 'true');
 	}
-	
+
 	// Expose the router hostname so the login-branding setting can
 	// pre-fill the display-name field with it.
 	window.protonHostname = {{ sprintf('%J', boardinfo.hostname ?? '') }};
@@ -81,6 +89,8 @@
 	if (r === 'sharp') document.documentElement.classList.add('proton-radius-sharp');
 	else if (r === 'extra') document.documentElement.classList.add('proton-radius-extra');
 	if (localStorage.getItem('proton-tab-outline') === 'true') document.documentElement.classList.add('proton-tab-outline');
+	if (localStorage.getItem('proton-tab-style') === 'classic') document.documentElement.classList.add('proton-tabs-classic');
+	if (localStorage.getItem('proton-tab-style') === 'proton') document.documentElement.classList.add('proton-tabs-proton');
 	var bp = localStorage.getItem('proton-background-pattern') || 'none';
 	if (bp === 'noise') bp = 'stars';  // pattern was renamed
 	if (bp !== 'none') {
@@ -119,8 +129,50 @@
 	if (pw && parseInt(pw) > 0 && window.innerWidth >= 800) {
 		document.documentElement.style.setProperty('--proton-page-max-width', pw + '%', 'important');
 	} else if (window.innerWidth >= 800) {
-		document.documentElement.style.setProperty('--proton-page-max-width', '990px', 'important');
+		document.documentElement.style.setProperty('--proton-page-max-width', '1200px', 'important');
 	}
+	// Раскладка меню — единственная настройка, меняющая структуру DOM, поэтому
+	// её нельзя ждать от асинхронного settings-sync.js: он догоняет UCI только
+	// через секунду, и меню на глазах прыгало из шапки в боковую колонку.
+	var uciMenu = {{ sprintf('%J', { mode: protonSettings.menu_mode, collapsed: protonSettings.menu_collapsed }) }};
+	var pendingUci = {};
+	try { pendingUci = JSON.parse(sessionStorage.getItem('proton-settings-pending') || '{}') || {}; } catch (e) {}
+	// Локальный выбор, ещё не подтверждённый ubus: UCI пока отдаёт старое значение.
+	if (uciMenu.mode != null && !('menu_mode' in pendingUci))
+		localStorage.setItem('proton-menu-mode', uciMenu.mode === 'side' ? 'side' : 'top');
+	if (uciMenu.collapsed != null && !('menu_collapsed' in pendingUci))
+		localStorage.setItem('proton-menu-collapsed', uciMenu.collapsed === '1' ? 'true' : 'false');
+	if (localStorage.getItem('proton-menu-mode') === 'side') {
+		document.documentElement.classList.add('proton-menu-side');
+		// Класс ставим до первой отрисовки, иначе свёрнутый рельс на мгновение
+		// мелькнёт на полной ширине
+		if (localStorage.getItem('proton-menu-collapsed') === 'true' && window.innerWidth >= 801)
+			document.documentElement.classList.add('proton-menu-collapsed');
+	}
+
+	// Логотип из брендинга страницы логина переиспользуется как бейдж рядом с
+	// хостнеймом в шапке. Значение подставляется в CSS url(), поэтому строгий
+	// allowlist: FileReader всегда отдаёт "data:<type>;base64,<...>", а любой
+	// символ вне этого набора мог бы закрыть url() и внедрить свой CSS.
+	var LOGO_RE = /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$/;
+	function applyHostnameLogo() {
+		var root = document.documentElement;
+		var on = localStorage.getItem('proton-login-branding') === 'true';
+		var logo = on ? (localStorage.getItem('proton-login-logo') || '') : '';
+		if (logo && logo.length < 300001 && LOGO_RE.test(logo)) {
+			root.style.setProperty('--proton-hostname-logo', 'url("' + logo + '")');
+			root.classList.add('proton-hostname-logo');
+		} else {
+			root.style.removeProperty('--proton-hostname-logo');
+			root.classList.remove('proton-hostname-logo');
+		}
+	}
+	applyHostnameLogo();
+	window.protonApplyHostnameLogo = applyHostnameLogo;
+	// UCI — источник истины, но синхронизация асинхронна: без этого логотип в
+	// новом браузере появился бы только со второй загрузки страницы.
+	window.addEventListener('proton-settings-synced', applyHostnameLogo);
+
 	// Устанавливаем фоновый цвет ДО загрузки cascade.css, чтобы избежать мерцания градиента
 	var bgSolid = themeMode === 'light' ? '#ffffff' : '#0f1419';
 	document.documentElement.style.setProperty('background-color', bgSolid);
@@ -128,11 +180,15 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#0f1419" />
-<meta name="color-scheme" content="dark" />
+<meta name="color-scheme" content="dark light" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="preload" href="{{ media }}/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="{{ media }}/fonts/inter-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+{# cyrillic-ext (25 КБ) и latin-ext (72 КБ) НЕ предзагружаем: в них лежат
+   глифы, которых нет ни на одной странице UI (⁴, ₴, доп. кириллица),
+   а preload тянул их безусловно. unicode-range + font-display: swap в cascade.css
+   загрузят сабсет лениво, если редкий глиф всё-таки встретится. #}
 <style>
 /* Critical: background and gradient before cascade.css to prevent FOUC */
 html {
@@ -161,7 +217,7 @@ body {
 
 /* Critical: keep header height stable before cascade.css loads */
 :root {
-	--proton-page-max-width: 990px;
+	--proton-page-max-width: 1200px;
 	--proton-page-gutter: 20px;
 }
 
@@ -227,20 +283,110 @@ body {
 	}
 }
 </style>
-<link rel="stylesheet" media="screen" href="{{ media }}/cascade.css" />
-<link rel="icon" href="{{ media }}/logo.svg" sizes="any" />
+{% let __pv = "1.4.0"; %}
+<link rel="stylesheet" media="screen" fetchpriority="high" href="{{ media }}/css/cascade.css?v={{ __pv }}" />
+{#
+   Фаза 2B-3: пофайловый per-page CSS. cascade.css содержит только общие
+   стили; правила, привязанные к конкретной странице через body[data-page],
+   вынесены в cascade-<page>.css и грузятся ТОЛЬКО на своей странице.
+   __page вычисляется так же, как для атрибута data-page на <body> ниже.
+   Совпадение по трём операторам: '=' точное, '^' префикс, '*' подстрока.
+-#}
+{%
+	// ctx.path — разрешённый узел (firstchild/alias), поэтому /admin/status/ даёт admin-status-overview;
+	// ctx.request_path остаётся резервом: на странице логина dispatcher обнуляет ctx.path.
+	let __ppage = length(ctx.path) ? join('-', ctx.path) : join('-', ctx.request_path);
+
+	let __perpage = [
+		['cascade-dashboard.css',   [['^', 'admin-dashboard']]],
+		['cascade-diagnostics.css', [['=', 'admin-network-diagnostics']]],
+		['cascade-filemanager.css', [['=', 'admin-system-filemanager']]],
+		['cascade-leds.css',        [['=', 'admin-system-leds']]],
+		['cascade-logs.css',        [['*', 'logs'], ['*', 'syslog'], ['*', 'dmesg']]],
+		['cascade-overview.css',    [['=', 'admin-status-overview']]],
+		['cascade-passwall2.css',   [['^', 'admin-services-passwall2']]],
+		['cascade-processes.css',   [['=', 'admin-status-processes']]],
+		['cascade-proxy.css',       [['*', 'ssclash'], ['*', 'mihomo']]],
+		['cascade-realtime.css',    [['=', 'admin-status-realtime-load'], ['=', 'admin-status-realtime-bandwidth'], ['=', 'admin-status-realtime-wireless'], ['=', 'admin-status-realtime-connections'], ['=', 'admin-status-realtime-temperature'], ['^', 'admin-status-realtime']]],
+		['cascade-reboot.css',      [['=', 'admin-system-reboot']]],
+		['cascade-repokeys.css',    [['=', 'admin-system-admin-repokeys']]],
+		['cascade-routes.css',      [['=', 'admin-status-routes']]],
+		['cascade-startup.css',     [['=', 'admin-system-startup']]],
+		['cascade-status.css',      [['^', 'admin-status']]],
+		['cascade-system.css',      [['=', 'admin-system-system']]],
+		['cascade-temperature.css', [['=', 'admin-status-realtime-temperature']]],
+		['cascade-wifihistory.css', [['=', 'admin-status-wifihistory']]]
+	];
+
+	for (let entry in __perpage) {
+		let __file = entry[0];
+		let __match = false;
+		for (let cond in entry[1]) {
+			let __op = cond[0], __val = cond[1];
+			if (__op == '=' && __ppage == __val) { __match = true; break; }
+			else if (__op == '^' && substr(__ppage, 0, length(__val)) == __val) { __match = true; break; }
+			else if (__op == '*' && index(__ppage, __val) >= 0) { __match = true; break; }
+		}
+		if (__match)
+			print(`<link rel="stylesheet" media="screen" href="${media}/css/pages/${__file}?v=${__pv}" />\n`);
+	}
+-%}
+<link rel="icon" href="{{ media }}/img/logo.svg" sizes="any" />
+{# Cache-buster для JS темы: после обновления файлов пользователи получают
+   свежую версию без ручной очистки кэша (uhttpd не шлёт строгие no-cache).
+   Инкрементировать при каждом изменении статики темы. #}
+{# Словарь переводов ОБЯЗАН быть блокирующим. defer здесь ломает локализацию:
+   меню (#mainmenu) и view-модули читают _() один раз в момент отрисовки, а
+   ui.menu.load().then(render) при закэшированных модулях успевает выполниться
+   за ~65 мс — раньше, чем догрузятся 300 КБ словаря (~250 мс). Метки тогда
+   остаются английскими до следующей перерисовки. #}
 <script src="{{ dispatcher.build_url('admin/translations', dispatcher.lang) }}"></script>
-<script src="{{ resource }}/luci.js"></script>
-<script src="{{ resource }}/xhr.js"></script>
+{# ?v= на luci.js критичен: luci.js парсит версию из собственного URL в
+   env.resource_version и дописывает её ко ВСЕМ модулям L.require()
+   (menu-proton2025.js, view-модули). Без неё L.require грузит модули
+   без версии и браузер отдаёт устаревшие копии после обновления темы.
+   type="text/plain" — тег нужен ТОЛЬКО как носитель ?v=: браузер его не
+   качает и не исполняет, но querySelectorAll('script[src*="/luci.js"]') в
+   LuCI.__init__ его находит первым и берёт версию отсюда. Сам luci.js
+   подключает ядро (template/header.ut) — без этого он грузился дважды. #}
+<script type="text/plain" src="{{ resource }}/luci.js?v={{ __pv }}"></script>
 <script src="{{ resource }}/cbi.js"></script>
-<script src="{{ media }}/translations.js"></script>
-<script src="{{ media }}/settings-sync.js" defer></script>
-<script src="{{ media }}/mobile-settings-fallback.js" defer></script>
-<script src="{{ media }}/services-widget.js" defer></script>
-<script src="{{ media }}/custom-pages.js" defer></script>
-<script src="{{ media }}/search-proton2025-data.js" defer></script>
-<script src="{{ media }}/search-proton2025.js" defer></script>
-<script src="{{ media }}/login-animation-settings.js"></script>
+{# v1.5.29: строки переводов вынесены в пофайловые локали XX-xx.js.
+   Грузим только активную локаль (fallback → en). translations.js оставлен
+   как рантайм (protonGetLang + protonT). Порядок defer сохраняется:
+   translations.js → локаль → translations-search.js. #}
+{%
+	let __langBase = lc(substr(dispatcher.lang ?? 'en', 0, 2));
+	let __localeMap = {
+		en: 'EN-en', ru: 'RU-ru', de: 'DE-de', uk: 'UK-uk', it: 'IT-it',
+		fr: 'FR-fr', es: 'ES-es', pt: 'PT-pt', pl: 'PL-pl', zh: 'ZH-zh'
+	};
+	let __localeFile = __localeMap[__langBase] || 'EN-en';
+-%}
+<script src="{{ media }}/js/translations.js?v={{ __pv }}" defer></script>
+<script src="{{ media }}/i18n/{{ __localeFile }}.js?v={{ __pv }}" defer></script>
+<script src="{{ media }}/js/settings-sync.js?v={{ __pv }}" defer></script>
+<script src="{{ media }}/js/mobile-settings-fallback.js?v={{ __pv }}" defer></script>
+<script src="{{ media }}/js/overview-decorations.js?v={{ __pv }}" defer></script>
+<script src="{{ media }}/js/custom-pages.js?v={{ __pv }}" defer></script>
+{# translations-search.js: семантические переводы поиска, вынесены из
+   translations.js. defer сохраняет порядок → protonGetLang доступен. #}
+<script src="{{ media }}/js/translations-search.js?v={{ __pv }}" defer></script>
+<script src="{{ media }}/js/search-proton2025-data.js?v={{ __pv }}" defer></script>
+<script src="{{ media }}/js/search-proton2025.js?v={{ __pv }}" defer></script>
+{# 18.6 КБ + опрос setInterval 20×300мс + MutationObserver ради блока
+   #proton-theme-settings, который существует только на Система → Управление.
+   На остальных страницах inject() сразу выходит — запрос был впустую.
+   Событие proton-theme-settings-mounted тоже шлётся только оттуда. #}
+{% if (__ppage == 'admin-system-system'): %}
+{# defer безопасен: скрипт сам стартует по readyState/DOMContentLoaded. #}
+<script src="{{ media }}/js/login-animation-settings.js?v={{ __pv }}" defer></script>
+{% endif %}
+{# Фаза 3: клиентский роутинг (SPA). Скрипт САМ-ГЕЙТИТСЯ на клиенте:
+   без Navigation API или при выключенном тумблере 'proton-client-routing'
+   (по умолчанию OFF) он ничего не делает и тема остаётся классическим MPA.
+   Лежит в resources/ (shared), грузится defer после ядра LuCI. #}
+<script src="{{ resource }}/router-proton2025.js?v={{ __pv }}" defer></script>
 
 <script>
 (function() {
@@ -281,18 +427,27 @@ body {
 		{ re: /\/luci-static\/resources\/icons\/(ethernet|wifi|bridge|tunnel|wireguard|switch|alias|vlan|vrf|port_up|port_down|loading|mobile|radio)(_disabled)?\.svg$/, prefix: 'proton-' }
 	];
 
+	var urlCache = window.__protonUrlCache || new WeakMap();
+	window.__protonUrlCache = urlCache;
+	var rawUrlCache = window.__protonRawUrlCache || new Map();
+	window.__protonRawUrlCache = rawUrlCache;
+
 	function remapIcon(img) {
 		if (!img || img.tagName !== 'IMG') return;
 
 		var rawSrc = img.getAttribute('src') || img.src;
 		if (!rawSrc) return;
 
-		var url;
-		try {
-			url = new URL(rawSrc, window.location.href);
-		} catch (e) {
-			return;
+		var url = rawUrlCache.get(rawSrc);
+		if (!url) {
+			try {
+				url = new URL(rawSrc, window.location.href);
+				rawUrlCache.set(rawSrc, url);
+			} catch (e) {
+				return;
+			}
 		}
+		urlCache.set(img, url);
 
 		for (var i = 0; i < iconPatterns.length; i++) {
 			var match = url.pathname && url.pathname.match(iconPatterns[i].re);
@@ -300,22 +455,19 @@ body {
 				var iconName = match[1];
 				var suffix = match[2] || '';
 
-				// Для физических радио (radio0, radio1, MT7981_1_1, ...) используем иконку вышки вместо wifi
 				if (iconName === 'wifi') {
-					// 1. Надёжнее всего: строка уже помечена markRadioDevicesAndFreq()
 					if (img.closest('tr[data-radio-device]')) {
 						iconName = 'radio';
 					} else {
 						var badge = img.closest('.ifacebadge');
 						if (badge) {
 							var text = badge.textContent.trim();
-							// 2. Точное совпадение (radio0, radio1, ...)
 							if (isWirelessDevice(text)) {
 								iconName = 'radio';
-							// 3. Подстрока — на случай если badge содержит доп. текст (MT7981_1_1 + канал и т.п.)
 							} else if (window._protonWirelessDevices) {
-								for (var di = 0, devs = Array.from(window._protonWirelessDevices); di < devs.length; di++) {
-									if (text.indexOf(devs[di]) !== -1) {
+								var devs = Array.from(window._protonWirelessDevices);
+								for (var d = 0; d < devs.length; d++) {
+									if (text.indexOf(devs[d]) !== -1) {
 										iconName = 'radio';
 										break;
 									}
@@ -344,50 +496,96 @@ body {
 	// Данные приходят из ubus (server-side карта), без regex-парсинга текста
 	// Работает с любыми именами устройств: radio0, MT7981_1_1, ath0, wl0 и т.д.
 
+	var radioMarkTimer = 0;
 	function markRadioDevicesAndFreq() {
-		var table = document.querySelector('#cbi-wireless table.cbi-section-table');
-		if (!table) return;
+		var wireless = document.querySelector('#cbi-wireless');
+		if (wireless) {
+			wireless.setAttribute('data-proton-wireless-pending', 'true');
+			wireless.removeAttribute('data-proton-wireless-ready');
+		}
+		if (radioMarkTimer) {
+			clearTimeout(radioMarkTimer);
+		}
+		radioMarkTimer = setTimeout(function() {
+			radioMarkTimer = 0;
+			var table = document.querySelector('#cbi-wireless table.cbi-section-table');
+			if (!table) return;
 
-		var rows = table.querySelectorAll('tr[data-section-id]');
-		var currentBand = null;
+			var rows = table.querySelectorAll('tr[data-section-id]');
+			var currentBand = null;
 
-		for (var i = 0; i < rows.length; i++) {
-			var row = rows[i];
-			var sectionId = row.getAttribute('data-section-id') || '';
+			for (var i = 0; i < rows.length; i++) {
+				var row = rows[i];
+				var sectionId = row.getAttribute('data-section-id') || '';
 
-			// 1. Это radio-устройство? (проверяем по серверной карте)
-			if (isWirelessDevice(sectionId)) {
-				if (!row.hasAttribute('data-radio-device')) {
-					row.setAttribute('data-radio-device', sectionId);
+				if (isWirelessDevice(sectionId)) {
+					if (!row.hasAttribute('data-radio-device')) {
+						row.setAttribute('data-radio-device', sectionId);
+					}
+					var mapEntry = _protonWirelessMap[sectionId];
+					currentBand = mapEntry ? mapEntry.band : null;
+
+					if (currentBand && !row.hasAttribute('data-band')) {
+						row.setAttribute('data-band', currentBand);
+					}
+					continue;
 				}
-				var mapEntry = _protonWirelessMap[sectionId];
-				currentBand = mapEntry ? mapEntry.band : null;
 
-				if (currentBand && !row.hasAttribute('data-band')) {
-					row.setAttribute('data-band', currentBand);
+				if (!row.hasAttribute('data-band')) {
+					var parentRadio = _ifaceToRadio[sectionId];
+					var band = null;
+
+					if (parentRadio && _protonWirelessMap[parentRadio]) {
+						band = _protonWirelessMap[parentRadio].band;
+					}
+
+					if (!band && currentBand) {
+						band = currentBand;
+					}
+
+					if (band) {
+						row.setAttribute('data-band', band);
+					}
 				}
-				continue;
 			}
 
-			// 2. Это WiFi-сеть — пытаемся найти band через обратную карту iface→radio
-			if (!row.hasAttribute('data-band')) {
-				var parentRadio = _ifaceToRadio[sectionId];
-				var band = null;
+			var readyContainer = document.querySelector('#cbi-wireless');
+			if (readyContainer && readyContainer.contains(table)) {
+				readyContainer.removeAttribute('data-proton-wireless-pending');
+				readyContainer.setAttribute('data-proton-wireless-ready', 'true');
+			}
+		}, 80);
+	}
 
-				if (parentRadio && _protonWirelessMap[parentRadio]) {
-					band = _protonWirelessMap[parentRadio].band;
-				}
+	function affectsWireless(mutation) {
+		if (mutation.type !== 'childList') return false;
 
-				// 3. Fallback: используем band от последнего встреченного radio (порядок DOM)
-				if (!band && currentBand) {
-					band = currentBand;
-				}
+		function containsRadioRow(node) {
+			return node && node.nodeType === 1 &&
+				((node.tagName === 'TR' && node.hasAttribute('data-section-id')) ||
+				 (node.querySelector && node.querySelector('tr[data-section-id]')));
+		}
 
-				if (band) {
-					row.setAttribute('data-band', band);
-				}
+		var wireless = document.querySelector('#cbi-wireless');
+		for (var i = 0; i < mutation.addedNodes.length; i++) {
+			var node = mutation.addedNodes[i];
+			if (node.nodeType === 1 &&
+				(node.id === 'cbi-wireless' ||
+				 (node.querySelector && node.querySelector('#cbi-wireless')) ||
+				 node.matches('table.cbi-section-table') ||
+				 containsRadioRow(node))) {
+				return true;
 			}
 		}
+
+		if (!wireless || !wireless.contains(mutation.target)) return false;
+		for (var j = 0; j < mutation.addedNodes.length; j++) {
+			if (containsRadioRow(mutation.addedNodes[j])) return true;
+		}
+		for (var k = 0; k < mutation.removedNodes.length; k++) {
+			if (containsRadioRow(mutation.removedNodes[k])) return true;
+		}
+		return false;
 	}
 
 	function start() {
@@ -395,11 +593,11 @@ body {
 		markRadioDevicesAndFreq();
 
 		var mo = new MutationObserver(function(mutations) {
-			// Сначала помечаем radio-строки, чтобы remapIcon() мог на них опираться
-			markRadioDevicesAndFreq();
+			var wirelessChanged = false;
 
 			for (var i = 0; i < mutations.length; i++) {
 				var m = mutations[i];
+				if (affectsWireless(m)) wirelessChanged = true;
 				if (m.type === 'attributes' && m.attributeName === 'src') {
 					remapIcon(m.target);
 					continue;
@@ -410,14 +608,28 @@ body {
 					}
 				}
 			}
+
+			if (wirelessChanged) {
+				markRadioDevicesAndFreq();
+			}
 		});
 
-		mo.observe(document.documentElement, {
+		// Наблюдаем за <body>: модальные окна LuCI (#modal_overlay) создаются
+		// прямым потомком body, вне #maincontainer, и иначе остаются без ремапа
+		mo.observe(document.body || document.documentElement, {
 			subtree: true,
 			childList: true,
 			attributes: true,
 			attributeFilter: ['src']
 		});
+
+		window.addEventListener('pagehide', function() {
+			if (radioMarkTimer) {
+				clearTimeout(radioMarkTimer);
+				radioMarkTimer = 0;
+			}
+			mo.disconnect();
+		}, { once: true });
 	}
 
 	if (document.readyState === 'loading')
@@ -431,8 +643,7 @@ body {
 <style title="text/css">{{ css }}</style>
 {% endif %}
 </head>
-{% let __page = join('-', ctx.request_path); %}
-{% if (!__page && ctx.dispatch_path): __page = join('-', ctx.dispatch_path); endif %}
+{% let __page = length(ctx.path) ? join('-', ctx.path) : join('-', ctx.request_path); %}
 <body class="lang_{{ dispatcher.lang }}" data-page="{{ entityencode(__page, true) }}">
 
 <p class="skiplink">
@@ -453,26 +664,45 @@ body {
 
 <div id="modemenu" style="display:none"></div>
 
+{# Плавающие уведомления вне #maincontent: его animation/transform делает его
+   containing block для position:fixed, из-за чего уведомление ехало вместе с
+   fade-in страницы и прыгало на своё место в конце анимации. #}
+{% if (getuid() == 0 && getspnam('root')?.pwdp === '' && join('-', ctx.request_path) != 'admin-system-admin'): %}
+<div class="alert-message warning proton-alert-floating" data-proton-managed="true">
+	<h4>{{ _('No password set!') }}</h4>
+	<p>{{ _('There is no password set on this router. Please configure a root password to protect the web interface.') }}</p>
+	{% if (dispatcher.lookup("admin/system/admin")): %}
+		<div class="right"><a class="btn" href="{{ dispatcher.build_url("admin/system/admin") }}">{{ _('Go to password configuration...') }}</a></div>
+	{% endif %}
+</div>
+{% endif %}
+
+{% if (boardinfo.rootfs_type == "initramfs"): %}
+<div class="alert-message warning proton-alert-floating" data-proton-managed="true">
+	<h4>{{ _('System running in recovery (initramfs) mode.') }}</h4>
+	<p>{{ _('No changes to settings will be stored and are lost after rebooting. This mode should only be used to install a firmware upgrade') }}</p>
+	{% if (dispatcher.lookup("admin/system/flash")): %}
+	  <div class="right"><a class="btn" href="{{ dispatcher.build_url("admin/system/flash") }}">{{ _('Go to firmware upgrade...') }}</a></div>
+	{% endif %}
+</div>
+{% endif %}
+
 <div id="maincontainer">
+{# Боковую колонку переставляем уже на этапе парсинга. Если ждать
+   menu-proton2025.js (~250 мс), пустой #mainmenu остаётся в шапке, но
+   боковые правила к нему уже применяются (proton-menu-side стоит до первой
+   отрисовки) — тёмная полоса 72/240px рисуется поверх контента, а сам
+   контент идёт на всю ширину и прыгает, когда меню наконец переезжает сюда. #}
+	<script>
+	(function() {
+		var root = document.documentElement;
+		if (!root.classList.contains('proton-menu-side') || window.innerWidth < 801)
+			return;
+		var menu = document.getElementById('mainmenu');
+		var container = document.getElementById('maincontainer');
+		if (menu && container && menu.parentNode !== container)
+			container.insertAdjacentElement('afterbegin', menu);
+	})();
+	</script>
 	<div id="maincontent">
-		{% if (getuid() == 0 && getspnam('root')?.pwdp === '' && join('-', ctx.request_path) != 'admin-system-admin'): %}
-		<div class="alert-message warning proton-alert-floating" data-proton-managed="true">
-			<h4>{{ _('No password set!') }}</h4>
-			<p>{{ _('There is no password set on this router. Please configure a root password to protect the web interface.') }}</p>
-			{% if (dispatcher.lookup("admin/system/admin")): %}
-				<div class="right"><a class="btn" href="{{ dispatcher.build_url("admin/system/admin") }}">{{ _('Go to password configuration...') }}</a></div>
-			{% endif %}
-		</div>
-		{% endif %}
-
-		{% if (boardinfo.rootfs_type == "initramfs"): %}
-		<div class="alert-message warning proton-alert-floating" data-proton-managed="true">
-			<h4>{{ _('System running in recovery (initramfs) mode.') }}</h4>
-			<p>{{ _('No changes to settings will be stored and are lost after rebooting. This mode should only be used to install a firmware upgrade') }}</p>
-			{% if (dispatcher.lookup("admin/system/flash")): %}
-			  <div class="right"><a class="btn" href="{{ dispatcher.build_url("admin/system/flash") }}">{{ _('Go to firmware upgrade...') }}</a></div>
-			{% endif %}
-		</div>
-		{% endif %}
-
 		<div id="tabmenu" style="display:none"></div>

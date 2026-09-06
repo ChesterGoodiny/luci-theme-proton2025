@@ -1,0 +1,89 @@
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist {
+    max-width: 100% !important;
+}
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.item {
+    display: block;
+    min-height: unset;
+    height: auto;
+    overflow: visible;
+    padding: 12px 52px 12px 16px;
+    line-height: 1.7;
+    cursor: default;
+    word-break: break-all;
+}
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.item::after {
+    content: "−";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 2.4rem;
+    height: 100%;
+    border-radius: 0 var(--proton-radius-sm) var(--proton-radius-sm) 0;
+}
+
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.item strong {
+    font-family: "SF Mono", Monaco, "Consolas", monospace;
+    color: var(--proton-accent);
+    font-size: 0.88rem;
+    display: block;
+    margin-bottom: 2px;
+}
+
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.item code {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--proton-fg-secondary);
+    word-break: break-all;
+    white-space: pre-wrap;
+}
+
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.item br {
+    display: none;
+}
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.add-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    min-height: unset;
+    padding: 14px;
+    background: var(--proton-bg-tertiary);
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius-sm);
+}
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.add-item>textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 100px;
+    resize: vertical;
+    border-radius: var(--proton-radius-sm);
+    padding: 10px 14px;
+    font-family: "SF Mono", Monaco, "Consolas", monospace;
+    font-size: 0.82rem;
+    background: var(--proton-bg-secondary);
+    border: 1px solid var(--proton-border);
+    color: var(--proton-fg);
+    transition: var(--proton-transition);
+}
+
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.add-item>textarea:focus {
+    outline: none;
+    border-color: var(--proton-accent);
+    box-shadow: 0 0 0 3px var(--proton-accent-glow);
+}
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.add-item>.cbi-button,
+[data-page="admin-system-admin-repokeys"] .cbi-dynlist>.add-item>button {
+    width: auto !important;
+    min-width: unset !important;
+    height: auto !important;
+    flex: 0 0 auto !important;
+    align-self: flex-end;
+    padding: 10px 28px !important;
+    border-radius: var(--proton-radius-sm) !important;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: var(--proton-accent) !important;
+    color: #fff !important;
+    border-color: var(--proton-accent) !important;
+}
