@@ -138,13 +138,15 @@
   }
 
   function getRpcSessionId() {
-    return (
-      (window.L && L.env && L.env.sessionid) ||
-      "00000000000000000000000000000000"
-    );
+    return (window.L && L.env && L.env.sessionid) || null;
   }
 
   async function callSettingsRpc(method, args, options = {}) {
+    const sessionId = getRpcSessionId();
+    if (!sessionId) {
+      throw new Error("No valid RPC session id available");
+    }
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
 
@@ -158,12 +160,7 @@
           jsonrpc: "2.0",
           id: Date.now(),
           method: "call",
-          params: [
-            getRpcSessionId(),
-            "luci.proton-settings",
-            method,
-            args || {},
-          ],
+          params: [sessionId, "luci.proton-settings", method, args || {}],
         }),
       });
 
