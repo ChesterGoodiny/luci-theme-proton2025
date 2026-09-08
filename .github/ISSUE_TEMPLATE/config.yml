@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "General Questions & Discussions / Общие вопросы и обсуждение"
+    url: https://github.com/ChesterGoodiny/luci-theme-proton2025/discussions
+    about: "Please ask questions about installation, configuration, and usage in Discussions. This keeps Issues focused on bugs and features. / Пожалуйста, задавайте вопросы по установке и настройке в разделе Discussions. Это поможет сохранить раздел Issues исключительно для багов и предложений."
