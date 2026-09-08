@@ -1,0 +1,125 @@
+name: "Bug Report / Отчет об ошибке"
+description: "Report a bug in the theme / Сообщите об ошибке в работе или оформлении темы"
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **IMPORTANT / ВАЖНО:** 
+        Before submitting, please **clear your browser cache** (Ctrl+F5 or Cmd+Shift+R). 
+        Перед отправкой, пожалуйста, **очистите кэш браузера**. Большинство проблем с CSS/JS решаются этим шагом.
+
+  - type: dropdown
+    id: openwrt_version
+    attributes:
+      label: "OpenWrt Version / Версия OpenWrt"
+      description: "Select your OpenWrt firmware version / Выберите версию вашей прошивки"
+      options:
+        - "23.05.x"
+        - "24.10.x"
+        - "Snapshot / Master"
+        - "Other (specify in description) / Другая (укажите в описании)"
+    validations:
+      required: true
+
+  - type: input
+    id: theme_version
+    attributes:
+      label: "Theme Version / Версия темы"
+      description: "e.g., v1.2.0 or commit hash / например, v1.2.0 или хэш коммита"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: browser_os
+    attributes:
+      label: "Browser & OS / Браузер и ОС"
+      description: "Where does the issue occur? / Где проявляется проблема?"
+      options:
+        - "Chrome / Windows"
+        - "Firefox / Windows"
+        - "Safari / macOS"
+        - "Chrome / Android (Mobile)"
+        - "Safari / iOS (Mobile)"
+        - "Other (specify in description) / Другое (укажите в описании)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: theme_mode
+    attributes:
+      label: "Theme Mode / Режим темы"
+      description: "In which mode does the bug appear? / В каком режиме проявляется ошибка?"
+      options:
+        - "Auto (System) / Авто (Системный)"
+        - "Dark / Темный"
+        - "Light / Светлый"
+        - "Any / Не имеет значения"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: accent_color
+    attributes:
+      label: "Accent Color / Акцентный цвет"
+      description: "Selected in System → System → Language and Style / Выбран в настройках темы"
+      options:
+        - "Neutral / Нейтральный"
+        - "Blue / Синий"
+        - "Purple / Фиолетовый"
+        - "Green / Зеленый"
+        - "Orange / Оранжевый"
+        - "Custom HEX / Пользовательский"
+        - "Default / Не имеет значения"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: preliminary_checks
+    attributes:
+      label: "Preliminary Checks / Предварительная проверка"
+      description: "Please confirm these steps before submitting / Пожалуйста, подтвердите выполнение этих шагов"
+      options:
+        - label: "I cleared my browser cache and the issue persists / Я очистил кэш браузера, и проблема воспроизводится"
+          required: true
+        - label: "I tested this on a mobile device (or mobile emulation) / Я проверил проблему на мобильном устройстве"
+          required: false
+        - label: "I checked for conflicts with other LuCI packages/themes / Я проверил, что проблема не вызвана конфликтом с другими пакетами/темами"
+          required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description / Описание проблемы"
+      description: "A clear and concise description of what the bug is / Четко и кратко опишите, что пошло не так"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: "Steps to Reproduce / Шаги воспроизведения"
+      description: |
+        1. Go to '...' / Перейти на страницу '...'
+        2. Click on '...' / Нажать на кнопку '...'
+        3. Scroll down to '...' / Прокрутить вниз до '...'
+        4. See error / Увидеть ошибку
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: "Expected Behavior / Ожидаемое поведение"
+      description: "What should happen instead? / Что должно было произойти вместо ошибки?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "Screenshots / Скриншоты"
+      description: "Drag and drop images here, especially for responsive layout issues / Перетащите изображения сюда, особенно для проблем адаптивной верстки"
+    validations:
+      required: false
