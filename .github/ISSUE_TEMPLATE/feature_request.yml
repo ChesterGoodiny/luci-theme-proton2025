@@ -1,53 +1,28 @@
-name: "Feature Request / Предложение новой функции"
-description: "Suggest an idea for the theme / Предложите идею по улучшению дизайна или функциональности"
+name: "✨ Feature Request / Предложение"
+description: "Suggest a new design, widget or feature / Предложить новый дизайн, виджет или функцию"
 title: "[Feature]: "
 labels: ["enhancement"]
 body:
-  - type: dropdown
-    id: category
+  - type: textarea
+    id: idea
     attributes:
-      label: "Category / Категория"
-      description: "What area does this relate to? / К какой области относится предложение?"
-      options:
-        - "Design / CSS Styles / Дизайн и CSS стили"
-        - "New Widget / LuCI Feature / Новый виджет или функция LuCI"
-        - "Dark / Light Mode / Темная или светлая тема"
-        - "Responsiveness (Mobile/Desktop) / Адаптивность"
-        - "Performance / Производительность"
-        - "Other / Другое"
+      label: "💡 Your Idea / Ваша идея"
+      description: "What would you like to add or change? / Что вы хотите добавить или изменить в теме?"
     validations:
       required: true
 
   - type: textarea
-    id: description
+    id: why
     attributes:
-      label: "Description / Описание предложения"
-      description: "A clear and detailed description of the feature you'd like to see / Подробно опишите, что вы хотите добавить или изменить"
-    validations:
-      required: true
-
-  - type: textarea
-    id: rationale
-    attributes:
-      label: "Rationale / Обоснование"
-      description: "Why is this feature useful? What problem does it solve? / Почему это улучшение будет полезно? Какую проблему оно решает?"
+      label: "🎯 Why is this needed? / Почему это нужно?"
+      description: "How will this improve the user experience? / Как это улучшит использование темы?"
     validations:
       required: true
 
   - type: textarea
     id: references
     attributes:
-      label: "References / Примеры или референсы"
-      description: "Links to screenshots, other themes, CSS snippets, or mockups / Ссылки на скриншоты, другие темы, CSS-сниппеты или макеты"
+      label: "🎨 Examples & Mockups / Примеры и референсы"
+      description: "Links, screenshots, or CSS examples / Ссылки, скриншоты, макеты или примеры CSS"
     validations:
       required: false
-
-  - type: checkboxes
-    id: additional_info
-    attributes:
-      label: "Additional Info / Дополнительная информация"
-      options:
-        - label: "I have checked that this feature does not already exist in the current version / Я проверил, что такой функциональности еще нет в текущей версии"
-          required: true
-        - label: "I am willing to help test this feature (e.g., provide screenshots or test CSS) / Я готов помочь с тестированием этой функции"
-          required: false
