@@ -1,119 +1,160 @@
 name: "🐛 Bug Report / Отчет об ошибке"
-description: "Report a styling or UI issue / Сообщить об ошибке верстки или UI"
+description: "Сообщить о проблеме с темой / Report a theme issue"
 title: "[Bug]: "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        ⚠️ **IMPORTANT / ВАЖНО:** 
-        Before submitting, **clear your browser cache** (Ctrl+F5) and test in **Incognito mode**. 
-        Перед отправкой **очистите кэш браузера** (Ctrl+F5) и проверьте в **режиме инкогнито**.
+        ⚠️ **Перед отправкой / Before submitting:**
+        1. Очистите кэш браузера (Ctrl+F5) и проверьте в режиме инкогнито
+        2. Проверьте, воспроизводится ли проблема на стандартной теме Bootstrap
+        
+        Если проблема только в этой теме — заполняйте форму ниже 👇
 
+  # ===== БЛОК: ИЗОЛЯЦИЯ ПРОБЛЕМЫ =====
   - type: dropdown
     id: bootstrap_check
     attributes:
-      label: "🔍 Isolate Issue / Изоляция проблемы"
-      description: "Does this issue occur on the default `luci-theme-bootstrap`? / Возникает ли эта проблема на стандартной теме `luci-theme-bootstrap`?"
+      label: "🔍 Воспроизводится ли на стандартной теме Bootstrap?"
+      description: "Isolate the issue / Изолируйте проблему"
       options:
-        - "No, only on this theme / Нет, только в этой теме"
-        - "Yes, it happens on Bootstrap too / Да, на Bootstrap тоже есть"
-        - "I haven't checked / Не проверял"
+        - "❌ Нет, только в этой теме / No, only in this theme"
+        - "✅ Да, на Bootstrap тоже / Yes, on Bootstrap too"
+        - "🤷 Не проверял / Haven't checked"
     validations:
       required: true
 
+  # ===== БЛОК: ОКРУЖЕНИЕ =====
   - type: dropdown
     id: openwrt_version
     attributes:
-      label: "🔧 OpenWrt Version / Версия OpenWrt"
+      label: "🔧 Версия OpenWrt / OpenWrt Version"
       options:
         - "23.05.x"
         - "24.10.x"
-        - "25.x+"
+        - "25.x"
         - "Snapshot / Master"
+        - "Не знаю / Don't know"
     validations:
       required: true
 
-  - type: input
+  - type: dropdown
+    id: install_method
+    attributes:
+      label: "📦 Как установлена тема? / Installation method"
+      options:
+        - "opkg install (официальный репозиторий)"
+        - "Ручная установка .ipk / Manual .ipk install"
+        - "git clone + make install"
+        - "Не помню / Don't remember"
+    validations:
+      required: true
+
+  - type: dropdown
     id: theme_version
     attributes:
-      label: "🎨 Theme Version / Версия темы"
-      description: "e.g., v1.2.0 or commit hash / Например, v1.2.0 или хэш коммита"
-      placeholder: "v1.2.0"
+      label: "🎨 Версия темы / Theme Version"
+      description: "Если не знаете — выберите «Не уверен» / If unsure select «Not sure»"
+      options:
+        - "Последняя (обновлена сегодня/вчера) / Latest (updated today/yesterday)"
+        - "Не уверен, но обновлял недавно / Not sure, but updated recently"
+        - "Ставил давно, не обновлял / Installed long ago, not updated"
+        - "Не знаю / Don't know"
     validations:
       required: true
 
+  # ===== БЛОК: ГДЕ ПРОБЛЕМА =====
   - type: dropdown
-    id: environment
+    id: location
     attributes:
-      label: "🌐 Browser & OS / Браузер и ОС"
+      label: "📍 Где проявляется проблема? / Where does it occur?"
+      description: "Выберите раздел / Select the section"
       options:
-        - "Desktop: Chrome / Edge"
-        - "Desktop: Firefox"
-        - "Desktop: Safari (macOS)"
-        - "Mobile: Chrome (Android)"
-        - "Mobile: Safari (iOS)"
-        - "Other / Другое"
+        - "🏠 Главная (Status → Overview)"
+        - "🌐 Сеть (Network)"
+        - "⚙️ Система (System)"
+        - "📡 Wi-Fi / Wireless"
+        - "🔥 Firewall"
+        - "🌡️ Температура (Status → Realtime → Temperature)"
+        - "🔍 Поиск (Search bar)"
+        - "🎨 Настройки темы (System → Language and Style)"
+        - "📦 Сторонний пакет / Third-party package"
+        - "📱 Мобильная версия (любая страница)"
+        - "Другое / Other (опишу ниже)"
     validations:
       required: true
-
-  - type: dropdown
-    id: language
-    attributes:
-      label: "🌍 Interface Language / Язык интерфейса"
-      description: "Important for layout issues (long words) / Важно для проблем с версткой (длинные слова)"
-      options:
-        - "English"
-        - "Russian / Русский"
-        - "Chinese / 中文"
-        - "German / Deutsch"
-        - "Other / Другой"
-    validations:
-      required: false
-
-  - type: input
-    id: affected_page
-    attributes:
-      label: "📍 Affected Page / Страница"
-      description: "Where does it happen? / Где это происходит?"
-      placeholder: "e.g., Status -> Overview / Например, Статус -> Обзор"
-    validations:
-      required: false
 
   - type: dropdown
     id: theme_mode
     attributes:
-      label: "🌓 Theme Mode / Режим темы"
+      label: "🌓 Режим темы / Theme Mode"
       options:
-        - "Dark / Темный"
-        - "Light / Светлый"
-        - "Auto / Авто"
-        - "All modes / Все режимы"
+        - "🌙 Dark / Темный"
+        - "☀️ Light / Светлый"
+        - "🔄 Auto / Авто"
+        - "Любой / Any"
     validations:
-      required: false
+      required: true
 
-  - type: textarea
-    id: description
+  - type: dropdown
+    id: device
     attributes:
-      label: "📝 Description & Steps / Описание и шаги"
-      description: "What is the bug and how to reproduce it? / В чем ошибка и как её воспроизвести?"
-      placeholder: "1. Go to...\n2. Click on..."
+      label: "💻 С какого устройства? / Device type"
+      options:
+        - "🖥️ Десктоп / Desktop"
+        - "💻 Ноутбук / Laptop"
+        - "📱 Телефон / Phone"
+        - "📟 Планшет / Tablet"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: "🌐 Браузер / Browser"
+      options:
+        - "Chrome / Chromium"
+        - "Firefox"
+        - "Safari"
+        - "Edge"
+        - "Другой / Other"
+    validations:
+      required: true
+
+  # ===== БЛОК: СУТЬ ПРОБЛЕМЫ =====
+  - type: dropdown
+    id: problem_type
+    attributes:
+      label: "🏷️ Тип проблемы / Problem type"
+      description: "Что именно не так? / What exactly is wrong?"
+      options:
+        - "📐 Верстка «поехала» / Layout is broken"
+        - "🎨 Неверные цвета / Wrong colors"
+        - "🔤 Текст не помещается / Text overflow"
+        - "🖱️ Кнопка/элемент не кликается / Button not clickable"
+        - "📄 Страница не загружается / Page doesn't load"
+        - "⚡ Тормозит / Laggy or slow"
+        - "🔍 Поиск не работает / Search broken"
+        - "🌡️ Температура не отображается / Temperature missing"
+        - "📱 Мобильная верстка / Mobile layout issue"
+        - "Другое / Other"
     validations:
       required: true
 
   - type: textarea
-    id: console
+    id: description
     attributes:
-      label: "🔍 Console Errors / Ошибки консоли"
-      description: "Press F12 -> Console. Copy red errors if any / Нажмите F12 -> Console. Скопируйте красные ошибки"
-      render: shell
+      label: "📝 Описание / Description"
+      description: "Кратко опишите проблему и шаги воспроизведения / Briefly describe the issue"
+      placeholder: "Что делали → Что произошло → Что ожидали"
     validations:
-      required: false
+      required: true
 
   - type: textarea
     id: screenshots
     attributes:
-      label: "📸 Screenshots / Скриншоты"
-      description: "Attach screenshots (drag & drop) / Прикрепите скриншоты"
+      label: "📸 Скриншоты / Screenshots"
+      description: "Перетащите файлы сюда / Drag & drop images here"
     validations:
       required: false
