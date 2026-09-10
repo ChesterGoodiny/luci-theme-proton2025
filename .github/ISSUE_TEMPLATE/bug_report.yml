@@ -1,31 +1,29 @@
 name: "🐛 Bug Report / Отчет об ошибке"
-description: "Сообщить о проблеме с темой / Report a theme issue"
+description: "Сообщить о проблеме с версткой или работой темы / Report a styling or UI issue"
 title: "[Bug]: "
-labels: ["bug"]
+labels: ["bug", "needs-triage"]
 body:
   - type: markdown
     attributes:
       value: |
         ⚠️ **Перед отправкой / Before submitting:**
-        1. Очистите кэш браузера (Ctrl+F5) и проверьте в режиме инкогнито
-        2. Проверьте, воспроизводится ли проблема на стандартной теме Bootstrap
+        1. Очистите кэш браузера (Ctrl+F5) и проверьте в режиме инкогнито.
+        2. Попробуйте переключиться на стандартную тему `luci-theme-bootstrap`.
         
-        Если проблема только в этой теме — заполняйте форму ниже 👇
+        Если проблема исчезла на Bootstrap — заполняйте форму ниже 👇
 
-  # ===== БЛОК: ИЗОЛЯЦИЯ ПРОБЛЕМЫ =====
   - type: dropdown
     id: bootstrap_check
     attributes:
-      label: "🔍 Воспроизводится ли на стандартной теме Bootstrap?"
-      description: "Isolate the issue / Изолируйте проблему"
+      label: "🔍 Проверка на стандартной теме / Bootstrap check"
+      description: "Воспроизводится ли проблема на `luci-theme-bootstrap`?"
       options:
-        - "❌ Нет, только в этой теме / No, only in this theme"
+        - "❌ Нет, только в Proton2025 / No, only in Proton2025"
         - "✅ Да, на Bootstrap тоже / Yes, on Bootstrap too"
         - "🤷 Не проверял / Haven't checked"
     validations:
       required: true
 
-  # ===== БЛОК: ОКРУЖЕНИЕ =====
   - type: dropdown
     id: openwrt_version
     attributes:
@@ -33,21 +31,8 @@ body:
       options:
         - "23.05.x"
         - "24.10.x"
-        - "25.x"
-        - "Snapshot / Master"
+        - "25.x / Snapshot"
         - "Не знаю / Don't know"
-    validations:
-      required: true
-
-  - type: dropdown
-    id: install_method
-    attributes:
-      label: "📦 Как установлена тема? / Installation method"
-      options:
-        - "opkg install (официальный репозиторий)"
-        - "Ручная установка .ipk / Manual .ipk install"
-        - "git clone + make install"
-        - "Не помню / Don't remember"
     validations:
       required: true
 
@@ -55,31 +40,30 @@ body:
     id: theme_version
     attributes:
       label: "🎨 Версия темы / Theme Version"
-      description: "Если не знаете — выберите «Не уверен» / If unsure select «Not sure»"
+      description: "Можно посмотреть в Системе → Программы или в настройках темы"
       options:
-        - "Последняя (обновлена сегодня/вчера) / Latest (updated today/yesterday)"
-        - "Не уверен, но обновлял недавно / Not sure, but updated recently"
-        - "Ставил давно, не обновлял / Installed long ago, not updated"
-        - "Не знаю / Don't know"
+        - "v1.4.1 (Последняя / Latest)"
+        - "v1.4.0"
+        - "v1.3.x"
+        - "v1.2.x"
+        - "Git / Master / Сборка из исходников"
+        - "Не знаю / Не уверен"
     validations:
       required: true
 
-  # ===== БЛОК: ГДЕ ПРОБЛЕМА =====
   - type: dropdown
     id: location
     attributes:
       label: "📍 Где проявляется проблема? / Where does it occur?"
-      description: "Выберите раздел / Select the section"
       options:
         - "🏠 Главная (Status → Overview)"
-        - "🌐 Сеть (Network)"
+        - "🌐 Сеть (Network / Wireless)"
         - "⚙️ Система (System)"
-        - "📡 Wi-Fi / Wireless"
         - "🔥 Firewall"
         - "🌡️ Температура (Status → Realtime → Temperature)"
         - "🔍 Поиск (Search bar)"
         - "🎨 Настройки темы (System → Language and Style)"
-        - "📦 Сторонний пакет / Third-party package"
+        - "📦 Сторонний пакет (OpenClash, Zerotier и др.)"
         - "📱 Мобильная версия (любая страница)"
         - "Другое / Other (опишу ниже)"
     validations:
@@ -92,7 +76,7 @@ body:
       options:
         - "🌙 Dark / Темный"
         - "☀️ Light / Светлый"
-        - "🔄 Auto / Авто"
+        - "🔄 Auto / Авто (Системный)"
         - "Любой / Any"
     validations:
       required: true
@@ -100,10 +84,9 @@ body:
   - type: dropdown
     id: device
     attributes:
-      label: "💻 С какого устройства? / Device type"
+      label: "💻 Устройство / Device type"
       options:
         - "🖥️ Десктоп / Desktop"
-        - "💻 Ноутбук / Laptop"
         - "📱 Телефон / Phone"
         - "📟 Планшет / Tablet"
     validations:
@@ -114,30 +97,25 @@ body:
     attributes:
       label: "🌐 Браузер / Browser"
       options:
-        - "Chrome / Chromium"
+        - "Chrome / Chromium / Edge"
         - "Firefox"
-        - "Safari"
-        - "Edge"
+        - "Safari (macOS / iOS)"
         - "Другой / Other"
     validations:
       required: true
 
-  # ===== БЛОК: СУТЬ ПРОБЛЕМЫ =====
   - type: dropdown
     id: problem_type
     attributes:
       label: "🏷️ Тип проблемы / Problem type"
-      description: "Что именно не так? / What exactly is wrong?"
       options:
-        - "📐 Верстка «поехала» / Layout is broken"
+        - "📐 Верстка «поехала» / Layout broken"
         - "🎨 Неверные цвета / Wrong colors"
         - "🔤 Текст не помещается / Text overflow"
-        - "🖱️ Кнопка/элемент не кликается / Button not clickable"
-        - "📄 Страница не загружается / Page doesn't load"
-        - "⚡ Тормозит / Laggy or slow"
+        - "🖱️ Элемент не кликается / Not clickable"
+        - "📱 Мобильная адаптация / Mobile layout"
+        - "⚡ Тормозит или мигает / Laggy or flashing"
         - "🔍 Поиск не работает / Search broken"
-        - "🌡️ Температура не отображается / Temperature missing"
-        - "📱 Мобильная верстка / Mobile layout issue"
         - "Другое / Other"
     validations:
       required: true
@@ -145,16 +123,25 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: "📝 Описание / Description"
-      description: "Кратко опишите проблему и шаги воспроизведения / Briefly describe the issue"
-      placeholder: "Что делали → Что произошло → Что ожидали"
+      label: "📝 Описание и шаги / Description & Steps"
+      description: "Кратко опишите, что делали, что произошло и что ожидали."
+      placeholder: "1. Перешел на...\n2. Нажал на...\n3. Увидел, что..."
     validations:
       required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: "🔍 Ошибки консоли / Console Errors (опционально)"
+      description: "Нажмите F12 → Console. Если есть красные ошибки, скопируйте их сюда."
+      render: shell
+    validations:
+      required: false
 
   - type: textarea
     id: screenshots
     attributes:
       label: "📸 Скриншоты / Screenshots"
-      description: "Перетащите файлы сюда / Drag & drop images here"
+      description: "Перетащите файлы сюда (особенно важно для проблем мобильной верстки)."
     validations:
       required: false
