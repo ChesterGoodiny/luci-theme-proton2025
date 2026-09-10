@@ -7,16 +7,17 @@ body:
     attributes:
       value: |
         ⚠️ **Перед отправкой / Before submitting:**
-        1. Очистите кэш браузера (Ctrl+F5) и проверьте в режиме инкогнито.
-        2. Попробуйте переключиться на стандартную тему `luci-theme-bootstrap`.
+        1. Очистите кэш браузера (Ctrl+F5) и проверьте в режиме инкогнито. / Clear browser cache (Ctrl+F5) and test in incognito mode.
+        2. Попробуйте переключиться на стандартную тему `luci-theme-bootstrap`. / Try switching to the default `luci-theme-bootstrap` theme.
         
         Если проблема исчезла на Bootstrap — заполняйте форму ниже 👇
+        If the issue disappears on Bootstrap, please fill out the form below 👇
 
   - type: dropdown
     id: bootstrap_check
     attributes:
       label: "🔍 Проверка на стандартной теме / Bootstrap check"
-      description: "Воспроизводится ли проблема на `luci-theme-bootstrap`?"
+      description: "Воспроизводится ли проблема на `luci-theme-bootstrap`? / Does the issue occur on `luci-theme-bootstrap`?"
       options:
         - "❌ Нет, только в Proton2025 / No, only in Proton2025"
         - "✅ Да, на Bootstrap тоже / Yes, on Bootstrap too"
@@ -40,14 +41,33 @@ body:
     id: theme_version
     attributes:
       label: "🎨 Версия темы / Theme Version"
-      description: "Можно посмотреть в Системе → Программы или в настройках темы"
+      description: "Можно посмотреть в Система → Программы или в настройках темы / Check in System → Software or theme settings"
       options:
         - "v1.4.1 (Последняя / Latest)"
         - "v1.4.0"
         - "v1.3.x"
         - "v1.2.x"
-        - "Git / Master / Сборка из исходников"
-        - "Не знаю / Не уверен"
+        - "Git / Master / Сборка из исходников (Build from source)"
+        - "Не знаю / Не уверен (Not sure)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: "🌍 Язык интерфейса / Interface Language"
+      description: "Какой язык выбран в настройках LuCI? Важно для длинных слов / Which language is selected in LuCI? Important for long words"
+      options:
+        - "🇺🇸 English"
+        - "🇷🇺 Русский (Russian)"
+        - "🇨🇳 中文 (Chinese)"
+        - "🇩🇪 Deutsch (German)"
+        - "🇺🇦 Українська (Ukrainian)"
+        - "🇪🇸 Español (Spanish)"
+        - "🇵🇹 Português (Portuguese)"
+        - "🇵🇱 Polski (Polish)"
+        - "🇫🇷 Français (French)"
+        - "🇮🇹 Italiano (Italian)"
     validations:
       required: true
 
@@ -62,10 +82,10 @@ body:
         - "🔥 Firewall"
         - "🌡️ Температура (Status → Realtime → Temperature)"
         - "🔍 Поиск (Search bar)"
-        - "🎨 Настройки темы (System → Language and Style)"
-        - "📦 Сторонний пакет (OpenClash, Zerotier и др.)"
-        - "📱 Мобильная версия (любая страница)"
-        - "Другое / Other (опишу ниже)"
+        - "🎨 Настройки темы (System → Language and Style / Theme settings)"
+        - "📦 Сторонний пакет (OpenClash, Zerotier и др.) / Third-party package"
+        - "📱 Мобильная версия (любая страница) / Mobile version (any page)"
+        - "Другое / Other (опишу ниже / describe below)"
     validations:
       required: true
 
@@ -76,7 +96,7 @@ body:
       options:
         - "🌙 Dark / Темный"
         - "☀️ Light / Светлый"
-        - "🔄 Auto / Авто (Системный)"
+        - "🔄 Auto / Авто (System)"
         - "Любой / Any"
     validations:
       required: true
@@ -97,9 +117,18 @@ body:
     attributes:
       label: "🌐 Браузер / Browser"
       options:
-        - "Chrome / Chromium / Edge"
+        - "Chrome / Chromium"
+        - "Google Chrome (Mobile / Android)"
         - "Firefox"
-        - "Safari (macOS / iOS)"
+        - "Firefox Mobile"
+        - "Safari (macOS)"
+        - "Safari (iOS / iPhone / iPad)"
+        - "Edge (Microsoft)"
+        - "Opera / Opera GX"
+        - "Brave"
+        - "Vivaldi"
+        - "Samsung Internet"
+        - "Yandex Browser / Яндекс Браузер"
         - "Другой / Other"
     validations:
       required: true
@@ -124,16 +153,19 @@ body:
     id: description
     attributes:
       label: "📝 Описание и шаги / Description & Steps"
-      description: "Кратко опишите, что делали, что произошло и что ожидали."
-      placeholder: "1. Перешел на...\n2. Нажал на...\n3. Увидел, что..."
+      description: "Кратко опишите, что делали, что произошло и что ожидали / Briefly describe what you did, what happened, and what you expected."
+      placeholder: |
+        1. Перешел на... / 1. Went to...
+        2. Нажал на... / 2. Clicked on...
+        3. Увидел, что... / 3. Saw that...
     validations:
       required: true
 
   - type: textarea
     id: console
     attributes:
-      label: "🔍 Ошибки консоли / Console Errors (опционально)"
-      description: "Нажмите F12 → Console. Если есть красные ошибки, скопируйте их сюда."
+      label: "🔍 Ошибки консоли / Console Errors (опционально / optional)"
+      description: "Нажмите F12 → Console. Если есть красные ошибки, скопируйте их сюда / Press F12 → Console. If there are red errors, copy them here."
       render: shell
     validations:
       required: false
@@ -142,6 +174,6 @@ body:
     id: screenshots
     attributes:
       label: "📸 Скриншоты / Screenshots"
-      description: "Перетащите файлы сюда (особенно важно для проблем мобильной верстки)."
+      description: "Перетащите файлы сюда (особенно важно для проблем мобильной верстки) / Drag and drop files here (especially important for mobile layout issues)."
     validations:
       required: false
