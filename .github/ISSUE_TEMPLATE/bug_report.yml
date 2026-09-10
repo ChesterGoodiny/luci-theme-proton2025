@@ -1,121 +1,121 @@
 name: "🐛 Bug Report / Отчет об ошибке"
-description: "Сообщить о проблеме с версткой или работой темы / Report a styling or UI issue"
+description: "Report a styling or UI issue / Сообщить о проблеме с версткой или работой темы"
 title: "[Bug]: "
 labels: ["bug", "needs-triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        ⚠️ **Перед отправкой / Before submitting:**
-        1. Очистите кэш браузера (Ctrl+F5) и проверьте в режиме инкогнито. / Clear browser cache (Ctrl+F5) and test in incognito mode.
-        2. Попробуйте переключиться на стандартную тему `luci-theme-bootstrap`. / Try switching to the default `luci-theme-bootstrap` theme.
+        ⚠️ **Before submitting / Перед отправкой:**
+        1. Clear browser cache (Ctrl+F5) and test in incognito mode. / Очистите кэш браузера (Ctrl+F5) и проверьте в режиме инкогнито.
+        2. Try switching to the default `luci-theme-bootstrap` theme. / Попробуйте переключиться на стандартную тему `luci-theme-bootstrap`.
         
-        Если проблема исчезла на Bootstrap — заполняйте форму ниже 👇
         If the issue disappears on Bootstrap, please fill out the form below 👇
+        Если проблема исчезла на Bootstrap — заполняйте форму ниже 👇
 
   - type: dropdown
     id: bootstrap_check
     attributes:
-      label: "🔍 Проверка на стандартной теме / Bootstrap check"
-      description: "Воспроизводится ли проблема на `luci-theme-bootstrap`? / Does the issue occur on `luci-theme-bootstrap`?"
+      label: "🔍 Bootstrap check / Проверка на стандартной теме"
+      description: "Does the issue occur on `luci-theme-bootstrap`? / Воспроизводится ли проблема на `luci-theme-bootstrap`?"
       options:
-        - "❌ Нет, только в Proton2025 / No, only in Proton2025"
-        - "✅ Да, на Bootstrap тоже / Yes, on Bootstrap too"
-        - "🤷 Не проверял / Haven't checked"
+        - "❌ No, only in Proton2025 / Нет, только в Proton2025"
+        - "✅ Yes, on Bootstrap too / Да, на Bootstrap тоже"
+        - "🤷 Haven't checked / Не проверял"
     validations:
       required: true
 
   - type: dropdown
     id: openwrt_version
     attributes:
-      label: "🔧 Версия OpenWrt / OpenWrt Version"
+      label: "🔧 OpenWrt Version / Версия OpenWrt"
       options:
         - "23.05.x"
         - "24.10.x"
         - "25.x / Snapshot"
-        - "Не знаю / Don't know"
+        - "Don't know / Не знаю"
     validations:
       required: true
 
   - type: dropdown
     id: theme_version
     attributes:
-      label: "🎨 Версия темы / Theme Version"
-      description: "Можно посмотреть в Система → Программы или в настройках темы / Check in System → Software or theme settings"
+      label: "🎨 Theme Version / Версия темы"
+      description: "Check in System → Software or theme settings / Можно посмотреть в Система → Программы или в настройках темы"
       options:
-        - "v1.4.1 (Последняя / Latest)"
+        - "v1.4.1 (Latest / Последняя)"
         - "v1.4.0"
         - "v1.3.x"
         - "v1.2.x"
-        - "Git / Master / Сборка из исходников (Build from source)"
-        - "Не знаю / Не уверен (Not sure)"
+        - "Git / Master / Build from source (Сборка из исходников)"
+        - "Not sure / Не уверен"
     validations:
       required: true
 
   - type: dropdown
     id: language
     attributes:
-      label: "🌍 Язык интерфейса / Interface Language"
-      description: "Какой язык выбран в настройках LuCI? Важно для длинных слов / Which language is selected in LuCI? Important for long words"
+      label: "🌍 Interface Language / Язык интерфейса"
+      description: "Which language is selected in LuCI? Important for long words / Какой язык выбран в настройках LuCI? Важно для длинных слов"
       options:
         - "🇺🇸 English"
-        - "🇷🇺 Русский (Russian)"
-        - "🇨🇳 中文 (Chinese)"
-        - "🇩🇪 Deutsch (German)"
-        - "🇺🇦 Українська (Ukrainian)"
-        - "🇪🇸 Español (Spanish)"
-        - "🇵🇹 Português (Portuguese)"
-        - "🇵🇱 Polski (Polish)"
-        - "🇫🇷 Français (French)"
-        - "🇮🇹 Italiano (Italian)"
+        - "🇷🇺 Russian (Русский)"
+        - "🇨🇳 Chinese (中文)"
+        - "🇩🇪 German (Deutsch)"
+        - "🇺🇦 Ukrainian (Українська)"
+        - "🇪🇸 Spanish (Español)"
+        - "🇵🇹 Portuguese (Português)"
+        - "🇵🇱 Polish (Polski)"
+        - "🇫🇷 French (Français)"
+        - "🇮🇹 Italian (Italiano)"
     validations:
       required: true
 
   - type: dropdown
     id: location
     attributes:
-      label: "📍 Где проявляется проблема? / Where does it occur?"
+      label: "📍 Where does it occur? / Где проявляется проблема?"
       options:
-        - "🏠 Главная (Status → Overview)"
-        - "🌐 Сеть (Network / Wireless)"
-        - "⚙️ Система (System)"
+        - "🏠 Status → Overview (Главная)"
+        - "🌐 Network / Wireless (Сеть)"
+        - "⚙️ System (Система)"
         - "🔥 Firewall"
-        - "🌡️ Температура (Status → Realtime → Temperature)"
-        - "🔍 Поиск (Search bar)"
-        - "🎨 Настройки темы (System → Language and Style / Theme settings)"
-        - "📦 Сторонний пакет (OpenClash, Zerotier и др.) / Third-party package"
-        - "📱 Мобильная версия (любая страница) / Mobile version (any page)"
-        - "Другое / Other (опишу ниже / describe below)"
+        - "🌡️ Status → Realtime → Temperature (Температура)"
+        - "🔍 Search bar (Поиск)"
+        - "🎨 System → Language and Style / Theme settings (Настройки темы)"
+        - "📦 Third-party package (OpenClash, Zerotier, etc.) / Сторонний пакет"
+        - "📱 Mobile version (any page) / Мобильная версия"
+        - "Other (describe below) / Другое (опишу ниже)"
     validations:
       required: true
 
   - type: dropdown
     id: theme_mode
     attributes:
-      label: "🌓 Режим темы / Theme Mode"
+      label: "🌓 Theme Mode / Режим темы"
       options:
         - "🌙 Dark / Темный"
         - "☀️ Light / Светлый"
-        - "🔄 Auto / Авто (System)"
-        - "Любой / Any"
+        - "🔄 Auto (System) / Авто (Системный)"
+        - "Any / Любой"
     validations:
       required: true
 
   - type: dropdown
     id: device
     attributes:
-      label: "💻 Устройство / Device type"
+      label: "💻 Device type / Устройство"
       options:
-        - "🖥️ Десктоп / Desktop"
-        - "📱 Телефон / Phone"
-        - "📟 Планшет / Tablet"
+        - "🖥️ Desktop / Десктоп"
+        - "📱 Phone / Телефон"
+        - "📟 Tablet / Планшет"
     validations:
       required: true
 
   - type: dropdown
     id: browser
     attributes:
-      label: "🌐 Браузер / Browser"
+      label: "🌐 Browser / Браузер"
       options:
         - "Chrome / Chromium"
         - "Google Chrome (Mobile / Android)"
@@ -129,43 +129,43 @@ body:
         - "Vivaldi"
         - "Samsung Internet"
         - "Yandex Browser / Яндекс Браузер"
-        - "Другой / Other"
+        - "Other / Другой"
     validations:
       required: true
 
   - type: dropdown
     id: problem_type
     attributes:
-      label: "🏷️ Тип проблемы / Problem type"
+      label: "🏷️ Problem type / Тип проблемы"
       options:
-        - "📐 Верстка «поехала» / Layout broken"
-        - "🎨 Неверные цвета / Wrong colors"
-        - "🔤 Текст не помещается / Text overflow"
-        - "🖱️ Элемент не кликается / Not clickable"
-        - "📱 Мобильная адаптация / Mobile layout"
-        - "⚡ Тормозит или мигает / Laggy or flashing"
-        - "🔍 Поиск не работает / Search broken"
-        - "Другое / Other"
+        - "📐 Layout broken / Верстка «поехала»"
+        - "🎨 Wrong colors / Неверные цвета"
+        - "🔤 Text overflow / Текст не помещается"
+        - "🖱️ Not clickable / Элемент не кликается"
+        - "📱 Mobile layout / Мобильная адаптация"
+        - "⚡ Laggy or flashing / Тормозит или мигает"
+        - "🔍 Search broken / Поиск не работает"
+        - "Other / Другое"
     validations:
       required: true
 
   - type: textarea
     id: description
     attributes:
-      label: "📝 Описание и шаги / Description & Steps"
-      description: "Кратко опишите, что делали, что произошло и что ожидали / Briefly describe what you did, what happened, and what you expected."
+      label: "📝 Description & Steps / Описание и шаги"
+      description: "Briefly describe what you did, what happened, and what you expected / Кратко опишите, что делали, что произошло и что ожидали"
       placeholder: |
-        1. Перешел на... / 1. Went to...
-        2. Нажал на... / 2. Clicked on...
-        3. Увидел, что... / 3. Saw that...
+        1. Went to... / 1. Перешел на...
+        2. Clicked on... / 2. Нажал на...
+        3. Saw that... / 3. Увидел, что...
     validations:
       required: true
 
   - type: textarea
     id: console
     attributes:
-      label: "🔍 Ошибки консоли / Console Errors (опционально / optional)"
-      description: "Нажмите F12 → Console. Если есть красные ошибки, скопируйте их сюда / Press F12 → Console. If there are red errors, copy them here."
+      label: "🔍 Console Errors (optional) / Ошибки консоли (опционально)"
+      description: "Press F12 → Console. If there are red errors, copy them here / Нажмите F12 → Console. Если есть красные ошибки, скопируйте их сюда"
       render: shell
     validations:
       required: false
@@ -173,7 +173,7 @@ body:
   - type: textarea
     id: screenshots
     attributes:
-      label: "📸 Скриншоты / Screenshots"
-      description: "Перетащите файлы сюда (особенно важно для проблем мобильной верстки) / Drag and drop files here (especially important for mobile layout issues)."
+      label: "📸 Screenshots / Скриншоты"
+      description: "Drag and drop files here (especially important for mobile layout issues) / Перетащите файлы сюда (особенно важно для проблем мобильной верстки)"
     validations:
       required: false
