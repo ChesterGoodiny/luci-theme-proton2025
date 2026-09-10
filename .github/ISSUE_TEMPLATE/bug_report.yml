@@ -34,11 +34,19 @@ body:
     validations:
       required: true
 
+  - type: input
+    id: theme_version
+    attributes:
+      label: "🎨 Theme Version / Версия темы"
+      description: "e.g., v1.2.0 or commit hash / Например, v1.2.0 или хэш коммита"
+      placeholder: "v1.2.0"
+    validations:
+      required: true
+
   - type: dropdown
     id: environment
     attributes:
       label: "🌐 Browser & OS / Браузер и ОС"
-      description: "Select your environment / Выберите ваше окружение"
       options:
         - "Desktop: Chrome / Edge"
         - "Desktop: Firefox"
@@ -48,6 +56,29 @@ body:
         - "Other / Другое"
     validations:
       required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: "🌍 Interface Language / Язык интерфейса"
+      description: "Important for layout issues (long words) / Важно для проблем с версткой (длинные слова)"
+      options:
+        - "English"
+        - "Russian / Русский"
+        - "Chinese / 中文"
+        - "German / Deutsch"
+        - "Other / Другой"
+    validations:
+      required: false
+
+  - type: input
+    id: affected_page
+    attributes:
+      label: "📍 Affected Page / Страница"
+      description: "Where does it happen? / Где это происходит?"
+      placeholder: "e.g., Status -> Overview / Например, Статус -> Обзор"
+    validations:
+      required: false
 
   - type: dropdown
     id: theme_mode
@@ -64,16 +95,25 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: "📝 Description & Steps / Описание и шаги воспроизведения"
+      label: "📝 Description & Steps / Описание и шаги"
       description: "What is the bug and how to reproduce it? / В чем ошибка и как её воспроизвести?"
       placeholder: "1. Go to...\n2. Click on..."
     validations:
       required: true
 
   - type: textarea
+    id: console
+    attributes:
+      label: "🔍 Console Errors / Ошибки консоли"
+      description: "Press F12 -> Console. Copy red errors if any / Нажмите F12 -> Console. Скопируйте красные ошибки"
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
     id: screenshots
     attributes:
       label: "📸 Screenshots / Скриншоты"
-      description: "Attach screenshots (drag & drop) / Прикрепите скриншоты (перетащите файлы сюда)"
+      description: "Attach screenshots (drag & drop) / Прикрепите скриншоты"
     validations:
       required: false
