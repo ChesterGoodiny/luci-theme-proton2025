@@ -1,0 +1,195 @@
+name: Update Issue Template Versions
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 1 * *'
+
+permissions:
+  contents: write
+
+# Защита от гонки: только один запуск за раз
+concurrency:
+  group: update-issue-templates
+  cancel-in-progress: false
+
+jobs:
+  update-versions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # ──────────────────────────────────────────────
+      # 1. Получаем теги через API релизов (не тегов!)
+      #    Релизы отсортированы по дате создания
+      # ──────────────────────────────────────────────
+      - name: Fetch latest release tags
+        id: get_tags
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          echo "📡 Запрашиваю последние релизы..."
+          RESPONSE=$(gh api repos/${{ github.repository }}/releases \
+            --jq '[.[] | select(.draft == false and .prerelease == false)] | .[0:4] | .[].tag_name' \
+            2>&1) || {
+            echo "❌ Ошибка GitHub API: $RESPONSE"
+            exit 1
+          }
+
+          if [ -z "$RESPONSE" ]; then
+            echo "⚠️ Релизы не найдены."
+            echo "TAGS=" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          echo "Найдены теги:"
+          echo "$RESPONSE"
+
+          # Безопасная передача многострочного значения
+          {
+            echo "TAGS<<EOFTAGS"
+            echo "$RESPONSE"
+            echo "EOFTAGS"
+          } >> $GITHUB_ENV
+
+      # ──────────────────────────────────────────────
+      # 2. Обновляем YAML через Python
+      # ──────────────────────────────────────────────
+      - name: Update bug_report.yml
+        run: |
+          set -euo pipefail
+
+          python3 << 'PYTHON_SCRIPT'
+          import os
+          import re
+          import sys
+
+          FILE_PATH = '.github/ISSUE_TEMPLATE/bug_report.yml'
+          TARGET_ID = 'id: theme_version'
+
+          if not os.path.exists(FILE_PATH):
+              print(f"❌ Файл {FILE_PATH} не найден")
+              sys.exit(1)
+
+          raw_tags = os.environ.get('TAGS', '').strip()
+          if not raw_tags:
+              print("⚠️ Теги пусты. Пропускаем обновление.")
+              sys.exit(0)
+
+          tags = [t.strip() for t in raw_tags.split('\n') if t.strip()]
+
+          # ── Санитизация: убираем опасные символы ──
+          def sanitize(tag: str) -> str:
+              # Разрешаем: буквы, цифры, точки, дефисы, подчёркивания
+              return re.sub(r'[^a-zA-Z0-9._\-]', '', tag)
+
+          tags = [sanitize(t) for t in tags if sanitize(t)]
+          if not tags:
+              print("❌ После санитизации тегов не осталось")
+              sys.exit(1)
+
+          # ── Формируем новые опции ──
+          options = []
+          for i, tag in enumerate(tags):
+              if i == 0:
+                  options.append(f'        - "{tag} (Latest / Последняя)"')
+              else:
+                  options.append(f'        - "{tag}"')
+
+          options.append('        - "Git / Master / Build from source (Сборка из исходников)"')
+          options.append('        - "Not sure / Не уверен (Не знаю)"')
+
+          # ── Читаем файл ──
+          with open(FILE_PATH, 'r', encoding='utf-8') as f:
+              lines = f.readlines()
+
+          new_lines = []
+          in_target_block = False
+          in_options = False
+          options_replaced = False
+
+          for line in lines:
+              stripped = line.strip()
+
+              # Входим в целевой блок
+              if TARGET_ID in line:
+                  in_target_block = True
+                  new_lines.append(line)
+                  continue
+
+              if in_target_block:
+                  # Нашли options: — вставляем новые
+                  if stripped == 'options:' and not options_replaced:
+                      in_options = True
+                      new_lines.append(line)
+                      new_lines.extend(opt + '\n' for opt in options)
+                      options_replaced = True
+                      continue
+
+                  # Пропускаем старые опции (строки, начинающиеся с "- ")
+                  if in_options:
+                      if stripped.startswith('- '):
+                          continue  # пропускаем старую опцию
+                      else:
+                          in_options = False  # блок опций закончился
+
+              new_lines.append(line)
+
+          if not options_replaced:
+              print(f"❌ Блок '{TARGET_ID}' или 'options:' не найден в файле")
+              sys.exit(1)
+
+          # ── Записываем ──
+          with open(FILE_PATH, 'w', encoding='utf-8') as f:
+              f.writelines(new_lines)
+
+          print(f"✅ Обновлён {FILE_PATH}")
+          print(f"   Теги: {', '.join(tags)}")
+          PYTHON_SCRIPT
+
+      # ──────────────────────────────────────────────
+      # 3. Коммит и пуш с обработкой ошибок
+      # ──────────────────────────────────────────────
+      - name: Show diff before commit
+        run: |
+          set -euo pipefail
+          git diff .github/ISSUE_TEMPLATE/bug_report.yml || true
+
+      - name: Commit and push
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/ISSUE_TEMPLATE/bug_report.yml
+
+          if git diff --staged --quiet; then
+            echo "ℹ️ Изменений нет — версии уже актуальны."
+            exit 0
+          fi
+
+          git commit -m "chore: auto-update theme versions in bug report [skip ci]"
+
+          if git push 2>&1; then
+            echo "✅ Изменения отправлены в репозиторий."
+          else
+            echo "⚠️ Не удалось запушить (возможно, защищённая ветка). Создаём PR..."
+            BRANCH="auto-update-versions-$(date +%s)"
+            git checkout -b "$BRANCH"
+            git push origin "$BRANCH"
+            gh pr create \
+              --title "chore: auto-update theme versions" \
+              --body "Автоматическое обновление версий темы в шаблоне баг-репорта." \
+              --base main \
+              --head "$BRANCH"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
