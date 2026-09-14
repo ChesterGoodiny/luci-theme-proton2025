@@ -5,6 +5,7 @@
             "ubus": {
                 "luci.proton-temp": [
                     "getSensors",
+                    "getThresholds",
                     "resetPeaks"
                 ],
                 "luci.proton-system": [
@@ -52,6 +53,9 @@
         },
         "write": {
             "ubus": {
+                "luci.proton-temp": [
+                    "setThresholds"
+                ],
                 "luci.proton-settings": [
                     "setSetting",
                     "setSettings",
