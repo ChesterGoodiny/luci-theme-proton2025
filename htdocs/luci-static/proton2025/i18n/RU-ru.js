@@ -215,6 +215,9 @@ window.ProtonTranslations = {
   "Pattern size": "Размер узора",
   "Size of the background pattern": "Размер фонового узора",
   "Underwater Depths": "Подводные глубины",
+  "Fluid": "Цветные потоки (Fluid)",
+  "Colorful fluid follows the mouse or touch. Uses WebGL when available.":
+    "Цветные потоки следуют за мышью или касанием. Используется WebGL, если он доступен.",
   "Login Page Animation": "Анимация страницы входа",
   "Animation used on the LuCI login page. The color follows the selected Proton accent color.":
     "Анимация на странице входа LuCI. Цвет берётся из выбранного акцента Proton.",

@@ -413,6 +413,6 @@
 	scheduleAdjust();
 })();
 </script>
-<script src="{{ media }}/js/login-particles.js?v={{ __pv }}"></script>
+<script src="{{ media }}/js/login-particles.js?v={{ __pv }}" data-fluid-src="{{ media }}/js/login-fluid.js?v={{ __pv }}"></script>
 </body>
 </html>

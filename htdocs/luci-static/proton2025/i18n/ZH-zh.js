@@ -194,6 +194,9 @@ window.ProtonTranslations = {
   "Pattern size": "图案大小",
   "Size of the background pattern": "背景图案的大小",
   "Underwater Depths": "水下深处",
+  "Fluid": "彩色流体",
+  "Colorful fluid follows the mouse or touch. Uses WebGL when available.":
+    "彩色流体随鼠标或触摸移动。在可用时使用 WebGL。",
   "Login Page Animation": "登录页动画",
   "Animation used on the LuCI login page. The color follows the selected Proton accent color.":
     "LuCI 登录页使用的动画。颜色跟随所选 Proton 强调色。",

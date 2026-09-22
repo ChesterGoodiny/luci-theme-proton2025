@@ -82,6 +82,7 @@
     ["packetpulses", tr("Packet Pulses")],
     ["hex", tr("Hex Grid")],
     ["underwater", tr("Underwater Depths")],
+    ["fluid", tr("Fluid")],
   ];
 
   function findRowByControlId(id, root) {
@@ -123,11 +124,17 @@
 
     var desc = document.createElement("div");
     desc.className = "cbi-value-description";
-    desc.textContent = tr(
-      "Animation used on the LuCI login page. The color follows the selected Proton accent color.",
-    );
+    function updateDescription() {
+      desc.textContent = tr(
+        select.value === "fluid"
+          ? "Colorful fluid follows the mouse or touch. Uses WebGL when available."
+          : "Animation used on the LuCI login page. The color follows the selected Proton accent color.",
+      );
+    }
+    updateDescription();
 
     select.addEventListener("change", function () {
+      updateDescription();
       safeStorage.set(STORAGE_KEY, select.value);
 
       window.dispatchEvent(

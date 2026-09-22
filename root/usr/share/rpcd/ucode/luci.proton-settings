@@ -54,7 +54,8 @@ const VALID_OPTIONS = {
         	'circuit',
         	'packetpulses',
         	'hex',
-		'underwater'
+		'underwater',
+		'fluid'
     	]
 	}
 };

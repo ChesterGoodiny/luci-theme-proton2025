@@ -2,6 +2,18 @@
   "use strict";
 
   var STORAGE_KEY = "proton-login-animation";
+  var currentScript = document.currentScript;
+  var fluidUrl = currentScript && currentScript.getAttribute("data-fluid-src");
+  var fluidRequested = false;
+
+  function loadFluid() {
+    if (fluidRequested || !fluidUrl) return;
+    fluidRequested = true;
+    var script = document.createElement("script");
+    script.src = fluidUrl;
+    script.async = true;
+    document.head.appendChild(script);
+  }
 
   var REDUCED_MOTION = !!(
     window.matchMedia &&
@@ -100,7 +112,13 @@
 
   function getMode() {
     try {
-      return localStorage.getItem(STORAGE_KEY) || "particles";
+      var selected = localStorage.getItem(STORAGE_KEY) || "particles";
+      if (selected === "fluid") {
+        loadFluid();
+        // WebGL has its own canvas. Keep this Canvas 2D renderer stopped.
+        return "off";
+      }
+      return selected;
     } catch (e) {
       return "particles";
     }
@@ -176,8 +194,14 @@
       theme = getThemeColors();
       mode = getMode();
       lastMode = mode;
-
+      canvas.style.setProperty("display", mode === "off" ? "none" : "block", "important");
+      if (mode === "off") {
+        stop();
+        return;
+      }
       initEffect();
+      if (REDUCED_MOTION) drawStatic();
+      else start();
     }
 
     function baseBackground(strength) {
@@ -1047,7 +1071,7 @@
     }
     function draw(now) {
       if (mode === "off") {
-        rafId = requestAnimationFrame(draw);
+        stop();
         return;
       }
 
@@ -1083,7 +1107,7 @@
     }
 
     function start() {
-      if (running) return;
+      if (running || REDUCED_MOTION || mode === "off" || document.hidden) return;
       running = true;
       lastFrame = 0;
       rafId = requestAnimationFrame(draw);
@@ -1095,6 +1119,12 @@
         cancelAnimationFrame(rafId);
         rafId = 0;
       }
+      if (mouseRaf) {
+        cancelAnimationFrame(mouseRaf);
+        mouseRaf = 0;
+      }
+      mouse.x = null;
+      mouse.y = null;
     }
 
     function applyMode(next) {
@@ -1104,11 +1134,14 @@
 
       if (mode === "off") {
         ctx.clearRect(0, 0, w, h);
-        canvas.style.display = "none";
+        canvas.style.setProperty("display", "none", "important");
+        stop();
       } else {
-        canvas.style.display = "block";
+        canvas.style.setProperty("display", "block", "important");
         needThemeRefresh = true;
         initEffect();
+        if (REDUCED_MOTION) drawStatic();
+        else start();
       }
     }
 
@@ -1121,7 +1154,7 @@
     window.addEventListener(
       "mousemove",
       function (e) {
-        if (mouseRaf) return;
+        if (mouseRaf || mode === "off" || document.hidden) return;
         mouseRaf = requestAnimationFrame(function () {
           mouseRaf = 0;
           mouse.x = e.clientX;
@@ -1162,9 +1195,11 @@
       needThemeRefresh = true;
     });
     window.addEventListener("proton-settings-synced", function () {
+      applyMode(getMode());
       needThemeRefresh = true;
     });
     window.addEventListener("proton-setting-changed", function () {
+      applyMode(getMode());
       needThemeRefresh = true;
     });
     window.addEventListener("proton-login-animation-change", function () {
@@ -1173,7 +1208,7 @@
 
     resize();
 
-    if (REDUCED_MOTION) {
+    function drawStatic() {
       needThemeRefresh = true;
       theme = getThemeColors();
       if (mode !== "off") {
@@ -1192,12 +1227,21 @@
         else if (mode === "underwater") drawUnderwater();
         else drawParticles();
       }
-      return;
     }
+
+    if (REDUCED_MOTION) return;
 
     needThemeRefresh = true;
     start();
   }
+
+  // Also start effects when the page initially opened with Off or Fluid.
+  window.addEventListener("storage", function (event) {
+    if (!event || event.key === null || event.key === STORAGE_KEY) init();
+  });
+  window.addEventListener("proton-login-animation-change", init);
+  window.addEventListener("proton-settings-synced", init);
+  window.addEventListener("proton-setting-changed", init);
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);

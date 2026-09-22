@@ -5,3 +5,9 @@ Licensed under the Apache License, Version 2.0.
 
 This project may include third-party components distributed under their own
 licenses. See individual files and bundled license texts for details.
+
+The Fluid login animation (htdocs/luci-static/proton2025/js/login-fluid.js)
+includes adapted code from WebGL Fluid Simulation by Pavel Dobryakov.
+Copyright (c) 2017 Pavel Dobryakov.
+Source: https://github.com/PavelDoGreat/WebGL-Fluid-Simulation
+License: MIT (see LICENSES/MIT-fluid.txt and the source file header).

@@ -267,3 +267,23 @@ body.login-page .login-card {
     border-color: rgba(21, 32, 51, 0.12) !important;
   }
 }
+
+/* A separate WebGL canvas keeps the existing Canvas 2D effects independent. */
+#proton-login-fluid {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  display: block;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+
+@supports (width: 100dvw) {
+  #proton-login-fluid {
+    width: 100dvw !important;
+    height: 100dvh !important;
+  }
+}
