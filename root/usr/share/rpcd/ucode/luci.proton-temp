@@ -12,6 +12,78 @@ import { cursor } from 'uci';
 // Storage for peak temperatures (persists while rpcd is running)
 let peakTemps = {};
 
+const DEFAULT_THRESHOLDS = {
+	warm: 50,
+	hot: 70,
+	critical: 85
+};
+const MIN_THRESHOLD = 0;
+const MAX_THRESHOLD = 150;
+
+function validThresholds(thresholds) {
+	if (!thresholds)
+		return false;
+
+	let warm = +thresholds.warm;
+	let hot = +thresholds.hot;
+	let critical = +thresholds.critical;
+
+	return warm == warm && hot == hot && critical == critical &&
+		warm == int(warm) && hot == int(hot) && critical == int(critical) &&
+		warm >= MIN_THRESHOLD && critical <= MAX_THRESHOLD &&
+		warm < hot && hot < critical;
+}
+
+function getThresholds() {
+	let uci = cursor();
+	uci.load('proton2025');
+
+	let thresholds = {
+		warm: +(uci.get('proton2025', 'settings', 'temp_threshold_warm') ?? DEFAULT_THRESHOLDS.warm),
+		hot: +(uci.get('proton2025', 'settings', 'temp_threshold_hot') ?? DEFAULT_THRESHOLDS.hot),
+		critical: +(uci.get('proton2025', 'settings', 'temp_threshold_critical') ?? DEFAULT_THRESHOLDS.critical)
+	};
+
+	if (!validThresholds(thresholds)) {
+		return {
+			warm: DEFAULT_THRESHOLDS.warm,
+			hot: DEFAULT_THRESHOLDS.hot,
+			critical: DEFAULT_THRESHOLDS.critical
+		};
+	}
+
+	return thresholds;
+}
+
+function setThresholds(req) {
+	let thresholds = {
+		warm: +req.args?.warm,
+		hot: +req.args?.hot,
+		critical: +req.args?.critical
+	};
+
+	if (!validThresholds(thresholds)) {
+		return {
+			success: false,
+			error: 'Thresholds must be whole numbers and satisfy 0 <= warm < hot < critical <= 150',
+			thresholds: getThresholds()
+		};
+	}
+
+	let uci = cursor();
+	uci.load('proton2025');
+
+	if (!uci.get('proton2025', 'settings'))
+		uci.set('proton2025', 'settings', 'theme');
+
+	uci.set('proton2025', 'settings', 'temp_threshold_warm', '' + thresholds.warm);
+	uci.set('proton2025', 'settings', 'temp_threshold_hot', '' + thresholds.hot);
+	uci.set('proton2025', 'settings', 'temp_threshold_critical', '' + thresholds.critical);
+	uci.commit('proton2025');
+
+	return { success: true, thresholds: thresholds };
+}
+
 // --- Optional integration: luci-app-5gmodem modem temperature ---------------
 // When the 5gmodem package is installed AND the user ticked the theme setting
 // (proton2025.settings.modem_temp='1'), expose the active modem's temperature
@@ -325,6 +397,17 @@ const methods = {
 	getSensors: {
 		call: function() {
 			return getSensors();
+		}
+	},
+	getThresholds: {
+		call: function() {
+			return getThresholds();
+		}
+	},
+	setThresholds: {
+		args: { warm: 32, hot: 32, critical: 32 },
+		call: function(req) {
+			return setThresholds(req);
 		}
 	},
 	resetPeaks: {

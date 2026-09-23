@@ -52,6 +52,9 @@ set_proton_default menu_mode 'top'
 set_proton_default menu_collapsed '0'
 set_proton_default custom_font '1'
 set_proton_default login_animation 'particles'
+set_proton_default temp_threshold_warm '50'
+set_proton_default temp_threshold_hot '70'
+set_proton_default temp_threshold_critical '85'
 
 uci commit proton2025
 

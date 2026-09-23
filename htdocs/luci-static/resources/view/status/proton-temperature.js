@@ -9,11 +9,23 @@
 "require view";
 "require poll";
 "require rpc";
+"require ui";
 
 const callGetSensors = rpc.declare({
   object: "luci.proton-temp",
   method: "getSensors",
   expect: { sensors: [] },
+});
+
+const callGetThresholds = rpc.declare({
+  object: "luci.proton-temp",
+  method: "getThresholds",
+});
+
+const callSetThresholds = rpc.declare({
+  object: "luci.proton-temp",
+  method: "setThresholds",
+  params: ["warm", "hot", "critical"],
 });
 
 const SENSOR_COLORS = [
@@ -40,11 +52,13 @@ const WINDOW_OPTIONS = [
 const GRAPH_WIDTH = 960;
 const GRAPH_HEIGHT = 320;
 const GRAPH_PADDING = { top: 18, right: 24, bottom: 40, left: 56 };
-const THRESHOLDS = {
+const DEFAULT_THRESHOLDS = {
   warm: 50,
   hot: 70,
   critical: 85,
 };
+const MIN_THRESHOLD = 0;
+const MAX_THRESHOLD = 150;
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -58,6 +72,40 @@ function t(key) {
   }
 
   return key;
+}
+
+function thresholdsAreValid(thresholds) {
+  if (!thresholds) return false;
+
+  const warm = Number(thresholds.warm);
+  const hot = Number(thresholds.hot);
+  const critical = Number(thresholds.critical);
+
+  return (
+    Number.isInteger(warm) &&
+    Number.isInteger(hot) &&
+    Number.isInteger(critical) &&
+    warm >= MIN_THRESHOLD &&
+    critical <= MAX_THRESHOLD &&
+    warm < hot &&
+    hot < critical
+  );
+}
+
+function normalizeThresholds(rawThresholds) {
+  const thresholds = {
+    warm: Number(rawThresholds && rawThresholds.warm),
+    hot: Number(rawThresholds && rawThresholds.hot),
+    critical: Number(rawThresholds && rawThresholds.critical),
+  };
+
+  if (thresholdsAreValid(thresholds)) return thresholds;
+
+  return {
+    warm: DEFAULT_THRESHOLDS.warm,
+    hot: DEFAULT_THRESHOLDS.hot,
+    critical: DEFAULT_THRESHOLDS.critical,
+  };
 }
 
 function getSensorId(sensor) {
@@ -94,10 +142,10 @@ function formatSensorName(name) {
   return formatted || t("Sensor");
 }
 
-function getTempLevel(temp) {
-  if (temp >= THRESHOLDS.critical) return "critical";
-  if (temp >= THRESHOLDS.hot) return "hot";
-  if (temp >= THRESHOLDS.warm) return "warm";
+function getTempLevel(temp, thresholds) {
+  if (temp >= thresholds.critical) return "critical";
+  if (temp >= thresholds.hot) return "hot";
+  if (temp >= thresholds.warm) return "warm";
   return "normal";
 }
 
@@ -112,7 +160,7 @@ function getTempStatus(level) {
   );
 }
 
-function normalizeSensors(rawSensors) {
+function normalizeSensors(rawSensors, thresholds) {
   if (!Array.isArray(rawSensors)) return [];
 
   return rawSensors
@@ -133,7 +181,7 @@ function normalizeSensors(rawSensors) {
         peak: peak,
         path: sensor.path || "",
         source: sensor.source || "",
-        level: getTempLevel(current),
+        level: getTempLevel(current, thresholds),
       });
 
       return list;
@@ -227,10 +275,18 @@ function createSvgElement(tag, attrs, textContent) {
 
 return view.extend({
   load: function () {
-    return L.resolveDefault(callGetSensors(), null);
+    return Promise.all([
+      L.resolveDefault(callGetSensors(), null),
+      L.resolveDefault(callGetThresholds(), null),
+    ]).then(function (results) {
+      return {
+        sensors: results[0],
+        thresholds: results[1],
+      };
+    });
   },
 
-  initState: function () {
+  initState: function (thresholds) {
     this.history = new Map();
     this.colors = new Map();
     this.patterns = new Map();
@@ -240,6 +296,19 @@ return view.extend({
     this.maxPoints = (this.windowMinutes * 60) / POLL_INTERVAL;
     this.lastUpdate = null;
     this.errorState = false;
+    this.thresholds = normalizeThresholds(thresholds);
+    this.savedThresholds = {
+      warm: this.thresholds.warm,
+      hot: this.thresholds.hot,
+      critical: this.thresholds.critical,
+    };
+    this.thresholdInputs = null;
+    this.thresholdStatusNode = null;
+    this.thresholdSaveButton = null;
+    this.thresholdResetButton = null;
+    this.thresholdSaving = false;
+    this.thresholdMessageTimer = null;
+    this.thresholdSaveStatusTimer = null;
   },
 
   getColor: function (sensorId) {
@@ -382,6 +451,311 @@ return view.extend({
     );
   },
 
+  setThresholdMessage: function (message, level, timeoutMs) {
+    if (!this.thresholdStatusNode) return;
+
+    if (this.thresholdMessageTimer) {
+      clearTimeout(this.thresholdMessageTimer);
+      this.thresholdMessageTimer = null;
+    }
+
+    this.thresholdStatusNode.textContent = message || "";
+    this.thresholdStatusNode.setAttribute("data-state", level || "neutral");
+    this.thresholdStatusNode.style.display = message ? "" : "none";
+
+    if (message && timeoutMs) {
+      this.thresholdMessageTimer = setTimeout(
+        L.bind(function () {
+          this.thresholdMessageTimer = null;
+          if (!this.thresholdStatusNode) return;
+          this.thresholdStatusNode.textContent = "";
+          this.thresholdStatusNode.style.display = "none";
+        }, this),
+        timeoutMs,
+      );
+    }
+  },
+
+  showThresholdSaveStatus: function (level, message, timeoutMs) {
+    if (this.thresholdSaveStatusTimer) {
+      clearTimeout(this.thresholdSaveStatusTimer);
+      this.thresholdSaveStatusTimer = null;
+    }
+
+    ui.changes.displayStatus(level, E("p", {}, [message]));
+
+    if (timeoutMs) {
+      this.thresholdSaveStatusTimer = setTimeout(
+        L.bind(function () {
+          this.thresholdSaveStatusTimer = null;
+          ui.changes.displayStatus(false);
+        }, this),
+        timeoutMs,
+      );
+    }
+  },
+
+  getThresholdInputValues: function () {
+    if (!this.thresholdInputs) return null;
+
+    const read = function (input) {
+      const raw = String(input && input.value != null ? input.value : "").trim();
+      return raw === "" ? NaN : Number(raw);
+    };
+
+    return {
+      warm: read(this.thresholdInputs.warm),
+      hot: read(this.thresholdInputs.hot),
+      critical: read(this.thresholdInputs.critical),
+    };
+  },
+
+  thresholdsEqual: function (left, right) {
+    return (
+      !!left &&
+      !!right &&
+      left.warm === right.warm &&
+      left.hot === right.hot &&
+      left.critical === right.critical
+    );
+  },
+
+  updateThresholdActionState: function () {
+    const current = this.getThresholdInputValues();
+    const dirty = !this.thresholdsEqual(current, this.savedThresholds);
+
+    if (this.thresholdSaveButton)
+      this.thresholdSaveButton.disabled = this.thresholdSaving || !dirty;
+    if (this.thresholdResetButton)
+      this.thresholdResetButton.disabled = this.thresholdSaving;
+  },
+
+  syncThresholdInputs: function () {
+    if (!this.thresholdInputs) return;
+
+    ["warm", "hot", "critical"].forEach(
+      L.bind(function (key) {
+        if (this.thresholdInputs[key])
+          this.thresholdInputs[key].value = String(this.thresholds[key]);
+      }, this),
+    );
+
+    this.updateThresholdActionState();
+  },
+
+  applyThresholds: function (thresholds, markSaved) {
+    this.thresholds = normalizeThresholds(thresholds);
+
+    if (markSaved) {
+      this.savedThresholds = {
+        warm: this.thresholds.warm,
+        hot: this.thresholds.hot,
+        critical: this.thresholds.critical,
+      };
+    }
+
+    this.syncThresholdInputs();
+
+    this.currentSensors.forEach(
+      L.bind(function (sensor) {
+        sensor.level = getTempLevel(sensor.temp, this.thresholds);
+      }, this),
+    );
+
+    if (this.chartSummaryNode) this.refreshFocusedView();
+  },
+
+  saveThresholds: function () {
+    if (!this.thresholdInputs || this.thresholdSaving) return Promise.resolve(false);
+
+    const thresholds = this.getThresholdInputValues();
+
+    if (!thresholdsAreValid(thresholds)) {
+      this.setThresholdMessage(
+        t("Use whole numbers from 0 to 150°C with Warm < Hot < Critical."),
+        "warning",
+      );
+      return Promise.resolve(false);
+    }
+
+    this.thresholdSaving = true;
+    this.updateThresholdActionState();
+    this.setThresholdMessage("", "neutral");
+    this.showThresholdSaveStatus(
+      "notice spinning",
+      t("Saving temperature thresholds…"),
+    );
+
+    return L.resolveDefault(
+      callSetThresholds(
+        thresholds.warm,
+        thresholds.hot,
+        thresholds.critical,
+      ),
+      null,
+    )
+      .then(
+        L.bind(function (result) {
+          if (!result || !result.success) {
+            this.showThresholdSaveStatus(
+              "warning",
+              (result && result.error) ||
+                t("Failed to save temperature thresholds."),
+            );
+            return false;
+          }
+
+          this.applyThresholds(result.thresholds || thresholds, true);
+          this.showThresholdSaveStatus(
+            "notice",
+            t("Temperature thresholds saved."),
+            1500,
+          );
+          return true;
+        }, this),
+      )
+      .catch(
+        L.bind(function (error) {
+          console.warn("[Proton2025] Temperature threshold save failed:", error);
+          this.showThresholdSaveStatus(
+            "warning",
+            t("Failed to save temperature thresholds."),
+          );
+          return false;
+        }, this),
+      )
+      .finally(
+        L.bind(function () {
+          this.thresholdSaving = false;
+          this.updateThresholdActionState();
+        }, this),
+      );
+  },
+
+  buildThresholdSettings: function () {
+    this.thresholdInputs = {};
+
+    const fields = E("div", { class: "proton-temp-threshold-fields" });
+
+    const addInput = L.bind(function (key, label) {
+      const id = "proton-temp-threshold-" + key;
+      const input = E("input", {
+        id: id,
+        class: "cbi-input-text",
+        type: "number",
+        min: String(MIN_THRESHOLD),
+        max: String(MAX_THRESHOLD),
+        step: "1",
+        value: String(this.thresholds[key]),
+        style: "width:7rem;box-sizing:border-box",
+      });
+
+      input.addEventListener(
+        "input",
+        L.bind(function () {
+          this.setThresholdMessage("", "neutral");
+          this.updateThresholdActionState();
+        }, this),
+      );
+
+      this.thresholdInputs[key] = input;
+      fields.appendChild(
+        E("div", { class: "cbi-value proton-temp-threshold-row" }, [
+          E("label", { class: "cbi-value-title", for: id }, [t(label)]),
+          E("div", { class: "cbi-value-field" }, [
+            input,
+            E("span", { style: "margin-left:8px" }, ["°C"]),
+          ]),
+        ]),
+      );
+    }, this);
+
+    addInput("warm", "Warm");
+    addInput("hot", "Hot");
+    addInput("critical", "Critical");
+
+    this.thresholdSaveButton = E(
+      "button",
+      {
+        class: "cbi-button cbi-button-positive",
+        type: "button",
+        disabled: "disabled",
+        click: L.bind(this.saveThresholds, this),
+      },
+      [t("Save")],
+    );
+
+    this.thresholdResetButton = E(
+      "button",
+      {
+        class: "cbi-button",
+        type: "button",
+        click: L.bind(function () {
+          this.thresholdInputs.warm.value = String(DEFAULT_THRESHOLDS.warm);
+          this.thresholdInputs.hot.value = String(DEFAULT_THRESHOLDS.hot);
+          this.thresholdInputs.critical.value = String(
+            DEFAULT_THRESHOLDS.critical,
+          );
+          this.updateThresholdActionState();
+          this.setThresholdMessage(
+            t("Defaults restored. Click Save to apply."),
+            "neutral",
+            3500,
+          );
+        }, this),
+      },
+      [t("Reset")],
+    );
+
+    this.thresholdStatusNode = E("div", {
+      class: "proton-temp-realtime-status",
+      style: "display:none;min-height:1.25rem;flex:1 1 16rem",
+      "aria-live": "polite",
+    });
+
+    const actions = E(
+      "div",
+      {
+        style:
+          "display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px",
+      },
+      [
+        this.thresholdStatusNode,
+        E(
+          "div",
+          {
+            style:
+              "display:flex;align-items:center;gap:8px;margin-left:auto",
+          },
+          [this.thresholdResetButton, this.thresholdSaveButton],
+        ),
+      ],
+    );
+
+    this.updateThresholdActionState();
+
+    return E("div", { class: "cbi-section proton-temp-threshold-settings" }, [
+      E("h3", {}, [t("Temperature thresholds")]),
+      E(
+        "div",
+        {
+          class: "cbi-value-description",
+          style: "margin:0 0 12px 0",
+        },
+        [
+          t(
+            "Controls when sensor readings change status. Values must satisfy Warm < Hot < Critical.",
+          ),
+        ],
+      ),
+      E(
+        "div",
+        { style: "padding:0.25rem 0 0.25rem 0" },
+        [fields, actions],
+      ),
+    ]);
+  },
+
   buildLayout: function () {
     this.windowSelectorNode = E("div", {
       class: "proton-temp-window-selector",
@@ -418,6 +792,7 @@ return view.extend({
     ]);
     this.statusNode = E("div", { class: "proton-temp-realtime-status" });
     this.tableBody = E("tbody");
+    this.thresholdSettingsNode = this.buildThresholdSettings();
 
     return E("div", { class: "cbi-map proton-temp-realtime-page" }, [
       E("h2", {}, [t("Temperature Realtime")]),
@@ -456,6 +831,7 @@ return view.extend({
           ]),
         ]),
       ]),
+      this.thresholdSettingsNode,
     ]);
   },
 
@@ -706,12 +1082,16 @@ return view.extend({
 
     const maxTemp = Math.max(
       90,
-      THRESHOLDS.critical,
+      this.thresholds.critical + 5,
       Math.max.apply(null, allValues) + 5,
     );
     const minTemp = Math.max(
       0,
-      Math.min(35, Math.min.apply(null, allValues) - 5),
+      Math.min(
+        35,
+        this.thresholds.warm - 5,
+        Math.min.apply(null, allValues) - 5,
+      ),
     );
     const roundedMax = Math.ceil(maxTemp / 5) * 5;
     const roundedMin = Math.floor(minTemp / 5) * 5;
@@ -763,12 +1143,12 @@ return view.extend({
     }
 
     [
-      { value: THRESHOLDS.warm, cssClass: "warm" },
-      { value: THRESHOLDS.hot, cssClass: "hot" },
-      { value: THRESHOLDS.critical, cssClass: "critical" },
+      { value: this.thresholds.warm, cssClass: "warm" },
+      { value: this.thresholds.hot, cssClass: "hot" },
+      { value: this.thresholds.critical, cssClass: "critical" },
     ].forEach(
       L.bind(function (line) {
-        if (line.value <= roundedMin || line.value >= roundedMax) return;
+        if (line.value < roundedMin || line.value > roundedMax) return;
 
         const y = mapY(line.value);
         svg.appendChild(
@@ -982,7 +1362,7 @@ return view.extend({
             });
             rows.push({
               label: t("Status"),
-              value: getTempStatus(getTempLevel(sampleValue)),
+              value: getTempStatus(getTempLevel(sampleValue, this.thresholds)),
             });
 
             if (dataIndex > 0)
@@ -1182,7 +1562,7 @@ return view.extend({
   },
 
   applySensors: function (rawSensors) {
-    const sensors = normalizeSensors(rawSensors);
+    const sensors = normalizeSensors(rawSensors, this.thresholds);
     this.currentSensors = sensors;
     this.updateHistory(sensors);
     this.refreshFocusedView();
@@ -1218,8 +1598,11 @@ return view.extend({
       });
   },
 
-  render: function (rawSensors) {
-    this.initState();
+  render: function (payload) {
+    const rawSensors = payload ? payload.sensors : null;
+    const rawThresholds = payload ? payload.thresholds : null;
+
+    this.initState(rawThresholds);
     const node = this.buildLayout();
 
     if (rawSensors == null)
