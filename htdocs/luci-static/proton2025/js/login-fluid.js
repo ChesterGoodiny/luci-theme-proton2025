@@ -149,6 +149,9 @@ SOFTWARE.
   window.addEventListener("proton-login-animation-change", sync);
   window.addEventListener("proton-settings-synced", sync);
   window.addEventListener("proton-setting-changed", sync);
+  // Freeze on login submit: keep the last frame, stop scheduling new ones.
+  // The sysauth.ut overlay covers the viewport until the next page paints.
+  window.addEventListener("proton-login-freeze", pause);
   window.addEventListener("pagehide", function () {
     pageActive = false;
     destroy();

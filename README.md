@@ -220,7 +220,10 @@ NOTICE for attribution details.
 
 Third-party assets: the **Inter** font, Copyright 2020 The Inter Project Authors
 (https://github.com/rsms/inter), under SIL Open Font License 1.1 — license file
-at `htdocs/luci-static/proton2025/fonts/LICENSE.txt`.
+at `htdocs/luci-static/proton2025/fonts/LICENSE.txt`; the **WebGL Fluid**
+login animation, adapted from WebGL Fluid Simulation by Pavel Dobryakov,
+Copyright (c) 2017 (https://github.com/PavelDoGreat/WebGL-Fluid-Simulation),
+under the MIT License — license file at `LICENSES/MIT-fluid.txt`.
 
 ## Acknowledgements
 

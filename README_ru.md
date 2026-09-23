@@ -231,6 +231,10 @@ Copyright 2025-2026 ChesterGoodiny.
   - Файл лицензии: `htdocs/luci-static/proton2025/fonts/LICENSE.txt`
   - Используется для единообразной типографики на всех платформах
 
+- **WebGL Fluid** (анимация страницы входа) - адаптация WebGL Fluid Simulation, Pavel Dobryakov, Copyright (c) 2017 (https://github.com/PavelDoGreat/WebGL-Fluid-Simulation)
+  - Лицензия: MIT
+  - Файл лицензии: `LICENSES/MIT-fluid.txt`
+
 ### Благодарности
 
 - Опциональный режим SPA (навигация внутри одного документа) заимствует часть

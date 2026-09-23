@@ -171,6 +171,17 @@
         return null;
       }
 
+      const contentType = response.headers.get("content-type") || "";
+      if (!response.ok) {
+        throw new Error(
+          "ubus HTTP request failed (" + response.status + ")",
+        );
+      }
+
+      if (!contentType.toLowerCase().includes("application/json")) {
+        throw new Error("ubus HTTP endpoint returned a non-JSON response");
+      }
+
       return response.json();
     } finally {
       clearTimeout(timeout);

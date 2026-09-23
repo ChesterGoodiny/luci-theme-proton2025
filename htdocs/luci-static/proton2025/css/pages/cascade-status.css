@@ -122,14 +122,28 @@ body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifa
 }
 
 body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-head.cbi-tooltip-container .zonebadge {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: stretch;
     width: 4px;
     height: 100% !important;
     flex: none;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
     border: none;
     border-radius: 4px;
     gap: 0;
     padding: 0;
+}
+
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-head.cbi-tooltip-container .zonebadge>* {
+    display: block;
+    flex: 1 1 0;
+    width: 100% !important;
+    min-width: 0;
+    min-height: 0;
 }
 
 body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-body:nth-child(4) {

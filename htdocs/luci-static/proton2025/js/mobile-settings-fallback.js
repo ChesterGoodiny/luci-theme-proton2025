@@ -134,6 +134,15 @@
         ],
       }),
     })
+      .then(function (response) {
+        var contentType = response.headers.get("content-type") || "";
+        if (!response.ok) {
+          throw new Error("ubus HTTP request failed (" + response.status + ")");
+        }
+        if (contentType.toLowerCase().indexOf("application/json") === -1) {
+          throw new Error("ubus HTTP endpoint returned a non-JSON response");
+        }
+      })
       .catch(function (err) {
         if (err && err.name === "AbortError") {
           window.alert("Proton2025 settings sync timed out. Please retry.");

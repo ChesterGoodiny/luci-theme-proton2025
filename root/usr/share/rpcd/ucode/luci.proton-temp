@@ -12,6 +12,8 @@ import { cursor } from 'uci';
 // Storage for peak temperatures (persists while rpcd is running)
 let peakTemps = {};
 
+// Configurable Warm / Hot / Critical thresholds (PR #82, @DoubleThePsycho).
+// Stored in proton2025.settings; defaults keep the historical 50/70/85 °C.
 const DEFAULT_THRESHOLDS = {
 	warm: 50,
 	hot: 70,
@@ -399,6 +401,11 @@ const methods = {
 			return getSensors();
 		}
 	},
+	resetPeaks: {
+		call: function() {
+			return resetPeaks();
+		}
+	},
 	getThresholds: {
 		call: function() {
 			return getThresholds();
@@ -408,11 +415,6 @@ const methods = {
 		args: { warm: 32, hot: 32, critical: 32 },
 		call: function(req) {
 			return setThresholds(req);
-		}
-	},
-	resetPeaks: {
-		call: function() {
-			return resetPeaks();
 		}
 	},
 	getIntegrations: {

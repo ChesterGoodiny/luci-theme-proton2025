@@ -283,7 +283,7 @@ body {
 	}
 }
 </style>
-{% let __pv = "1.4.0"; %}
+{% let __pv = "1.4.2"; %}
 <link rel="stylesheet" media="screen" fetchpriority="high" href="{{ media }}/css/cascade.css?v={{ __pv }}" />
 {#
    Фаза 2B-3: пофайловый per-page CSS. cascade.css содержит только общие

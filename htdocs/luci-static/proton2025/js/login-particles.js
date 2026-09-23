@@ -149,12 +149,12 @@
     var rafId = 0;
     var running = false;
     var lastFrame = 0;
-    var FRAME_MS = 1000 / 30;
-    var needThemeRefresh = false;
-
     var cores = navigator.hardwareConcurrency || 4;
     var mem = navigator.deviceMemory || 4;
-    var particleScale = cores <= 2 || mem <= 2 ? 0.5 : cores <= 4 ? 0.75 : 1;
+    var lowPowerDevice = cores <= 2 || mem <= 2;
+    var particleScale = lowPowerDevice ? 0.5 : cores <= 4 ? 0.75 : 1;
+    var FRAME_MS = lowPowerDevice ? 1000 / 30 : 0;
+    var needThemeRefresh = false;
 
     var lastMode = mode;
     var theme = getThemeColors();
@@ -194,7 +194,11 @@
       theme = getThemeColors();
       mode = getMode();
       lastMode = mode;
-      canvas.style.setProperty("display", mode === "off" ? "none" : "block", "important");
+      canvas.style.setProperty(
+        "display",
+        mode === "off" ? "none" : "block",
+        "important",
+      );
       if (mode === "off") {
         stop();
         return;
@@ -1075,7 +1079,7 @@
         return;
       }
 
-      if (now - lastFrame < FRAME_MS) {
+      if (FRAME_MS && now - lastFrame < FRAME_MS) {
         rafId = requestAnimationFrame(draw);
         return;
       }
@@ -1107,7 +1111,8 @@
     }
 
     function start() {
-      if (running || REDUCED_MOTION || mode === "off" || document.hidden) return;
+      if (running || REDUCED_MOTION || mode === "off" || document.hidden)
+        return;
       running = true;
       lastFrame = 0;
       rafId = requestAnimationFrame(draw);
@@ -1204,6 +1209,13 @@
     });
     window.addEventListener("proton-login-animation-change", function () {
       applyMode(getMode());
+    });
+
+    // Freeze frame on login submit: the overlay in sysauth.ut covers the
+    // viewport, and stopping here frees the GPU for the next page paint.
+    window.addEventListener("proton-login-freeze", function () {
+      stop();
+      needThemeRefresh = false;
     });
 
     resize();

@@ -11,6 +11,20 @@
 	// Optional custom login branding (router name + uploaded logo).
 	const protonResp = ubus.call('uci', 'get', { config: 'proton2025', section: 'settings' });
 	const protonSettings = (protonResp && protonResp.values) ? protonResp.values : {};
+
+	// Resolve the theme mode server-side so the login page renders with the
+	// correct data-theme from the first paint — no flash of the wrong theme.
+	// Mirrors the logic in header.ut.
+	function resolveServerTheme(mode) {
+		if (mode === 'auto') {
+			// We cannot read prefers-color-scheme from ucode; default to dark
+			// which matches the Proton2025 default and the login canvas.
+			return 'dark';
+		}
+		return mode === 'light' ? 'light' : 'dark';
+	}
+	const serverTheme = resolveServerTheme(protonSettings.theme_mode || 'auto');
+
 	const loginBranding = (protonSettings.login_branding == '1');
 	const loginLogoOnly = (protonSettings.login_logo_only == '1');
 	const loginLogo = protonSettings.login_logo;
@@ -29,7 +43,7 @@
 -%}
 
 <!DOCTYPE html>
-<html lang="{{ dispatcher.lang }}">
+<html lang="{{ dispatcher.lang }}" data-theme="{{ serverTheme }}" data-darkmode="{{ serverTheme === 'dark' ? 'true' : 'false' }}">
 <head>
 <meta charset="utf-8" />
 <script>
@@ -214,9 +228,16 @@
 <meta name="color-scheme" content="dark light" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+{# Критический фон: задаём сразу в head, чтобы браузер не рисовал белый фон
+   до загрузки cascade.css. Значение совпадает с тем, что выставляет
+   inline-скрипт ниже и login-bg.css. #}
+<style>
+html { background-color: {{ serverTheme === 'light' ? '#ffffff' : '#0f1419' }} !important; }
+body.login-page { background-color: {{ serverTheme === 'light' ? '#ffffff' : '#0f1419' }} !important; }
+</style>
 {# Версия должна совпадать с __pv в header.ut: без ?v= браузер отдаёт
    старый cascade.css на странице логина после обновления темы. #}
-{% let __pv = "1.4.0"; %}
+{% let __pv = "1.4.2"; %}
 <link rel="stylesheet" fetchpriority="high" href="{{ media }}/css/cascade.css?v={{ __pv }}" />
 <link rel="stylesheet" href="{{ media }}/css/login-bg.css?v={{ __pv }}" />
 
@@ -411,6 +432,31 @@
 	}
 
 	scheduleAdjust();
+})();
+// Freeze login animations on submit so the unload/navigation frame never
+// flashes white: stop both renderers and cover the viewport with the
+// already-resolved theme background until the next document paints.
+(function () {
+  var form = document.querySelector('.login-form');
+  if (!form) return;
+
+  function freezeLogin() {
+    try {
+      var dark = document.documentElement.getAttribute('data-theme') !== 'light';
+      var cover = document.createElement('div');
+      cover.setAttribute('aria-hidden', 'true');
+      cover.style.cssText = 'position:fixed;inset:0;z-index:9999;margin:0;padding:0;border:0;' +
+        'background:' + (dark ? '#0f1419' : '#ffffff') + ';pointer-events:none;';
+      document.body.appendChild(cover);
+    } catch (e) {}
+    try { window.dispatchEvent(new Event('proton-login-freeze')); } catch (e) {}
+  }
+
+  // 'submit' covers keyboard/Enter/button submits; 'click' on the submit
+  // button is a backup for programmatic form.submit() which skips the event.
+  form.addEventListener('submit', freezeLogin);
+  var submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+  if (submitBtn) submitBtn.addEventListener('click', freezeLogin);
 })();
 </script>
 <script src="{{ media }}/js/login-particles.js?v={{ __pv }}" data-fluid-src="{{ media }}/js/login-fluid.js?v={{ __pv }}"></script>
