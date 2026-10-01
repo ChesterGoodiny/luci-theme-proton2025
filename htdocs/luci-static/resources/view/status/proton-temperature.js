@@ -49,8 +49,13 @@ const WINDOW_OPTIONS = [
   { minutes: 10, label: "10 min" },
   { minutes: 15, label: "15 min" },
 ];
-const GRAPH_WIDTH = 960;
-const GRAPH_HEIGHT = 320;
+// Fallback size used until the chart has a measured width; the real size is
+// taken from the rendered element so the SVG is drawn 1:1 in CSS pixels
+// (a fixed viewBox stretched with preserveAspectRatio="none" squashed the
+// chart and its text on wide pages).
+const DEFAULT_GRAPH_WIDTH = 960;
+const DEFAULT_GRAPH_HEIGHT = 340;
+const MAX_INLINE_SERIES_LABELS = 4;
 const GRAPH_PADDING = { top: 18, right: 24, bottom: 40, left: 56 };
 const DEFAULT_THRESHOLDS = {
   warm: 50,
@@ -773,8 +778,7 @@ return view.extend({
     this.chartSummaryNode = E("div", { class: "proton-temp-chart-summary" });
     this.svgNode = createSvgElement("svg", {
       class: "proton-temp-chart-svg",
-      viewBox: "0 0 %d %d".format(GRAPH_WIDTH, GRAPH_HEIGHT),
-      preserveAspectRatio: "none",
+      viewBox: "0 0 %d %d".format(DEFAULT_GRAPH_WIDTH, DEFAULT_GRAPH_HEIGHT),
       role: "img",
       "aria-label": t("Temperature history chart"),
     });
@@ -1049,6 +1053,13 @@ return view.extend({
     svg.replaceChildren();
     this.hideChartTooltip();
 
+    // Draw at the real on-screen size so text and lines are never stretched.
+    const bounds = svg.getBoundingClientRect();
+    const graphWidth = Math.round(bounds.width) || DEFAULT_GRAPH_WIDTH;
+    const graphHeight = Math.round(bounds.height) || DEFAULT_GRAPH_HEIGHT;
+    this.graphWidth = graphWidth;
+    svg.setAttribute("viewBox", "0 0 %d %d".format(graphWidth, graphHeight));
+
     if (!this.currentSensors.length) {
       this.emptyNode.style.display = "";
       return;
@@ -1095,8 +1106,8 @@ return view.extend({
     );
     const roundedMax = Math.ceil(maxTemp / 5) * 5;
     const roundedMin = Math.floor(minTemp / 5) * 5;
-    const plotWidth = GRAPH_WIDTH - GRAPH_PADDING.left - GRAPH_PADDING.right;
-    const plotHeight = GRAPH_HEIGHT - GRAPH_PADDING.top - GRAPH_PADDING.bottom;
+    const plotWidth = graphWidth - GRAPH_PADDING.left - GRAPH_PADDING.right;
+    const plotHeight = graphHeight - GRAPH_PADDING.top - GRAPH_PADDING.bottom;
 
     var maxPts = this.maxPoints;
     const mapX = function (index, count) {
@@ -1128,7 +1139,7 @@ return view.extend({
         createSvgElement("line", {
           x1: String(GRAPH_PADDING.left),
           y1: String(y),
-          x2: String(GRAPH_WIDTH - GRAPH_PADDING.right),
+          x2: String(graphWidth - GRAPH_PADDING.right),
           y2: String(y),
           class: "proton-temp-grid-line",
         }),
@@ -1155,7 +1166,7 @@ return view.extend({
           createSvgElement("line", {
             x1: String(GRAPH_PADDING.left),
             y1: String(y),
-            x2: String(GRAPH_WIDTH - GRAPH_PADDING.right),
+            x2: String(graphWidth - GRAPH_PADDING.right),
             y2: String(y),
             class:
               "proton-temp-threshold proton-temp-threshold-" + line.cssClass,
@@ -1164,7 +1175,7 @@ return view.extend({
         svg.appendChild(
           this.createAxisLabel(
             formatTemp(line.value),
-            GRAPH_WIDTH - GRAPH_PADDING.right - 6,
+            graphWidth - GRAPH_PADDING.right - 6,
             y - 6,
             "end",
             "proton-temp-threshold-label",
@@ -1190,7 +1201,7 @@ return view.extend({
             createSvgElement("line", {
               x1: String(GRAPH_PADDING.left),
               y1: String(averageY),
-              x2: String(GRAPH_WIDTH - GRAPH_PADDING.right),
+              x2: String(graphWidth - GRAPH_PADDING.right),
               y2: String(averageY),
               class: "proton-temp-average-line",
             }),
@@ -1211,11 +1222,11 @@ return view.extend({
             " " +
             String(mapX(history.length - 1, history.length)) +
             "," +
-            String(GRAPH_HEIGHT - GRAPH_PADDING.bottom) +
+            String(graphHeight - GRAPH_PADDING.bottom) +
             " " +
             String(mapX(0, history.length)) +
             "," +
-            String(GRAPH_HEIGHT - GRAPH_PADDING.bottom);
+            String(graphHeight - GRAPH_PADDING.bottom);
           svg.appendChild(
             createSvgElement("polygon", {
               points: areaPoints,
@@ -1248,6 +1259,11 @@ return view.extend({
           }),
         );
 
+        // With many sensors the inline end-of-line labels collide into an
+        // unreadable pile; the selector chips and the hover tooltip carry
+        // the values in that case.
+        if (!sensor && sensors.length > MAX_INLINE_SERIES_LABELS) return;
+
         seriesLabels.push({
           text: sensor
             ? formatTemp(history[history.length - 1], 1)
@@ -1273,7 +1289,7 @@ return view.extend({
     seriesLabels.forEach(
       L.bind(function (label) {
         const anchor =
-          label.x > GRAPH_WIDTH - GRAPH_PADDING.right - 60 ? "end" : "start";
+          label.x > graphWidth - GRAPH_PADDING.right - 60 ? "end" : "start";
         svg.appendChild(
           this.createAxisLabel(
             label.text,
@@ -1281,7 +1297,7 @@ return view.extend({
             clamp(
               label.y,
               GRAPH_PADDING.top + 10,
-              GRAPH_HEIGHT - GRAPH_PADDING.bottom - 6,
+              graphHeight - GRAPH_PADDING.bottom - 6,
             ),
             anchor,
             "proton-temp-series-label",
@@ -1294,7 +1310,7 @@ return view.extend({
       x1: String(GRAPH_PADDING.left),
       y1: String(GRAPH_PADDING.top),
       x2: String(GRAPH_PADDING.left),
-      y2: String(GRAPH_HEIGHT - GRAPH_PADDING.bottom),
+      y2: String(graphHeight - GRAPH_PADDING.bottom),
       class: "proton-temp-hover-guide",
     });
     const hoverPoints = createSvgElement("g", {
@@ -1318,17 +1334,17 @@ return view.extend({
 
     const updateHover = L.bind(function (ev) {
       const rect = svg.getBoundingClientRect();
-      const scaleX = GRAPH_WIDTH / Math.max(1, rect.width);
-      const scaleY = GRAPH_HEIGHT / Math.max(1, rect.height);
+      const scaleX = graphWidth / Math.max(1, rect.width);
+      const scaleY = graphHeight / Math.max(1, rect.height);
       const pointerX = clamp(
         (ev.clientX - rect.left) * scaleX,
         GRAPH_PADDING.left,
-        GRAPH_WIDTH - GRAPH_PADDING.right,
+        graphWidth - GRAPH_PADDING.right,
       );
       const pointerY = clamp(
         (ev.clientY - rect.top) * scaleY,
         GRAPH_PADDING.top,
-        GRAPH_HEIGHT - GRAPH_PADDING.bottom,
+        graphHeight - GRAPH_PADDING.bottom,
       );
       const slot = Math.round(
         ((pointerX - GRAPH_PADDING.left) / Math.max(1, plotWidth)) *
@@ -1424,23 +1440,23 @@ return view.extend({
       this.createAxisLabel(
         "-" + formatMinutesShort(this.windowMinutes),
         GRAPH_PADDING.left,
-        GRAPH_HEIGHT - 10,
+        graphHeight - 10,
         "start",
       ),
     );
     svg.appendChild(
       this.createAxisLabel(
         "-" + formatMinutesShort(this.windowMinutes / 2),
-        GRAPH_WIDTH / 2,
-        GRAPH_HEIGHT - 10,
+        graphWidth / 2,
+        graphHeight - 10,
         "middle",
       ),
     );
     svg.appendChild(
       this.createAxisLabel(
         t("Now"),
-        GRAPH_WIDTH - GRAPH_PADDING.right,
-        GRAPH_HEIGHT - 10,
+        graphWidth - GRAPH_PADDING.right,
+        graphHeight - 10,
         "end",
       ),
     );
@@ -1613,6 +1629,19 @@ return view.extend({
     else this.applySensors(rawSensors);
 
     poll.add(L.bind(this.pollSensors, this), POLL_INTERVAL);
+
+    // Redraw when the chart width changes (page-width setting, window resize,
+    // first attach to the DOM) instead of scaling the old drawing.
+    if (typeof ResizeObserver === "function") {
+      new ResizeObserver(
+        L.bind(function () {
+          const width = Math.round(this.svgNode.getBoundingClientRect().width);
+
+          if (width && width !== this.graphWidth)
+            this.renderChart(this.ensureSelectedSensor(this.currentSensors));
+        }, this),
+      ).observe(this.chartWrapNode);
+    }
 
     return node;
   },
