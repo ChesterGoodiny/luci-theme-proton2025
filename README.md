@@ -114,6 +114,13 @@ and cached on the router.
   module, with no external dependencies
 - Colour-coded Load Average bars on the status page
 - Automatic styling for third-party packages and custom pages
+- System → **Software** → *Upload Package…* installs several files at once, in
+  one transaction, and on OpenWrt 25.12+ (apk) also packages that are not signed
+  by a trusted key. The stock page runs `apk add` without `--allow-untrusted`, so
+  such uploads fail with `UNTRUSTED signature`
+  ([openwrt/luci#8482](https://github.com/openwrt/luci/issues/8482)). The theme
+  hands the install step to its own `luci.proton-packages` RPC module, which only
+  accepts files the upload step just created (never a name or a URL)
 - 10 interface languages: EN, RU, ZH, DE, UK, ES, PT, PL, FR, IT
 
 The service, temperature and throughput widgets on Status → Overview are no
