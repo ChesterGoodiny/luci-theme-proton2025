@@ -1,0 +1,155 @@
+// Proton2025 Theme - Package install RPC module
+// Copyright 2025-2026 ChesterGoodiny
+// Licensed under the Apache License, Version 2.0
+// See LICENSE and NOTICE for details.
+//
+// Installs package files uploaded from System -> Software -> "Upload Package...".
+//
+// On OpenWrt 25.12+ (apk) the stock installer runs `apk add <file>`, which fails
+// with "UNTRUSTED signature" for any package that is not signed by a key in
+// /etc/apk/keys, and its helper script silently drops unknown options, so the
+// UI cannot pass --allow-untrusted (openwrt/luci#8482). This module installs the
+// uploaded files itself, with --allow-untrusted, in ONE transaction so that
+// packages that depend on each other can be installed together.
+//
+// It only ever touches files the theme's own upload step created
+// (/tmp/proton-upload-<n>.apk|ipk); it never takes a package name or a URL.
+
+'use strict';
+
+import { popen, stat, readfile, unlink } from 'fs';
+
+const UPLOAD_RE = /^\/tmp\/proton-upload-[0-9]+\.(apk|ipk)$/;
+// The lock luci-app-package-manager takes, so the two never run at once.
+const LOCK_FILE = '/tmp/ipkg.lock';
+const OUT_FILE = '/tmp/proton-pkg-install.out';
+const ERR_FILE = '/tmp/proton-pkg-install.err';
+const MAX_FILES = 32;
+const MAX_OUTPUT = 65536;
+
+function detectPackageManager() {
+	return stat('/usr/bin/apk') ? 'apk' : 'opkg';
+}
+
+function shellQuote(value) {
+	return "'" + replace(value, "'", "'\\''") + "'";
+}
+
+function readOutput(path) {
+	let content = readfile(path, MAX_OUTPUT);
+	return content ? trim(content) : '';
+}
+
+// Returns the validated list of upload paths, or an { error } object.
+function validateFiles(files, packageManager) {
+	if (type(files) != 'array' || length(files) < 1)
+		return { error: 'No package files given' };
+
+	if (length(files) > MAX_FILES)
+		return { error: 'Too many package files' };
+
+	let wantedExt = packageManager == 'apk' ? 'apk' : 'ipk';
+	let seen = {};
+	let list = [];
+
+	for (let file in files) {
+		let m = type(file) == 'string' ? match(file, UPLOAD_RE) : null;
+
+		if (!m)
+			return { error: 'Invalid package file path' };
+
+		if (m[1] != wantedExt)
+			return { error: 'Package file type does not match the package manager' };
+
+		let st = stat(file);
+		if (!st || st.type != 'file')
+			return { error: 'Package file not found: ' + file };
+
+		if (!seen[file]) {
+			seen[file] = true;
+			push(list, file);
+		}
+	}
+
+	return { files: list };
+}
+
+function removeFiles(files) {
+	for (let file in files)
+		if (type(file) == 'string' && match(file, UPLOAD_RE))
+			unlink(file);
+}
+
+function installLocal(request) {
+	let packageManager = detectPackageManager();
+	let checked = validateFiles(request.args?.files, packageManager);
+
+	if (checked.error)
+		return { code: 255, stderr: checked.error };
+
+	let argv = packageManager == 'apk'
+		? [ 'apk', 'add', '--allow-untrusted' ]
+		: [ 'opkg', 'install' ];
+
+	if (request.args?.overwrite === true)
+		push(argv, '--force-overwrite');
+
+	for (let file in checked.files)
+		push(argv, file);
+
+	let command = join(' ', map(argv, shellQuote));
+	let shown = join(' ', argv);
+
+	// One transaction (all files at once) under the package manager lock;
+	// stdout and stderr are kept apart like the stock installer does.
+	let proc = popen(
+		'flock -x ' + LOCK_FILE + ' ' + command +
+		' </dev/null >' + OUT_FILE + ' 2>' + ERR_FILE + '; echo $?', 'r');
+
+	let code = 255;
+	if (proc) {
+		let parsed = int(trim(proc.read('all') || ''));
+		if (type(parsed) == 'int')
+			code = parsed;
+		proc.close();
+	}
+
+	let result = { code: code, pkmcmd: shown };
+	let stdout = readOutput(OUT_FILE);
+	let stderr = readOutput(ERR_FILE);
+
+	if (stdout) result.stdout = stdout;
+	if (stderr) result.stderr = stderr;
+
+	unlink(OUT_FILE);
+	unlink(ERR_FILE);
+	removeFiles(checked.files);
+
+	return result;
+}
+
+function cleanup(request) {
+	let files = request.args?.files;
+
+	if (type(files) == 'array')
+		removeFiles(files);
+
+	return { success: true };
+}
+
+const methods = {
+	installLocal: {
+		args: { files: [ '/tmp/proton-upload-1.apk' ], overwrite: false },
+		call: function(request) {
+			return installLocal(request);
+		}
+	},
+	cleanup: {
+		args: { files: [ '/tmp/proton-upload-1.apk' ] },
+		call: function(request) {
+			return cleanup(request);
+		}
+	}
+};
+
+return { 'luci.proton-packages': methods };

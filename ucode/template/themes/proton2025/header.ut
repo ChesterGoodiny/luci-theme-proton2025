@@ -369,6 +369,10 @@ body {
 <script src="{{ media }}/js/mobile-settings-fallback.js?v={{ __pv }}" defer></script>
 <script src="{{ media }}/js/overview-decorations.js?v={{ __pv }}" defer></script>
 <script src="{{ media }}/js/custom-pages.js?v={{ __pv }}" defer></script>
+{# Загрузка нескольких пакетов и установка неподписанных .apk на System ->
+   Software (openwrt/luci#8482). Скрипт сам определяет страницу (в том числе
+   после SPA-навигации) и на остальных страницах ничего не делает. #}
+<script src="{{ media }}/js/package-upload.js?v={{ __pv }}" defer></script>
 {# translations-search.js: семантические переводы поиска, вынесены из
    translations.js. defer сохраняет порядок → protonGetLang доступен. #}
 <script src="{{ media }}/js/translations-search.js?v={{ __pv }}" defer></script>
