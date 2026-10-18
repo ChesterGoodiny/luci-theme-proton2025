@@ -497,7 +497,7 @@ html[class*="proton-pattern-"] .cbi-section,
     justify-content: center;
     gap: 12px;
     width: 100%;
-    min-height: calc(100vh - 64px);
+    min-height: calc((100vh - 64px) / var(--proton-zoom, 1));
     padding: 24px !important;
     color: var(--proton-fg-secondary);
     text-align: center;
@@ -685,7 +685,7 @@ a:active {
     right: 0;
     width: 100%;
     min-width: 100%;
-    max-height: min(60vh, 420px);
+    max-height: min(calc(60vh / var(--proton-zoom, 1)), 420px);
     overflow-y: auto;
     overscroll-behavior: contain;
     background: rgba(20, 25, 35, 0.98);
@@ -6305,7 +6305,7 @@ body.modal-overlay-active #modal_overlay {
         align-self: stretch;
         position: sticky;
         top: 65px;
-        height: calc(100vh - 65px);
+        height: calc((100vh - 65px) / var(--proton-zoom, 1));
         margin: 0;
         padding: 0;
         border-right: 1px solid var(--proton-border);
@@ -6403,7 +6403,7 @@ body.modal-overlay-active #modal_overlay {
         align-items: center;
         gap: 12px;
         padding: 10px 12px;
-        border-radius: 10px;
+        border-radius: var(--proton-radius-sm);
         border-left: 0;
         color: var(--proton-accent);
         white-space: nowrap;
@@ -6472,18 +6472,19 @@ body.modal-overlay-active #modal_overlay {
     html.proton-menu-side #mainmenu .mainmenu.l1>li>a:has(+ ul)::after {
         content: "";
         margin-left: auto;
-        width: 8px;
-        height: 8px;
-        border-right: 1.5px solid currentColor;
-        border-bottom: 1.5px solid currentColor;
-        transform: rotate(-45deg);
-        opacity: 0.5;
-        transition: transform 0.2s ease;
+        flex: 0 0 auto;
+        width: 12px;
+        height: 12px;
+        background: currentColor;
+        -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 6 6 6-6 6'/%3E%3C/svg%3E") center / contain no-repeat;
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 6 6 6-6 6'/%3E%3C/svg%3E") center / contain no-repeat;
+        opacity: 0.55;
+        transition: transform 0.2s ease, opacity 0.2s ease;
     }
 
     html.proton-menu-side #mainmenu .mainmenu.l1>li.active>a:has(+ ul)::after,
     html.proton-menu-side #mainmenu .mainmenu.l1:not(.active)>li.selected>a:has(+ ul)::after {
-        transform: rotate(45deg);
+        transform: rotate(90deg);
     }
 
     html.proton-menu-side #mainmenu li>ul {
@@ -6542,7 +6543,7 @@ body.modal-overlay-active #modal_overlay {
 
     html.proton-menu-side #mainmenu .mainmenu.l2>li>a {
         padding: 8px 12px 8px 21px;
-        border-radius: 8px;
+        border-radius: var(--proton-radius-sm);
         color: var(--proton-fg-secondary);
         font-size: 0.875rem;
         overflow: hidden;
@@ -6697,7 +6698,7 @@ body.modal-overlay-active #modal_overlay {
         margin: 0;
         padding: 6px;
         border: 1px solid var(--proton-border);
-        border-radius: 12px;
+        border-radius: var(--proton-radius);
         background: var(--proton-card-solid);
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
         opacity: 0;
@@ -6708,7 +6709,7 @@ body.modal-overlay-active #modal_overlay {
 
     html.proton-menu-side.proton-menu-collapsed #mainmenu .mainmenu.l1>li:hover>ul,
     html.proton-menu-side.proton-menu-collapsed #mainmenu .mainmenu.l1>li:focus-within>ul {
-        max-height: min(70vh, 600px);
+        max-height: min(calc(70vh / var(--proton-zoom, 1)), 600px);
         overflow-y: auto;
         opacity: 1;
         visibility: visible;
@@ -10234,7 +10235,7 @@ body.proton-log-fs-active #maincontainer {
     overflow-x: auto;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    max-height: calc(100vh - 260px);
+    max-height: calc((100vh - 260px) / var(--proton-zoom, 1));
     min-height: 200px;
     scroll-behavior: smooth;
     position: relative;

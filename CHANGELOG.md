@@ -2,7 +2,57 @@
 
 All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
 
-## Unreleased
+## [1.4.3] - 2026-10-19
+
+## Changes in version 1.4.3
+
+## Fixes
+
+- **Sidebar chevrons redesigned** (@ChesterGoodiny)
+  - The side-mode expand carets were CSS border corners (blocky, visually heavier than the theme's stroke icons); they are now inline SVG masks matching the menu icon style, with a smooth 90° rotation when a group opens
+  - The logout menu item now uses a proper log-out glyph (door with a pointing arrow) instead of a lightning bolt
+
+- **Leftover LuCI theme registration after uninstall** (fixes #75 — reported by @RedSnt)
+  - The package `postrm` only restarted services, so `/etc/config/luci` kept `luci.main.mediaurlbase` pointing to the deleted theme and the `luci.themes.Proton2025` registry entry, leaving the theme selectable in the dropdown after `apk del` / `opkg remove`
+  - On removal LuCI now falls back to bootstrap (openwrt2020 as fallback, otherwise the mediaurlbase option is unset so LuCI uses its runtime default) — but only when the active theme is actually proton2025
+  - The registry entry is deleted when it points to the removed theme
+  - `uninstall.sh` received the same guarded logic so both removal paths behave identically
+  - Uninstalling now also deletes `/etc/config/proton2025`: nothing of the theme is left on the router. Export the settings JSON beforehand via Tools → Backup (restorable after a fresh install)
+
+- **Port status stripe with sibling zonebadges** (fixes #83 — root cause and tested correction reported by @sludgepudge)
+  - LuCI renders multi-network ports as several empty sibling `.zonebadge` elements with inline `flex:1; height:3px`, not as one badge with child segments, so the v1.4.2 `.zonebadge > *` rule never matched and `height: 100%` stacked each badge to full stripe height, causing overflow
+  - The stripe container is now a column flex box; direct-child badges share the stripe height through flex instead of stacking
+  - Badge descendant selectors are scoped to direct children, and badges inside the port tooltip are restored to their normal inline-block sizing
+
+- **Sidebar height with Interface Zoom ≠ 100%** (fixes #88 — reported and diagnosed by @OiCkilL)
+  - The zoom is applied via `document.documentElement.style.zoom`, but CSS `zoom` does not scale viewport-relative units, so the height of `#mainmenu` in the sidebar mode (`calc(100vh - 65px)`) no longer matched the visible viewport
+  - `applyZoom()` now exposes the scale as a `--proton-zoom` custom property (same pattern as `--proton-login-scale` on the login page)
+  - Compensated viewport-based heights in `cascade.css`: sidebar, loading spinner, system log viewer and popup flyout menus — now evaluated as `calc(... / var(--proton-zoom, 1))`
+  - Sidebar menu items and the collapsed-mode flyout now use `--proton-radius` / `--proton-radius-sm` instead of fixed `10px`/`8px`/`12px` corners, so the Border radius setting applies to the whole sidebar panel
+
+- **Overview decorations triggered on non-overview pages** (fixes #87 — reported and diagnosed by @OiCkilL)
+  - The `isOverviewPage()` regex `/\/admin\/?$/` matched the end of any path, including `/admin/system/admin` (System → Administration), so the Load Average enhancement ran where the expected DOM was absent and threw `Cannot read properties of null (reading 'querySelectorAll')`
+  - The broad regex is replaced with precise checks: exact `dispatchpath` matches (`admin`, `admin/status`, `admin/status/overview`) and a pathname fallback that only accepts the admin root (`/admin`, `/cgi-bin/luci/admin`)
+
+- **Settings synchronization without HTTP ubus** (fixes #70 — reported and diagnosed by @ang3el7z)
+  - Added `uhttpd-mod-ubus` as a runtime dependency and configure the standard `/ubus` endpoint during installation only when it is missing
+
+  - Settings sync now checks HTTP status and response content type before parsing JSON, reporting a clear error instead of a misleading `Unexpected token "<"` message when a router returns an HTML 404 page
+
+## Build
+
+- **Theme asset versioning**
+  - Bumped the asset version (`__pv`) and the package version to 1.4.3 so updated styles and UI scripts are reloaded by browsers after the zoom and ubus fixes
+
+## Authors
+
+- @OiCkilL — sidebar layout with Interface Zoom (issue #88), overview page detection (issue #87)
+
+- @sludgepudge — port status stripe root cause and tested correction (issue #83)
+
+- @RedSnt — leftover theme registration after uninstall (issue #75)
+
+- @ang3el7z — HTTP ubus gateway diagnosis and fix for settings synchronization (issue #70)
 
 ---
 
@@ -53,11 +103,6 @@ All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
 
   - Stacked segments within the stripe on desktop hover and mobile layouts
 
-- **Settings synchronization without HTTP ubus** (fixes #70 — reported and diagnosed by @ang3el7z)
-  - Added `uhttpd-mod-ubus` as a runtime dependency and configure the standard `/ubus` endpoint during installation only when it is missing
-
-  - Settings sync now checks HTTP status and response content type before parsing JSON, reporting a clear error instead of a misleading `Unexpected token "<"` message when a router returns an HTML 404 page
-
 ## Build
 
 - **Theme asset versioning**
@@ -70,8 +115,6 @@ All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
 - @frenzydrive — WebGL Fluid animation (PR #85)
 
 - @DoubleThePsycho — configurable temperature thresholds (PR #82)
-
-- @ang3el7z — HTTP ubus gateway diagnosis and fix for settings synchronization (issue #70)
 
 ## Pull Requests
 

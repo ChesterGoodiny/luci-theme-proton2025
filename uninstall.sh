@@ -59,20 +59,32 @@ fi
 
 info "Switching to default theme..."
 if command -v uci >/dev/null 2>&1; then
-    if [ -d "/www/luci-static/bootstrap" ]; then
-        uci set luci.main.mediaurlbase="/luci-static/bootstrap"
+    # Откатываем запись только если активна именно наша тема (issue #75).
+    if uci -q get luci.main.mediaurlbase 2>/dev/null | grep -q "/luci-static/$THEME_NAME"; then
+        if [ -d "/www/luci-static/bootstrap" ]; then
+            uci set luci.main.mediaurlbase="/luci-static/bootstrap"
+        elif [ -d "/www/luci-static/openwrt2020" ]; then
+            uci set luci.main.mediaurlbase="/luci-static/openwrt2020"
+        else
+            # Пакета тем нет ни с одним именем: LuCI сам подставит дефолт.
+            uci -q delete luci.main.mediaurlbase >/dev/null 2>&1 || true
+        fi
+        uci commit luci
+        ok "Switched to default theme"
     else
-        uci set luci.main.mediaurlbase="/luci-static/openwrt"
+        ok "Theme is not active - nothing to switch"
     fi
-    uci commit luci
-    ok "Switched to default theme"
 fi
 
 info "Removing theme from LuCI registry..."
 if command -v uci >/dev/null 2>&1; then
-    uci delete luci.themes.Proton2025 2>/dev/null || true
-    uci commit luci
-    ok "Theme removed from registry"
+    if uci -q get luci.themes.Proton2025 2>/dev/null | grep -q "/luci-static/$THEME_NAME"; then
+        uci -q delete luci.themes.Proton2025 >/dev/null 2>&1 || true
+        uci commit luci
+        ok "Theme removed from registry"
+    else
+        ok "No theme registry entry to remove"
+    fi
 fi
 
 # Installed as a package: let the package manager do the work.
@@ -126,10 +138,11 @@ rm -f "/usr/share/rpcd/acl.d/luci-theme-proton2025.json"
 rm -f "/usr/share/luci/menu.d/luci-theme-proton2025.json"
 ok "Removed RPC modules"
 
-# Remove config (optional - keep user settings)
-# Uncomment to remove settings on uninstall:
-# rm -f "/etc/config/proton2025"
-# ok "Removed config"
+# Remove config (full removal policy since 1.4.3: user can export settings
+# JSON beforehand via Tools -> Backup). Only the theme's own files are deleted;
+# foreign configs like /etc/config/proton2025_dashboard are left untouched.
+rm -f "/etc/config/proton2025" "/etc/config/proton2025-opkg"
+ok "Removed config"
 
 # Clear cache
 info "Clearing cache..."

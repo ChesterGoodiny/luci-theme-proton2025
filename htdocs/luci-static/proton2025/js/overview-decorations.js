@@ -247,26 +247,25 @@
     if (document.body.dataset.page === "admin-status-overview") return true;
     if (window.location.pathname.includes("/admin/status/overview"))
       return true;
-    if (window.location.pathname.match(/\/admin\/?$/)) return true;
     if (window.location.pathname.match(/\/admin\/status\/?$/)) return true;
+
+    // Точный фолбэк по pathname, пока L.env недоступен: только корень /admin.
+    if (window.location.pathname.match(/^(?:\/cgi-bin\/luci)?\/admin\/?$/))
+      return true;
 
     try {
       if (
         window.L &&
         L.env &&
-        Array.isArray(L.env.dispatchpath) &&
-        L.env.dispatchpath.join("/") === "admin/status/overview"
+        Array.isArray(L.env.dispatchpath)
       ) {
-        return true;
-      }
+        const dispatchPath = L.env.dispatchpath.join("/");
 
-      if (
-        window.L &&
-        L.env &&
-        Array.isArray(L.env.dispatchpath) &&
-        L.env.dispatchpath.join("/") === "admin/status"
-      ) {
-        return true;
+        // Точное совпадение покрывает и корень /admin (редирект на Overview),
+        // без ложных срабатываний вроде /admin/system/admin (issue #87).
+        if (dispatchPath === "admin/status/overview") return true;
+        if (dispatchPath === "admin/status") return true;
+        if (dispatchPath === "admin") return true;
       }
 
       if (window.L && L.env && L.env.nodespec && L.env.nodespec.action) {

@@ -237,7 +237,7 @@ body.login-page { background-color: {{ serverTheme === 'light' ? '#ffffff' : '#0
 </style>
 {# Версия должна совпадать с __pv в header.ut: без ?v= браузер отдаёт
    старый cascade.css на странице логина после обновления темы. #}
-{% let __pv = "1.4.2"; %}
+{% let __pv = "1.4.3"; %}
 <link rel="stylesheet" fetchpriority="high" href="{{ media }}/css/cascade.css?v={{ __pv }}" />
 <link rel="stylesheet" href="{{ media }}/css/login-bg.css?v={{ __pv }}" />
 

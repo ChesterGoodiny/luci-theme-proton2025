@@ -113,7 +113,8 @@ body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifa
 body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-head.cbi-tooltip-container {
     grid-area: stripe;
     align-self: stretch;
-    display: block !important;
+    display: flex !important;
+    flex-direction: column;
     position: relative;
     width: auto;
     background: transparent;
@@ -121,29 +122,43 @@ body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifa
     margin: 0;
 }
 
-body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-head.cbi-tooltip-container .zonebadge {
+/* Полоса статуса: LuCI кладёт по одному пустому .zonebadge на каждую сеть
+   (inline flex:1/height:3px), либо один бейдж с дочерними сегментами.
+   В обоих вариантах колонка flex делит высоту сторайп-колонки поровну,
+   вместо N бейджей по height:100% друг над другом (fixes #83). */
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-head.cbi-tooltip-container>.zonebadge {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    justify-content: stretch;
-    width: 4px;
-    height: 100% !important;
-    flex: none;
+    flex: 1 1 0 !important;
+    width: 100% !important;
+    height: auto !important;
     min-width: 0;
     min-height: 0;
+    gap: 0;
+    padding: 0;
     overflow: hidden;
     border: none;
     border-radius: 4px;
-    gap: 0;
-    padding: 0;
 }
 
-body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-head.cbi-tooltip-container .zonebadge>* {
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-head.cbi-tooltip-container>.zonebadge>* {
     display: block;
     flex: 1 1 0;
     width: 100% !important;
     min-width: 0;
     min-height: 0;
+}
+
+/* Бейджи внутри tooltip — описание сетей, а не сегменты сторайпа:
+   возвращаем им обычные размеры. */
+body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-head.cbi-tooltip-container>.cbi-tooltip .zonebadge {
+    display: inline-block !important;
+    flex: none !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0;
+    overflow: visible;
+    border-radius: 4px;
 }
 
 body[data-page^="admin-status"] .cbi-section>div>div[style*="display:grid"]>.ifacebox>.ifacebox-body:nth-child(4) {

@@ -82,8 +82,10 @@ wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025
 ```
 
 Switches LuCI back to the stock theme, removes the package and anything left
-behind, and restarts the web server. `/etc/config/proton2025` is kept, so a
-later reinstall picks your settings back up.
+behind, and restarts the web server. Nothing of the theme stays on the router —
+including the settings in `/etc/config/proton2025`. If you want to keep them for
+a future reinstall, export the settings JSON first via **System → System →
+Language and Style → Tools → Backup**, then import it after reinstalling.
 
 ## Theme settings
 
