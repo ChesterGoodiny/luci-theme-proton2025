@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 # Защита от гонки: только один запуск за раз
 concurrency:
@@ -21,7 +22,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 1
 
@@ -178,7 +179,7 @@ jobs:
 
           git commit -m "chore: auto-update theme versions in bug report [skip ci]"
 
-          if git push 2>&1; then
+          if git push origin HEAD:main 2>&1; then
             echo "✅ Изменения отправлены в репозиторий."
           else
             echo "⚠️ Не удалось запушить (возможно, защищённая ветка). Создаём PR..."
