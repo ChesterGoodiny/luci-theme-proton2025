@@ -65,11 +65,20 @@
                 "luci.proton-search-cache": [
                     "saveCache",
                     "clearCache"
+                ],
+                "luci.proton-packages": [
+                    "installLocal",
+                    "cleanup"
                 ]
             },
             "uci": [
                 "proton2025"
-            ]
+            ],
+            "file": {
+                "/tmp/proton-upload-*": [
+                    "write"
+                ]
+            }
         }
     }
 }

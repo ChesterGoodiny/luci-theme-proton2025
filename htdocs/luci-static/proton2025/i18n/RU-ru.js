@@ -574,4 +574,11 @@ window.ProtonTranslations = {
   "Reset to factory code": "Сбросить к заводскому коду",
   "Reset the template to factory code": "Сбросить шаблон к заводскому коду",
   "Template reset to factory code": "Шаблон сброшен к заводскому коду",
+  "Upload packages": "Загрузка пакетов",
+  "Select one or more package files. They are installed together in one step, so packages that depend on each other can be uploaded at once.":
+    "Выберите один или несколько файлов пакетов. Они устанавливаются вместе за один шаг, поэтому пакеты, зависящие друг от друга, можно загрузить сразу.",
+  "Too many files (at most %d)": "Слишком много файлов (не более %d)",
+  "Only .%s files can be installed here":
+    "Здесь можно устанавливать только файлы .%s",
+  "Uploading %d of %d: %s": "Загрузка %d из %d: %s",
 };
