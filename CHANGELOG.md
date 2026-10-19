@@ -2,7 +2,7 @@
 
 All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
 
-## [1.4.4] - 2026-10-19
+## [1.4.4]
 
 ## Changes in version 1.4.4
 
