@@ -2,6 +2,40 @@
 
 All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
 
+## [1.4.4] - 2026-10-19
+
+## Changes in version 1.4.4
+
+## Features
+
+- **Install several packages at once on System → Software** (PR #89 — author: @cergo666)
+  - *Upload Package…* now accepts multiple files and installs them together in one transaction (`apk add` / `opkg install` with all files), so packages that depend on each other can be uploaded in any order
+  - Shows the selected files with their sizes, limits the batch to 32 files and only accepts the package type of the running package manager (`.apk` or `.ipk`)
+
+## Fixes
+
+- **Upload Package… failed for unsigned `.apk` on OpenWrt 25.12+** (PR #89, openwrt/luci#8482)
+  - The stock page runs `apk add <file>` without `--allow-untrusted`, and its helper script silently drops any option it does not know, so the flag cannot be passed from the browser: every package not signed by a key in `/etc/apk/keys` failed with `UNTRUSTED signature`
+  - The install step is handed to the new `luci.proton-packages` RPC module, which installs with `--allow-untrusted` under the same lock as the stock page. The stock confirmation dialog (with its untrusted-source warning), progress and command output are kept
+  - The module only accepts `/tmp/proton-upload-<n>.apk|ipk` paths created by the upload step, never a package name or a URL; uploaded files are removed after install, on failure and on Cancel
+  - `js/package-upload.js` replaces only `ui.uploadFile` (for the package upload path) and the install call, and only on System → Software (also after a client-side navigation); anything it does not recognise falls through to the original code
+  - New ACL entries: `luci.proton-packages` (`installLocal`, `cleanup`) and write access to `/tmp/proton-upload-*`; Russian strings added
+
+## Build
+
+- **Theme asset versioning**
+  - Bumped the asset version (`__pv`) and the package version to 1.4.4 so updated styles and UI scripts are reloaded by browsers after the package-manager changes
+
+## Authors
+
+- @cergo666 — package-manager upload flow: untrusted `.apk` fix and multi-file install (PR #89)
+
+## Pull Requests
+
+- #89 — Fix package install on OpenWrt 25.12 (apk) and allow uploading several packages
+
+---
+
 ## [1.4.3] - 2026-10-19
 
 ## Changes in version 1.4.3
@@ -49,21 +83,6 @@ All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
 - @sludgepudge — port status stripe root cause and tested correction (issue #83)
 
 - @RedSnt — leftover theme registration after uninstall (issue #75)
-
-## Features
-
-- **Install several packages at once on System → Software**
-  - *Upload Package…* now accepts multiple files and installs them together in one transaction (`apk add` / `opkg install` with all files), so packages that depend on each other can be uploaded in any order
-  - Shows the selected files with their sizes, limits the batch to 32 files and only accepts the package type of the running package manager (`.apk` or `.ipk`)
-
-## Fixes
-
-- **Upload Package… failed for unsigned `.apk` on OpenWrt 25.12+** (openwrt/luci#8482)
-  - The stock page runs `apk add <file>` without `--allow-untrusted`, and its helper script silently drops any option it does not know, so the flag cannot be passed from the browser: every package not signed by a key in `/etc/apk/keys` failed with `UNTRUSTED signature`
-  - The install step is handed to the new `luci.proton-packages` RPC module, which installs with `--allow-untrusted` under the same lock as the stock page. The stock confirmation dialog (with its untrusted-source warning), progress and command output are kept
-  - The module only accepts `/tmp/proton-upload-<n>.apk|ipk` paths created by the upload step, never a package name or a URL; uploaded files are removed after install, on failure and on Cancel
-  - `js/package-upload.js` replaces only `ui.uploadFile` (for the package upload path) and the install call, and only on System → Software (also after a client-side navigation); anything it does not recognise falls through to the original code
-  - New ACL entries: `luci.proton-packages` (`installLocal`, `cleanup`) and write access to `/tmp/proton-upload-*`; Russian strings added
 
 ---
 
