@@ -34,15 +34,13 @@ All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
   - The `isOverviewPage()` regex `/\/admin\/?$/` matched the end of any path, including `/admin/system/admin` (System → Administration), so the Load Average enhancement ran where the expected DOM was absent and threw `Cannot read properties of null (reading 'querySelectorAll')`
   - The broad regex is replaced with precise checks: exact `dispatchpath` matches (`admin`, `admin/status`, `admin/status/overview`) and a pathname fallback that only accepts the admin root (`/admin`, `/cgi-bin/luci/admin`)
 
-- **Settings synchronization without HTTP ubus** (fixes #70 — reported and diagnosed by @ang3el7z)
-  - Added `uhttpd-mod-ubus` as a runtime dependency and configure the standard `/ubus` endpoint during installation only when it is missing
-
-  - Settings sync now checks HTTP status and response content type before parsing JSON, reporting a clear error instead of a misleading `Unexpected token "<"` message when a router returns an HTML 404 page
+- **HTTP ubus endpoint for settings synchronization** (completes fix for #70 — reported and diagnosed by @ang3el7z; the client-side checks shipped in 1.4.2)
+  - Added `uhttpd-mod-ubus` as a package dependency and configure the standard `/ubus` endpoint in uhttpd during installation only when it is missing
 
 ## Build
 
 - **Theme asset versioning**
-  - Bumped the asset version (`__pv`) and the package version to 1.4.3 so updated styles and UI scripts are reloaded by browsers after the zoom and ubus fixes
+  - Bumped the asset version (`__pv`) and the package version to 1.4.3 so updated styles and UI scripts are reloaded by browsers after the fixes in this release
 
 ## Authors
 
@@ -51,8 +49,6 @@ All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
 - @sludgepudge — port status stripe root cause and tested correction (issue #83)
 
 - @RedSnt — leftover theme registration after uninstall (issue #75)
-
-- @ang3el7z — HTTP ubus gateway diagnosis and fix for settings synchronization (issue #70)
 
 ---
 
@@ -103,6 +99,11 @@ All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
 
   - Stacked segments within the stripe on desktop hover and mobile layouts
 
+- **Settings synchronization fails with "Unexpected token '<'"** (fixes #70 — reported and diagnosed by @ang3el7z)
+  - `settings-sync.js` and `mobile-settings-fallback.js` now check HTTP status and response content type before parsing JSON, reporting a clear error when a router returns an HTML 404 page instead of the JSON endpoint
+
+  - The server-side part (`uhttpd-mod-ubus` dependency and endpoint configuration) followed in 1.4.3
+
 ## Build
 
 - **Theme asset versioning**
@@ -115,6 +116,8 @@ All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
 - @frenzydrive — WebGL Fluid animation (PR #85)
 
 - @DoubleThePsycho — configurable temperature thresholds (PR #82)
+
+- @ang3el7z — HTTP ubus gateway diagnosis and settings synchronization error handling (issue #70)
 
 ## Pull Requests
 
