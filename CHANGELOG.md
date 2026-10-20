@@ -50,6 +50,10 @@ All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
 ## Build
 
 - Asset version (`__pv`) and package version bumped to 1.4.4.1
+- **CI builds take under a minute instead of 15–27 minutes**
+  - The theme compiles nothing, but the SDK built its whole dependency tree from source (luci-base, uhttpd, ucode, ubus…); packages are now built with `NO_DEPS=1` after compiling only the luci-base host tools (`jsmin`, `po2lmo`), and the resulting ipk/apk are byte-identical to the full build
+  - Only the luci feed is fetched; the SDK archive and the feed clone are cached; apk is built with the 25.12.5 release SDK instead of the moving snapshot SDK
+  - The job fails if minification left `*.js.o`/`*.css.o` files in the package
 
 ## Authors
 
