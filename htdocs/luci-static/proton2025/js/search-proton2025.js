@@ -86,6 +86,10 @@
   const SEARCH_CACHE_RPC_TIMEOUT = 5000;
   const SEARCH_CACHE_RETRY_DELAY = 250;
   const SEARCH_CACHE_RETRY_ATTEMPTS = 8;
+  // uhttpd-mod-ubus rejects POST bodies over 64 KiB (issue #65): larger
+  // caches go up in chunks and come back through loadCacheChunk.
+  const SEARCH_CACHE_MAX_REQUEST_BYTES = 48 * 1024;
+  const SEARCH_CACHE_CHUNK_CHARS = 16 * 1024;
   const SEARCH_CACHE_ALT_TEXT_LIMIT = 1;
   const SEARCH_INDEX_SETTINGS_ROUTE = "admin/system/system";
   const SEARCH_INDEX_SETTINGS_HASH = "proton-search-index-panel";
@@ -777,35 +781,158 @@
     }
   }
 
+  const utf8Encoder =
+    typeof TextEncoder === "function" ? new TextEncoder() : null;
+
+  function utf8Length(value) {
+    return utf8Encoder
+      ? utf8Encoder.encode(value).length
+      : unescape(encodeURIComponent(value)).length;
+  }
+
+  function isHighSurrogate(code) {
+    return code >= 0xd800 && code <= 0xdbff;
+  }
+
   async function readRemotePrefetchCache() {
-    const response = await callSearchCacheRpc("loadCache", {});
-    const rawCache =
-      response.status === UBUS_STATUS_OK &&
-      response.data?.success &&
-      typeof response.data?.cache === "string"
-        ? response.data.cache
-        : "";
-    const rawMeta =
-      response.status === UBUS_STATUS_OK &&
-      response.data?.success &&
-      typeof response.data?.meta === "string"
-        ? response.data.meta
-        : "";
+    let rawCache = "";
+    let rawMeta = "";
+    let offset = 0;
+    let total = Number.NaN;
+
+    // Read in chunks: ubus replies over ~1 MiB time out.
+    for (;;) {
+      const response = await callSearchCacheRpc("loadCacheChunk", {
+        offset: offset,
+      });
+
+      if (response.status !== UBUS_STATUS_OK || !response.data?.success) {
+        return {
+          status: response.status,
+          success: false,
+          error: response.error || "loadCacheChunk: unexpected response",
+          rawCache: "",
+          rawMeta: "",
+          cacheBytes: 0,
+        };
+      }
+
+      const data =
+        typeof response.data.data === "string" ? response.data.data : "";
+      const chunkTotal = Number(response.data.total) || 0;
+
+      if (offset === 0) {
+        total = chunkTotal;
+        rawMeta =
+          typeof response.data.meta === "string" ? response.data.meta : "";
+      } else if (chunkTotal !== total) {
+        // Another browser replaced the cache while we were reading it.
+        return {
+          status: response.status,
+          success: false,
+          error: "loadCacheChunk: cache changed while loading",
+          rawCache: "",
+          rawMeta: "",
+          cacheBytes: 0,
+        };
+      }
+
+      rawCache += data;
+      offset += utf8Length(data);
+
+      if (offset >= total) break;
+
+      if (!data.length) {
+        return {
+          status: response.status,
+          success: false,
+          error: "loadCacheChunk: empty chunk",
+          rawCache: "",
+          rawMeta: "",
+          cacheBytes: 0,
+        };
+      }
+    }
+
+    return {
+      status: UBUS_STATUS_OK,
+      success: true,
+      error: "",
+      rawCache: rawCache,
+      rawMeta: rawMeta,
+      cacheBytes: total + rawMeta.length,
+    };
+  }
+
+  async function writeRemotePrefetchCacheChunked(rawCache, rawMeta) {
+    const uploadId =
+      Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    let offset = 0;
+    let index = 0;
+
+    while (offset < rawCache.length) {
+      let end = Math.min(offset + SEARCH_CACHE_CHUNK_CHARS, rawCache.length);
+      let data;
+
+      for (;;) {
+        // Never split a surrogate pair between two chunks.
+        if (end < rawCache.length && isHighSurrogate(rawCache.charCodeAt(end - 1))) {
+          end -= 1;
+        }
+        data = rawCache.slice(offset, end);
+        if (
+          end - offset <= 1 ||
+          utf8Length(JSON.stringify(data)) <= SEARCH_CACHE_MAX_REQUEST_BYTES
+        ) {
+          break;
+        }
+        end = offset + Math.ceil((end - offset) / 2);
+      }
+
+      const response = await callSearchCacheRpc("saveCacheChunk", {
+        id: uploadId,
+        index: index,
+        data: data,
+      });
+
+      if (response.status !== UBUS_STATUS_OK || !response.data?.success) {
+        return {
+          status: response.status,
+          success: false,
+          error: response.error || "saveCacheChunk: unexpected response",
+          cacheBytes: 0,
+        };
+      }
+
+      offset = end;
+      index += 1;
+    }
+
+    const cacheBytes = utf8Length(rawCache);
+    const response = await callSearchCacheRpc("commitCache", {
+      id: uploadId,
+      size: cacheBytes,
+      meta: rawMeta,
+    });
     const success =
       response.status === UBUS_STATUS_OK && !!response.data?.success;
 
     return {
       status: response.status,
       success: success,
-      error: success ? "" : response.error || "loadCache: unexpected response",
-      rawCache: rawCache,
-      rawMeta: rawMeta,
-      cacheBytes:
-        Number(response.data?.cacheBytes) || rawCache.length + rawMeta.length,
+      error: success ? "" : response.error || "commitCache: unexpected response",
+      cacheBytes: Number(response.data?.cacheBytes) || cacheBytes + rawMeta.length,
     };
   }
 
   async function writeRemotePrefetchCache(rawCache, rawMeta) {
+    if (
+      utf8Length(JSON.stringify({ cache: rawCache, meta: rawMeta })) >
+      SEARCH_CACHE_MAX_REQUEST_BYTES
+    ) {
+      return writeRemotePrefetchCacheChunked(rawCache, rawMeta);
+    }
+
     const response = await callSearchCacheRpc("saveCache", {
       cache: rawCache,
       meta: rawMeta,
@@ -1935,8 +2062,21 @@
       }
 
       frame.onload = async () => {
+        // The navigation itself is done: from here the render wait
+        // (PREFETCH_PAGE_TIMEOUT) bounds the page. Leaving the navigation
+        // timer running removed the frame mid-parse on slow pages
+        // (mwan3, acme, realtime graphs) and the parser then hit null.
+        if (navigationTimerId) {
+          window.clearTimeout(navigationTimerId);
+          navigationTimerId = null;
+        }
+
         try {
           const sourceDocument = await waitForPrefetchRender(frame);
+          if (settled) return;
+          if (!sourceDocument) {
+            throw new Error(`Prefetch page did not render: ${href}`);
+          }
           let entries = [];
 
           try {
@@ -1962,6 +2102,7 @@
             );
 
             for (const tabLink of tabLinks) {
+              if (settled) return;
               tabLink.click();
               await new Promise((resolve) => {
                 window.setTimeout(resolve, PREFETCH_RENDER_SETTLE_DELAY);

@@ -146,7 +146,7 @@ ok "Removed config"
 
 # Clear cache
 info "Clearing cache..."
-rm -f /tmp/proton-search-prefetch-cache.json /tmp/proton-search-prefetch-cache-meta.json 2>/dev/null || true
+rm -f /tmp/proton-search-prefetch-cache.json /tmp/proton-search-prefetch-cache.json.part-* /tmp/proton-search-prefetch-cache-meta.json 2>/dev/null || true
 rm -rf /tmp/proton-search-cache /tmp/proton-search-cache-meta 2>/dev/null || true
 rm -rf /tmp/luci-modulecache 2>/dev/null || true
 rm -rf /tmp/luci-indexcache* 2>/dev/null || true
