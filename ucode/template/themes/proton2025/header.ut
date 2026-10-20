@@ -183,6 +183,13 @@
 <meta name="color-scheme" content="dark light" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="{{ entityencode(boardinfo.hostname ?? 'LuCI', true) }}" />
+{# Установка на главный экран: манифест и PNG-иконки
+   для Android/Chrome, apple-touch-icon для iOS. Браузер предлагает
+   «Установить» только по HTTPS; по HTTP остаётся ярлык на главном экране. #}
+<link rel="manifest" href="{{ media }}/manifest.json" />
+<link rel="apple-touch-icon" href="{{ media }}/img/apple-touch-icon.png" />
 <link rel="preload" href="{{ media }}/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="{{ media }}/fonts/inter-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
 {# cyrillic-ext (25 КБ) и latin-ext (72 КБ) НЕ предзагружаем: в них лежат
@@ -332,6 +339,7 @@ body {
 	}
 -%}
 <link rel="icon" href="{{ media }}/img/logo.svg" sizes="any" />
+<link rel="icon" href="{{ media }}/img/icon-192.png" type="image/png" sizes="192x192" />
 {# Cache-buster для JS темы: после обновления файлов пользователи получают
    свежую версию без ручной очистки кэша (uhttpd не шлёт строгие no-cache).
    Инкрементировать при каждом изменении статики темы. #}
