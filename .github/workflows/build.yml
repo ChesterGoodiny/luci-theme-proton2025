@@ -123,6 +123,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: CHANGELOG.md
+          sparse-checkout-cone-mode: false
+
       - name: Download build artifacts
         uses: actions/download-artifact@v8
         with:
@@ -133,30 +139,68 @@ jobs:
       - name: Show release files
         run: ls -lah dist
 
+      # The release text was the install instructions only, so the changes of
+      # every release had to be pasted from CHANGELOG.md by hand. Take the
+      # "## [<version>]" section of CHANGELOG.md instead.
+      - name: Build release notes
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES="$RUNNER_TEMP/release-notes.md"
+
+          awk -v ver="$VERSION" '
+            BEGIN { hdr = "## [" ver "]" }
+            index($0, hdr) == 1 { on = 1; next }
+            on && /^## \[/ { exit }
+            on && !/^---[[:space:]]*$/ { print }
+          ' CHANGELOG.md > "$RUNNER_TEMP/changes.md"
+
+          {
+            echo "## Proton2025 Theme ${GITHUB_REF_NAME}"
+            echo
+            if grep -q '[^[:space:]]' "$RUNNER_TEMP/changes.md"; then
+              # Section headings one level down under the release title.
+              sed -e 's/^## /### /' "$RUNNER_TEMP/changes.md" | sed '/./,$!d'
+            else
+              echo "See [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/CHANGELOG.md)."
+            fi
+            cat << 'INSTALL_END'
+
+          ### Installation
+
+          One command over root SSH. The script detects the package manager
+          (`apk` or `opkg`), picks the matching asset from this release,
+          installs it and switches LuCI over to the theme.
+
+          ```bash
+          wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/install.sh | sh
+          ```
+
+          ### Removal
+
+          ```bash
+          wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/uninstall.sh | sh
+          ```
+
+          To install by hand, take the exact file name from the assets below:
+          `.apk` if `command -v apk` prints a path, `.ipk` otherwise.
+          INSTALL_END
+          } | sed -e 's/^          //' > "$NOTES"
+
+          # In a fork, "#89" would link to the fork's own issues and PRs.
+          UPSTREAM="ChesterGoodiny/luci-theme-proton2025"
+          if [ "$GITHUB_REPOSITORY" != "$UPSTREAM" ]; then
+            sed -i -E "s~(^|[[:space:](,])#([0-9]+)~\\1${UPSTREAM}#\\2~g" "$NOTES"
+          fi
+
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/changes.md"; then
+            echo "::warning::CHANGELOG.md has no [${VERSION}] section"
+          fi
+          cat "$NOTES"
+
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
           files: dist/*
-          body: |
-            ## Proton2025 Theme ${{ github.ref_name }}
-
-            ### Installation
-
-            One command over root SSH. The script detects the package manager
-            (`apk` or `opkg`), picks the matching asset from this release,
-            installs it and switches LuCI over to the theme.
-
-            ```bash
-            wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/install.sh | sh
-            ```
-
-            ### Removal
-
-            ```bash
-            wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/uninstall.sh | sh
-            ```
-
-            To install by hand, take the exact file name from the assets below:
-            `.apk` if `command -v apk` prints a path, `.ipk` otherwise.
+          body_path: ${{ runner.temp }}/release-notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
