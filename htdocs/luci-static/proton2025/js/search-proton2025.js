@@ -2062,8 +2062,21 @@
       }
 
       frame.onload = async () => {
+        // The navigation itself is done: from here the render wait
+        // (PREFETCH_PAGE_TIMEOUT) bounds the page. Leaving the navigation
+        // timer running removed the frame mid-parse on slow pages
+        // (mwan3, acme, realtime graphs) and the parser then hit null.
+        if (navigationTimerId) {
+          window.clearTimeout(navigationTimerId);
+          navigationTimerId = null;
+        }
+
         try {
           const sourceDocument = await waitForPrefetchRender(frame);
+          if (settled) return;
+          if (!sourceDocument) {
+            throw new Error(`Prefetch page did not render: ${href}`);
+          }
           let entries = [];
 
           try {
@@ -2089,6 +2102,7 @@
             );
 
             for (const tabLink of tabLinks) {
+              if (settled) return;
               tabLink.click();
               await new Promise((resolve) => {
                 window.setTimeout(resolve, PREFETCH_RENDER_SETTLE_DELAY);
