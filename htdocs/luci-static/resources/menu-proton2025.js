@@ -221,9 +221,11 @@ return baseclass.extend({
     this.loadAndApplyThemeSettings();
 
     this.whenDomReady(() => this.maybeInitThemeSettings());
+    this.whenDomReady(() => this.initThemeModeToggle());
 
     window.addEventListener("proton-settings-synced", () => {
       this.loadAndApplyThemeSettings();
+      this.updateThemeModeToggle();
       this._themeSettingsInit = false;
       this.maybeInitThemeSettings();
     });
@@ -320,6 +322,66 @@ return baseclass.extend({
 
     this.applyThemeMode(settings.themeMode);
     this.applyThemeSettings(settings);
+  },
+
+  // Header button that cycles Auto -> Light -> Dark. It writes the same
+  // proton-theme-mode key as the settings panel, so settings-sync stores the
+  // choice on the router as well.
+  initThemeModeToggle() {
+    if (document.getElementById("proton-mode-toggle")) return;
+
+    const search = document.getElementById("proton-search-container");
+    const anchor = search || document.getElementById("indicators");
+    if (!anchor || !anchor.parentNode) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.id = "proton-mode-toggle";
+    button.className = "proton-mode-toggle";
+    button.addEventListener("click", () => {
+      const order = ["auto", "light", "dark"];
+      const current = this.getStoredThemeMode();
+      const next = order[(order.indexOf(current) + 1) % order.length];
+
+      localStorage.setItem("proton-theme-mode", next);
+      this.applyThemeMode(next);
+      this.updateThemeModeToggle();
+
+      const select = document.getElementById("proton-mode-select");
+      if (select) select.value = next;
+    });
+
+    anchor.parentNode.insertBefore(button, search ? search.nextSibling : anchor);
+    this.updateThemeModeToggle();
+  },
+
+  getStoredThemeMode() {
+    const mode = localStorage.getItem("proton-theme-mode");
+    return mode === "light" || mode === "dark" ? mode : "auto";
+  },
+
+  updateThemeModeToggle() {
+    const button = document.getElementById("proton-mode-toggle");
+    if (!button) return;
+
+    const mode = this.getStoredThemeMode();
+    const icons = {
+      auto: '<circle cx="12" cy="12" r="8"></circle><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"></path>',
+      light:
+        '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>',
+      dark: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>',
+    };
+    const labels = {
+      auto: `${this.translateThemeText("Auto")} (${this.translateThemeText("System")})`,
+      light: this.translateThemeText("Light"),
+      dark: this.translateThemeText("Dark"),
+    };
+    const label = `${this.translateThemeText("Theme Mode")}: ${labels[mode]}`;
+
+    button.dataset.mode = mode;
+    button.title = label;
+    button.setAttribute("aria-label", label);
+    button.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[mode]}</svg>`;
   },
 
   translateThemeText(key) {
