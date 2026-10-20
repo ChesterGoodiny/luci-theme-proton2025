@@ -46,13 +46,14 @@ jobs:
           echo "PACKAGE_RELEASE=1" >> "$GITHUB_ENV"
           echo "SDK_ARCHIVE=$RUNNER_TEMP/sdk/$(basename "${{ matrix.sdk_url }}")" >> "$GITHUB_ENV"
 
-      # The SDK archive of a release never changes, so it is keyed by its URL.
+      # A release SDK never changes and pins its feeds to fixed commits, so the
+      # archive and the cloned luci feed are cached together, keyed by its URL.
       - name: Cache OpenWrt SDK
         id: sdk-cache
         uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/sdk
-          key: openwrt-sdk-${{ matrix.sdk_url }}
+          key: openwrt-sdk-v2-${{ matrix.sdk_url }}
 
       - name: Download OpenWrt SDK
         if: steps.sdk-cache.outputs.cache-hit != 'true'
@@ -88,7 +89,15 @@ jobs:
             "$GITHUB_WORKSPACE/" package/luci-theme-proton2025/
 
           # Only the luci feed is needed: luci.mk and the luci-base host tools.
-          ./scripts/feeds update luci
+          # Cloning it from git.openwrt.org takes up to a minute, so a cached
+          # copy is reused.
+          FEEDS_CACHE="$(dirname "$SDK_ARCHIVE")/feeds"
+          if [ -f "$FEEDS_CACHE/luci.index" ]; then
+            cp -a "$FEEDS_CACHE" ./feeds
+          else
+            ./scripts/feeds update luci
+            cp -a ./feeds "$FEEDS_CACHE"
+          fi
           ./scripts/feeds install luci-base
 
           cat >> .config << 'CONFIG_END'
