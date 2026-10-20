@@ -333,6 +333,9 @@ function normalizeVersion(version) {
         let str = '' + version;
         str = replace(str, /^v/, '');
         str = replace(str, /^V/, '');
+        // opkg reports "1.4.3-r1" (or "1.4.3-1"): without dropping the release
+        // the last part became NaN and no update was ever found on ipk systems.
+        str = replace(str, /-r?[0-9]+$/, '');
 
         return str;
 }
@@ -341,7 +344,10 @@ function compareVersions(currentVersion, latestVersion) {
         const current = split(normalizeVersion(currentVersion), '.');
         const latest = split(normalizeVersion(latestVersion), '.');
 
-        for (let i = 0; i < 3; i++) {
+        // All parts count: 1.4.4.1 is newer than 1.4.4.
+        const parts = max(length(current), length(latest));
+
+        for (let i = 0; i < parts; i++) {
                 const c = +(current[i] ?? 0);
                 const l = +(latest[i] ?? 0);
 
