@@ -126,7 +126,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          sparse-checkout: CHANGELOG.md
+          sparse-checkout: |
+            CHANGELOG.md
+            CHANGELOG_ru.md
           sparse-checkout-cone-mode: false
 
       - name: Download build artifacts
@@ -141,29 +143,64 @@ jobs:
 
       # The release text was the install instructions only, so the changes of
       # every release had to be pasted from CHANGELOG.md by hand. Take the
-      # "## [<version>]" section of CHANGELOG.md instead.
+      # "## [<version>]" section of CHANGELOG_ru.md (first) and CHANGELOG.md
+      # instead; either file may lack it.
       - name: Build release notes
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           NOTES="$RUNNER_TEMP/release-notes.md"
 
-          awk -v ver="$VERSION" '
-            BEGIN { hdr = "## [" ver "]" }
-            index($0, hdr) == 1 { on = 1; next }
-            on && /^## \[/ { exit }
-            on && !/^---[[:space:]]*$/ { print }
-          ' CHANGELOG.md > "$RUNNER_TEMP/changes.md"
+          # Prints the section of $1 for $VERSION, headings one level down.
+          section() {
+            [ -f "$1" ] || return 0
+            awk -v ver="$VERSION" '
+              BEGIN { hdr = "## [" ver "]" }
+              index($0, hdr) == 1 { on = 1; next }
+              on && /^## \[/ { exit }
+              on && !/^---[[:space:]]*$/ { print }
+            ' "$1" | sed -e 's/^## /### /' -e '/./,$!d'
+          }
+
+          section CHANGELOG_ru.md > "$RUNNER_TEMP/changes-ru.md"
+          section CHANGELOG.md > "$RUNNER_TEMP/changes-en.md"
 
           {
             echo "## Proton2025 Theme ${GITHUB_REF_NAME}"
-            echo
-            if grep -q '[^[:space:]]' "$RUNNER_TEMP/changes.md"; then
-              # Section headings one level down under the release title.
-              sed -e 's/^## /### /' "$RUNNER_TEMP/changes.md" | sed '/./,$!d'
-            else
-              echo "See [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/CHANGELOG.md)."
+            found=0
+            for lang in ru en; do
+              if grep -q '[^[:space:]]' "$RUNNER_TEMP/changes-$lang.md"; then
+                [ "$found" = 1 ] && printf '\n---\n'
+                echo
+                cat "$RUNNER_TEMP/changes-$lang.md"
+                found=1
+              fi
+            done
+            if [ "$found" = 0 ]; then
+              echo
+              echo "См. / See [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/CHANGELOG.md)."
             fi
             cat << 'INSTALL_END'
+
+          ---
+
+          ### Установка
+
+          Одна команда по SSH под root. Скрипт определяет менеджер пакетов
+          (`apk` или `opkg`), берёт подходящий файл из этого релиза,
+          устанавливает его и включает тему в LuCI.
+
+          ```bash
+          wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/install.sh | sh
+          ```
+
+          Удаление:
+
+          ```bash
+          wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/uninstall.sh | sh
+          ```
+
+          Для ручной установки возьмите точное имя файла из списка ниже:
+          `.apk`, если `command -v apk` выводит путь, иначе `.ipk`.
 
           ### Installation
 
@@ -175,7 +212,7 @@ jobs:
           wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/install.sh | sh
           ```
 
-          ### Removal
+          Removal:
 
           ```bash
           wget -qO- https://raw.githubusercontent.com/ChesterGoodiny/luci-theme-proton2025/main/uninstall.sh | sh
@@ -184,17 +221,19 @@ jobs:
           To install by hand, take the exact file name from the assets below:
           `.apk` if `command -v apk` prints a path, `.ipk` otherwise.
           INSTALL_END
-          } | sed -e 's/^          //' > "$NOTES"
+          } > "$NOTES"
 
           # In a fork, "#89" would link to the fork's own issues and PRs.
           UPSTREAM="ChesterGoodiny/luci-theme-proton2025"
           if [ "$GITHUB_REPOSITORY" != "$UPSTREAM" ]; then
-            sed -i -E "s~(^|[[:space:](,])#([0-9]+)~\\1${UPSTREAM}#\\2~g" "$NOTES"
+            sed -i -E "s~(^|[[:space:](,])#([0-9]+)~\1${UPSTREAM}#\2~g" "$NOTES"
           fi
 
-          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/changes.md"; then
-            echo "::warning::CHANGELOG.md has no [${VERSION}] section"
-          fi
+          for lang in en ru; do
+            if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/changes-$lang.md"; then
+              echo "::warning::No [${VERSION}] section in the ${lang} changelog"
+            fi
+          done
           cat "$NOTES"
 
       - name: Create Release
