@@ -50,7 +50,7 @@ define Package/$(PKG_NAME)/postinst
 	fi
 	[ -f /etc/uci-defaults/30_luci-theme-proton2025 ] && sh /etc/uci-defaults/30_luci-theme-proton2025 >/dev/null 2>&1 || true
 	/etc/init.d/rpcd restart >/dev/null 2>&1 || true
-	rm -f /tmp/proton-search-prefetch-cache.json /tmp/proton-search-prefetch-cache-meta.json >/dev/null 2>&1 || true
+	rm -f /tmp/proton-search-prefetch-cache.json /tmp/proton-search-prefetch-cache.json.part-* /tmp/proton-search-prefetch-cache-meta.json >/dev/null 2>&1 || true
 	rm -rf /tmp/proton-search-cache /tmp/proton-search-cache-meta >/dev/null 2>&1 || true
 	rm -rf /tmp/luci-indexcache* /tmp/luci-modulecache >/dev/null 2>&1 || true
 	/etc/init.d/uhttpd reload >/dev/null 2>&1 || /etc/init.d/uhttpd restart >/dev/null 2>&1 || true
@@ -97,7 +97,7 @@ define Package/$(PKG_NAME)/postrm
 		rmdir "$$d" >/dev/null 2>&1 || true
 	done
 	/etc/init.d/rpcd restart >/dev/null 2>&1 || true
-	rm -f /tmp/proton-search-prefetch-cache.json /tmp/proton-search-prefetch-cache-meta.json >/dev/null 2>&1 || true
+	rm -f /tmp/proton-search-prefetch-cache.json /tmp/proton-search-prefetch-cache.json.part-* /tmp/proton-search-prefetch-cache-meta.json >/dev/null 2>&1 || true
 	rm -rf /tmp/proton-search-cache /tmp/proton-search-cache-meta >/dev/null 2>&1 || true
 	rm -rf /tmp/luci-indexcache* /tmp/luci-modulecache >/dev/null 2>&1 || true
 	/etc/init.d/uhttpd reload >/dev/null 2>&1 || /etc/init.d/uhttpd restart >/dev/null 2>&1 || true

@@ -1,14 +1,24 @@
 // Proton2025 Theme - Search Cache RPC Module
 // Persists the search prefetch cache in /tmp for reuse across browsers.
+//
+// uhttpd-mod-ubus rejects request bodies over 64 KiB and ubus replies over
+// ~1 MiB time out, so large caches are written with saveCacheChunk +
+// commitCache and read with loadCacheChunk (issue #65). saveCache and
+// loadCache remain for small payloads.
 
 'use strict';
 
-import { readfile, rename, unlink, writefile } from 'fs';
+import { lsdir, open, readfile, rename, stat, unlink, writefile } from 'fs';
 
 const CACHE_PATH = '/tmp/proton-search-prefetch-cache.json';
 const META_PATH = '/tmp/proton-search-prefetch-cache-meta.json';
 const CACHE_TMP_PATH = '/tmp/proton-search-prefetch-cache.json.tmp';
 const META_TMP_PATH = '/tmp/proton-search-prefetch-cache-meta.json.tmp';
+const PART_PATH_PREFIX = '/tmp/proton-search-prefetch-cache.json.part-';
+// Upper bound for an assembled cache, so a client cannot fill tmpfs.
+const MAX_CACHE_BYTES = 4 * 1024 * 1024;
+// Below the ~1 MiB ubus reply limit even with JSON escaping.
+const LOAD_CHUNK_BYTES = 256 * 1024;
 
 function normalizeString(value) {
 	if (type(value) == 'string') {
@@ -23,7 +33,7 @@ function normalizeString(value) {
 }
 
 function removeFile(path) {
-	if (readfile(path) == null) {
+	if (stat(path) == null) {
 		return true;
 	}
 
@@ -97,10 +107,162 @@ function saveCache(req) {
 	}
 }
 
+function partPath(id) {
+	id = normalizeString(id);
+
+	if (!match(id, /^[A-Za-z0-9]{1,32}$/)) {
+		return null;
+	}
+
+	return PART_PATH_PREFIX + id;
+}
+
+// Drops uploads that were never committed (closed tab, failed request).
+function removeStaleParts(keepPath) {
+	for (let name in (lsdir('/tmp') ?? [])) {
+		const path = '/tmp/' + name;
+		if (index(path, PART_PATH_PREFIX) == 0 && path != keepPath) {
+			removeFile(path);
+		}
+	}
+}
+
+function fileSize(path) {
+	return stat(path)?.size ?? 0;
+}
+
+function saveCacheChunk(req) {
+	try {
+		const path = partPath(req.args?.id);
+		const index = +(req.args?.index ?? -1);
+		const data = normalizeString(req.args?.data);
+
+		if (path == null || index != int(index) || index < 0) {
+			return { error: 'Invalid chunk' };
+		}
+
+		if (index > 0 && stat(path) == null) {
+			return { error: 'Missing previous chunks' };
+		}
+
+		if ((index > 0 ? fileSize(path) : 0) + length(data) > MAX_CACHE_BYTES) {
+			removeFile(path);
+			return { error: 'Cache is too large' };
+		}
+
+		if (index == 0) {
+			removeStaleParts(path);
+		}
+
+		const fd = open(path, index == 0 ? 'w' : 'a');
+		if (!fd) {
+			return { error: 'Failed to save cache chunk' };
+		}
+
+		const written = fd.write(data);
+		fd.close();
+
+		if (written == null || written != length(data)) {
+			removeFile(path);
+			return { error: 'Failed to save cache chunk' };
+		}
+
+		return { success: true, received: fileSize(path) };
+	} catch (error) {
+		return { error: 'Failed to save cache chunk' };
+	}
+}
+
+function commitCache(req) {
+	try {
+		const path = partPath(req.args?.id);
+		const size = +(req.args?.size ?? -1);
+		const meta = normalizeString(req.args?.meta);
+
+		if (path == null || stat(path) == null) {
+			return { error: 'Missing cache chunks' };
+		}
+
+		if (fileSize(path) != size) {
+			removeFile(path);
+			return { error: 'Incomplete cache upload' };
+		}
+
+		const renamed = rename(path, CACHE_PATH);
+		if (renamed == null || renamed === false) {
+			removeFile(path);
+			return { error: 'Failed to save cache' };
+		}
+
+		if (!replaceFileAtomically(META_PATH, META_TMP_PATH, meta)) {
+			return { error: 'Failed to save cache' };
+		}
+
+		return { success: true, cacheBytes: size + length(meta) };
+	} catch (error) {
+		return { error: 'Failed to save cache' };
+	}
+}
+
+function loadCacheChunk(req) {
+	try {
+		const offset = +(req.args?.offset ?? 0);
+		const total = fileSize(CACHE_PATH);
+
+		if (offset != int(offset) || offset < 0) {
+			return { error: 'Invalid offset' };
+		}
+
+		let data = '';
+
+		if (offset < total) {
+			const fd = open(CACHE_PATH, 'r');
+			if (!fd) {
+				return { error: 'Failed to load cache' };
+			}
+
+			fd.seek(offset);
+			data = fd.read(LOAD_CHUNK_BYTES) ?? '';
+			fd.close();
+
+			// Do not cut a UTF-8 sequence: end the chunk before a lead byte
+			// whose continuation bytes did not fit.
+			if (offset + length(data) < total) {
+				let end = length(data);
+				while (end > 0 && (ord(data, end - 1) & 0xC0) == 0x80) {
+					end--;
+				}
+				if (end > 0 && ord(data, end - 1) >= 0xC0) {
+					end--;
+				}
+				if (end > 0) {
+					data = substr(data, 0, end);
+				}
+			}
+		}
+
+		const result = {
+			success: true,
+			data: data,
+			offset: offset,
+			total: total
+		};
+
+		if (offset == 0) {
+			result.meta = normalizeString(readfile(META_PATH));
+		}
+
+		return result;
+	} catch (error) {
+		return { error: 'Failed to load cache' };
+	}
+}
+
 function clearCache() {
 	try {
 		removeFile(CACHE_TMP_PATH);
 		removeFile(META_TMP_PATH);
+		removeStaleParts(null);
 
 		const cacheCleared = removeFile(CACHE_PATH);
 		const metaCleared = removeFile(META_PATH);
@@ -125,6 +287,24 @@ const methods = {
 		args: { cache: 'cache', meta: 'meta' },
 		call: function(req) {
 			return saveCache(req);
+		}
+	},
+	loadCacheChunk: {
+		args: { offset: 0 },
+		call: function(req) {
+			return loadCacheChunk(req);
+		}
+	},
+	saveCacheChunk: {
+		args: { id: 'id', index: 0, data: 'data' },
+		call: function(req) {
+			return saveCacheChunk(req);
+		}
+	},
+	commitCache: {
+		args: { id: 'id', size: 0, meta: 'meta' },
+		call: function(req) {
+			return commitCache(req);
 		}
 	},
 	clearCache: {
