@@ -110,19 +110,10 @@
   }
 
   function init() {
-    if (!hasNavigationApi()) {
-      console.info(
-        "[Proton2025 router] Navigation API недоступен — остаёмся в MPA-режиме.",
-      );
-      return;
-    }
-
-    if (!routerEnabled()) {
-      console.info(
-        "[Proton2025 router] Клиентский роутинг выключен (тумблер OFF) — MPA-режим.",
-      );
-      return;
-    }
+    // MPA-режим — штатное состояние (тумблер выключен по умолчанию, в части
+    // браузеров нет Navigation API), поэтому без сообщений в консоль на
+    // каждой странице.
+    if (!hasNavigationApi() || !routerEnabled()) return;
 
     var missing = contractMissing();
     if (missing.length) {
