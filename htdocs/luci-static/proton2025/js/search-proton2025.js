@@ -3686,6 +3686,54 @@
         hideResults();
       }
     });
+
+    searchInput.setAttribute("aria-keyshortcuts", "Control+K Meta+K /");
+    iconLabel.title = `${getSearchPlaceholder()} (${getSearchShortcutHint()})`;
+    document.addEventListener("keydown", onGlobalSearchShortcut);
+  }
+
+  function getSearchShortcutHint() {
+    return /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)
+      ? "\u2318K"
+      : "Ctrl+K";
+  }
+
+  function isEditableTarget(target) {
+    if (!target || !(target instanceof Element)) return false;
+    if (target.isContentEditable) return true;
+
+    return !!target.closest(
+      "input, textarea, select, [contenteditable=''], [contenteditable='true']",
+    );
+  }
+
+  // Ctrl/Cmd+K anywhere and "/" outside of text fields open the search.
+  // Inside a modal the keys are left to the dialog.
+  function onGlobalSearchShortcut(e) {
+    if (!searchInput || e.defaultPrevented || e.isComposing) return;
+    if (document.body.classList.contains("modal-overlay-active")) return;
+
+    const isPaletteKey =
+      (e.ctrlKey || e.metaKey) &&
+      !e.altKey &&
+      !e.shiftKey &&
+      (e.key === "k" || e.key === "K" || e.code === "KeyK");
+    const isSlashKey =
+      e.key === "/" &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      !e.altKey &&
+      !isEditableTarget(e.target);
+
+    if (!isPaletteKey && !isSlashKey) return;
+    if (e.target === searchInput) {
+      if (isPaletteKey) e.preventDefault();
+      return;
+    }
+
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
   }
 
   function clearSearchCloseAnimation() {
