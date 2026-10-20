@@ -184,7 +184,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="preload" href="{{ media }}/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+{# Кириллицу предзагружаем только для кириллических локалей: на остальных
+   языках preload не использовался и браузер ругался в консоли. Если
+   кириллический глиф всё же встретится, unicode-range подгрузит сабсет. #}
+{% if (lc(substr(dispatcher.lang ?? '', 0, 2)) in [ 'ru', 'uk', 'be', 'bg', 'kk', 'mk', 'sr' ]): %}
 <link rel="preload" href="{{ media }}/fonts/inter-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+{% endif %}
 {# cyrillic-ext (25 КБ) и latin-ext (72 КБ) НЕ предзагружаем: в них лежат
    глифы, которых нет ни на одной странице UI (⁴, ₴, доп. кириллица),
    а preload тянул их безусловно. unicode-range + font-display: swap в cascade.css
@@ -349,7 +354,10 @@ body {
    качает и не исполняет, но querySelectorAll('script[src*="/luci.js"]') в
    LuCI.__init__ его находит первым и берёт версию отсюда. Сам luci.js
    подключает ядро (template/header.ut) — без этого он грузился дважды. #}
-<script type="text/plain" src="{{ resource }}/luci.js?v={{ __pv }}"></script>
+{# pkgs_update_time меняется при установке/обновлении любого пакета: без него
+   view-модули сторонних luci-app-* оставались закэшированными с ?v темы,
+   пока не поднимется версия темы (issue #84). В старом LuCI переменной нет. #}
+<script type="text/plain" src="{{ resource }}/luci.js?v={{ __pv }}{{ pkgs_update_time ? '-' + pkgs_update_time : '' }}"></script>
 <script src="{{ resource }}/cbi.js"></script>
 {# v1.5.29: строки переводов вынесены в пофайловые локали XX-xx.js.
    Грузим только активную локаль (fallback → en). translations.js оставлен
@@ -369,6 +377,10 @@ body {
 <script src="{{ media }}/js/mobile-settings-fallback.js?v={{ __pv }}" defer></script>
 <script src="{{ media }}/js/overview-decorations.js?v={{ __pv }}" defer></script>
 <script src="{{ media }}/js/custom-pages.js?v={{ __pv }}" defer></script>
+{# Загрузка нескольких пакетов и установка неподписанных .apk на System ->
+   Software (openwrt/luci#8482). Скрипт сам определяет страницу (в том числе
+   после SPA-навигации) и на остальных страницах ничего не делает. #}
+<script src="{{ media }}/js/package-upload.js?v={{ __pv }}" defer></script>
 {# translations-search.js: семантические переводы поиска, вынесены из
    translations.js. defer сохраняет порядок → protonGetLang доступен. #}
 <script src="{{ media }}/js/translations-search.js?v={{ __pv }}" defer></script>
