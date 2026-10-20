@@ -7,7 +7,7 @@
 'use strict';
 
 import { cursor } from 'uci';
-import { popen } from 'fs';
+import { popen, readfile, unlink } from 'fs';
 
 const CONFIG_NAME = 'proton2025';
 const SECTION_NAME = 'settings';
@@ -267,14 +267,62 @@ function getInstalledThemeVersion(packageManager) {
         return '';
 }
 
-function getLatestReleaseTag() {
-        return runCommand("wget -qO- --timeout=10 '" + RELEASE_API_URL + "' 2>/dev/null | sed -n 's/.*\"tag_name\"[[:space:]]*:[[:space:]]*\"\\([^\"]*\\)\".*/\\1/p' | head -n1");
+const RELEASE_JSON_PATH = '/tmp/proton2025-release.json';
+const RELEASE_ASSET_URL_PREFIX = 'https://github.com/ChesterGoodiny/luci-theme-proton2025/releases/download/';
+const RELEASE_API_ERROR = 'GitHub API request failed (no network or the API rate limit of 60 requests per hour was reached, try again later)';
+
+// Reads the latest release once and parses it with json() instead of
+// scraping it with sed; the release also carries the sha256 of each asset.
+function fetchLatestRelease() {
+        const fetched = runCommand("rm -f '" + RELEASE_JSON_PATH + "'; wget -qO '" + RELEASE_JSON_PATH + "' --timeout=10 '" + RELEASE_API_URL + "' 2>/dev/null && echo ok || echo fail");
+        let release = null;
+
+        if (fetched == 'ok') {
+                try {
+                        release = json(readfile(RELEASE_JSON_PATH) ?? '');
+                } catch (error) {
+                        release = null;
+                }
+        }
+
+        unlink(RELEASE_JSON_PATH);
+
+        if (type(release) != 'object' || type(release.tag_name) != 'string') {
+                return { error: RELEASE_API_ERROR };
+        }
+
+        return { release: release };
 }
 
-function getLatestReleaseAssetUrl(packageManager) {
-        const ext = packageManager == 'apk' ? 'apk' : 'ipk';
+function getReleaseAsset(release, packageManager) {
+        const pattern = packageManager == 'apk'
+                ? /^luci-theme-proton2025-[0-9][^\/]*\.apk$/
+                : /^luci-theme-proton2025_[0-9][^\/]*\.ipk$/;
 
-        return runCommand("wget -qO- --timeout=10 '" + RELEASE_API_URL + "' 2>/dev/null | sed -n 's/.*\"browser_download_url\"[[:space:]]*:[[:space:]]*\"\\([^\"]*luci-theme-proton2025[^\"]*\\." + ext + "\\)\".*/\\1/p' | head -n1");
+        for (let asset in (release?.assets ?? [])) {
+                const url = asset?.browser_download_url;
+
+                if (type(asset?.name) != 'string' || !match(asset.name, pattern)) {
+                        continue;
+                }
+
+                // The URL ends up in a shell command: accept only this repository's
+                // release downloads with plain path characters.
+                if (type(url) != 'string' ||
+                    index(url, RELEASE_ASSET_URL_PREFIX) != 0 ||
+                    !match(url, /^https:\/\/[A-Za-z0-9._\/~-]+$/)) {
+                        continue;
+                }
+
+                const digest = type(asset.digest) == 'string' ? lc(asset.digest) : '';
+
+                return {
+                        url: url,
+                        sha256: match(digest, /^sha256:[0-9a-f]{64}$/) ? substr(digest, 7) : ''
+                };
+        }
+
+        return null;
 }
 
 function normalizeVersion(version) {
@@ -285,6 +333,9 @@ function normalizeVersion(version) {
         let str = '' + version;
         str = replace(str, /^v/, '');
         str = replace(str, /^V/, '');
+        // opkg reports "1.4.3-r1" (or "1.4.3-1"): without dropping the release
+        // the last part became NaN and no update was ever found on ipk systems.
+        str = replace(str, /-r?[0-9]+$/, '');
 
         return str;
 }
@@ -293,7 +344,10 @@ function compareVersions(currentVersion, latestVersion) {
         const current = split(normalizeVersion(currentVersion), '.');
         const latest = split(normalizeVersion(latestVersion), '.');
 
-        for (let i = 0; i < 3; i++) {
+        // All parts count: 1.4.4.1 is newer than 1.4.4.
+        const parts = max(length(current), length(latest));
+
+        for (let i = 0; i < parts; i++) {
                 const c = +(current[i] ?? 0);
                 const l = +(latest[i] ?? 0);
 
@@ -345,7 +399,8 @@ function getVersion() {
 function checkUpdate() {
         const packageManager = detectPackageManager();
         const currentVersion = getInstalledThemeVersion(packageManager);
-        const latestTag = getLatestReleaseTag();
+        const latest = fetchLatestRelease();
+        const latestTag = latest.release?.tag_name ?? '';
         const latestVersion = normalizeVersion(latestTag);
         const currentNormalized = normalizeVersion(currentVersion);
 
@@ -373,7 +428,7 @@ function checkUpdate() {
         if (!length(latestTag)) {
                 return {
                         success: false,
-                        error: 'Latest GitHub release not found',
+                        error: latest.error ?? 'Latest GitHub release not found',
                         package_manager: packageManager,
                         current_version: currentNormalized,
                         latest_version: '',
@@ -396,7 +451,8 @@ function checkUpdate() {
 function installUpdate() {
         const packageManager = detectPackageManager();
         const currentVersion = getInstalledThemeVersion(packageManager);
-        const latestTag = getLatestReleaseTag();
+        const latest = fetchLatestRelease();
+        const latestTag = latest.release?.tag_name ?? '';
         const latestVersion = normalizeVersion(latestTag);
         const currentNormalized = normalizeVersion(currentVersion);
 
@@ -425,7 +481,7 @@ function installUpdate() {
         if (!length(latestTag)) {
                 return {
                         success: false,
-                        error: 'Latest GitHub release not found',
+                        error: latest.error ?? 'Latest GitHub release not found',
                         package_manager: packageManager,
                         current_version: currentNormalized,
                         latest_version: '',
@@ -447,9 +503,9 @@ function installUpdate() {
                 };
         }
 
-        const assetUrl = getLatestReleaseAssetUrl(packageManager);
+        const asset = getReleaseAsset(latest.release, packageManager);
 
-        if (!length(assetUrl)) {
+        if (asset == null) {
                 return {
                         success: false,
                         error: 'Release package asset not found',
@@ -465,7 +521,7 @@ function installUpdate() {
                 ? '/tmp/luci-theme-proton2025-update.apk'
                 : '/tmp/luci-theme-proton2025-update.ipk';
 
-        const downloadResult = runCommand("rm -f '" + packagePath + "'; wget -qO '" + packagePath + "' --timeout=30 '" + assetUrl + "' && echo ok || echo fail");
+        const downloadResult = runCommand("rm -f '" + packagePath + "'; wget -qO '" + packagePath + "' --timeout=30 '" + asset.url + "' && echo ok || echo fail");
 
         if (downloadResult != 'ok') {
                 return {
@@ -479,6 +535,27 @@ function installUpdate() {
                 };
         }
 
+        // Releases list the sha256 of every asset: refuse a package that does
+        // not match it (truncated download, tampered mirror). Older releases
+        // without a digest are installed as before.
+        if (length(asset.sha256)) {
+                const actual = runCommand("sha256sum '" + packagePath + "' 2>/dev/null | cut -d' ' -f1");
+
+                if (actual != asset.sha256) {
+                        unlink(packagePath);
+
+                        return {
+                                success: false,
+                                error: 'Downloaded package does not match the release sha256',
+                                package_manager: packageManager,
+                                current_version: currentNormalized,
+                                latest_version: latestVersion,
+                                latest_tag: latestTag,
+                                release_url: RELEASE_PAGE_URL
+                        };
+                }
+        }
+
         let installCommand = '';
 
         if (packageManager == 'apk') {
@@ -488,6 +565,7 @@ function installUpdate() {
         }
 
         const installResult = runCommand("(" + installCommand + " >/tmp/proton2025-update.log 2>&1 && echo ok) || echo fail");
+        unlink(packagePath);
 
         runCommand("rm -rf /tmp/luci-* /tmp/luci-indexcache /tmp/luci-modulecache");
 
