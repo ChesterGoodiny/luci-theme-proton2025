@@ -43,10 +43,10 @@ body:
       label: "🎨 Theme Version / Версия темы"
       description: "Check in System → Software or theme settings / Можно посмотреть в Система → Программы или в настройках темы"
       options:
-        - "v1.4.4 (Latest / Последняя)"
+        - "v1.4.5 (Latest / Последняя)"
+        - "v1.4.4"
         - "v1.4.3"
         - "v1.4.2"
-        - "v1.4.1"
         - "Git / Master / Build from source (Сборка из исходников)"
         - "Not sure / Не уверен (Не знаю)"
     validations:
