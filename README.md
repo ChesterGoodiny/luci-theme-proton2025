@@ -249,6 +249,34 @@ under the MIT License — license file at `LICENSES/MIT-fluid.txt`.
   for helping identify the installation documentation issues that prompted this
   simpler installer flow.
 
+### Community
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ChesterGoodiny"><img src="https://avatars.githubusercontent.com/u/241477052?s=100" width="100px;" alt="ChesterGoodiny"/><br /><sub><b>ChesterGoodiny</b></sub></a><br /><a href="https://github.com/ChesterGoodiny/luci-theme-proton2025/commits?author=ChesterGoodiny" title="Code">💻</a> <a href="#maintenance-ChesterGoodiny" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/fildunsky"><img src="https://avatars.githubusercontent.com/u/32987666?s=100" width="100px;" alt="fildunsky"/><br /><sub><b>fildunsky</b></sub></a><br /><a href="https://github.com/ChesterGoodiny/luci-theme-proton2025/commits?author=fildunsky" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/cergo666"><img src="https://avatars.githubusercontent.com/u/24405345?s=100" width="100px;" alt="cergo666"/><br /><sub><b>cergo666</b></sub></a><br /><a href="https://github.com/ChesterGoodiny/luci-theme-proton2025/commits?author=cergo666" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/frenzydrive"><img src="https://avatars.githubusercontent.com/u/54944468?s=100" width="100px;" alt="frenzydrive"/><br /><sub><b>frenzydrive</b></sub></a><br /><a href="https://github.com/ChesterGoodiny/luci-theme-proton2025/commits?author=frenzydrive" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/smalleaves"><img src="https://avatars.githubusercontent.com/u/99544917?s=100" width="100px;" alt="smalleaves"/><br /><sub><b>smalleaves</b></sub></a><br /><a href="https://github.com/ChesterGoodiny/luci-theme-proton2025/commits?author=smalleaves" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/DoubleThePsycho"><img src="https://avatars.githubusercontent.com/u/27337177?s=100" width="100px;" alt="DoubleThePsycho"/><br /><sub><b>DoubleThePsycho</b></sub></a><br /><a href="https://github.com/ChesterGoodiny/luci-theme-proton2025/commits?author=DoubleThePsycho" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/zcluo"><img src="https://avatars.githubusercontent.com/u/642516?s=100" width="100px;" alt="zcluo"/><br /><sub><b>zcluo</b></sub></a><br /><a href="https://github.com/ChesterGoodiny/luci-theme-proton2025/commits?author=zcluo" title="Code">💻</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind are welcome!
+
 ## Star history
 
 <a href="https://www.star-history.com/?repos=ChesterGoodiny%2Fluci-theme-proton2025&type=date&legend=top-left">

@@ -2,6 +2,92 @@
 
 All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
 
+## [1.4.5]
+
+## Changes in version 1.4.5
+
+## Features
+
+- **Header: quick Auto/Light/Dark theme switch** (PR #100 — author: @cergo666)
+  - A compact header button cycles Auto → Light → Dark without opening the settings panel
+  - Writes the same `proton-theme-mode` key as the settings panel, so the choice syncs to the router settings
+  - Auto state is shown as a half-filled circle, Light as the sun, Dark as the moon, with localized titles on all 9 locales
+
+- **Search opens with Ctrl/Cmd+K or /** (PR #99 — author: @cergo666)
+  - Anywhere on an admin page `Ctrl+K` / `⌘K` focuses the search field; outside text fields plain `/` does the same
+  - The icon tooltip now shows the current-platform hint (`Поиск... (Ctrl+K)` / `⌘K`); inside modals the keys are left to the dialog
+
+- **Web app manifest and home-screen icons** (PR #101 — author: @cergo666)
+  - Added `manifest.json` and PNG icons so Android/Chrome offers "Install" (also on iOS via `apple-touch-icon`)
+  - The installed app starts straight into LuCI with the theme colors and the router hostname as the title
+
+- **Search index: chunked persistence for large caches** (PR #93 — author: @cergo666, fixes #65)
+  - `uhttpd-mod-ubus` rejects request bodies over 64 KiB, so big indexes never reached the router: caches now upload in ≤48 KiB chunks (`saveCacheChunk`/`commitCache`) and read back through `loadCacheChunk`, with a 4 MiB cap so a client cannot fill tmpfs
+  - Fixed prefetch parse crashes on slow pages (mwan3, acme, realtime graphs): the navigation timer no longer kills the iframe mid-parse
+
+- **Versioned `luci.js` on package changes** (PR #92 — author: @cergo666, fixes #84)
+  - The cache-buster of `luci.js` now follows `pkgs_update_time`, so third-party `luci-app-*` view modules reload after any package install/update instead of staying stale until the theme version bumps
+
+- **CI: build packages in under a minute** (PR #98 — author: @cergo666)
+  - Release SDK with cached archives/feeds and `NO_DEPS=1` replaces the 15–27-minute full dependency tree build
+  - New package-contents verification step refuses to ship packages with leftover `*.o` minifier debris and asserts `package-upload.js` is present
+
+## Fixes
+
+- **Restore package-upload.js on System → Software (1.4.4 regression)** (PR #91 — author: @cergo666)
+  - v1.4.4 added the package-upload script via the per-page CSS/JS map but missed the script tag itself on OpenWrt 25.12+, leaving the multi-file upload page without its enhancements; the script is now loaded on every admin page and self-activates on System → Software
+
+- **Temperature chart: drawn at real size** (PR #96 — author: @cergo666)
+  - The SVG used a fixed 960×340 viewBox stretched with `preserveAspectRatio="none"`, squashing lines and text on wide pages; the chart is now drawn 1:1 in CSS pixels and redrawn via ResizeObserver when the width changes
+  - Inline series labels are limited to 4 sensors; beyond that the selector chips and the hover tooltip carry the values
+
+- **Self-update: hardening and reliability** (PR #94 — author: @cergo666)
+  - `installUpdate` no longer hangs the RPC on synchronous service restarts: rpcd/uhttpd restart in the background with a 3 s delay, so the update call can answer before its own connection dies
+  - Downloaded packages are verified against the `sha256` digest published in the release (GitHub API asset digests), mismatched files are rejected and deleted
+  - Asset URLs are validated against `https://github.com/<repo>/releases/download/` with a strict character whitelist before reaching a shell command
+  - Version comparison now handles `1.4.3-r1` (opkg release suffix, which previously turned the last component into `NaN` and never found updates on ipk systems) and compares all numeric parts
+
+- **ACL: dropped unused file grants** (PR #95 — author: @cergo666)
+  - The theme ACL no longer grants `exec` on `/etc/init.d/*` and `/bin/pidof` or `read` on `/proc/cpuinfo`; services monitoring works over ubus only
+
+- **Cleanup: dead code, console noise and CRLF normalisation** (PR #97 — author: @cergo666)
+  - Removed the unused `menu-proton2025.core.js` (1964 lines kept for nothing), silenced per-page console messages about the disabled client-side router and the Cyrillic font preload on non-Cyrillic locales
+  - `CHANGELOG.md`, `README.md`, `README_ru.md` and `luci.proton-temp` are stored with LF line endings again (regression from browser uploads), matching the repo `.gitattributes`
+
+- **CI: release notes from the changelogs** (PR #102 — author: @cergo666)
+  - Releases now take the `[<version>]` section of `CHANGELOG.md`/`CHANGELOG_ru.md` automatically (Russian first) instead of the static install instructions
+
+## Notes
+
+- **Search results with `https://` links after upgrading from < 1.4.4-era caches** — no code change needed: the lookup index cache stored absolute URLs captured while the LuCI session was opened over HTTPS (`https://192.168.1.1/...`), which broke navigation on ordinary HTTP setups. The cache is now gone automatically on theme update (package postinst) — see the new `postrm` cleanup of `proton-search-prefetch-cache*.part-*`. Do not open LuCI over TLS with a different scheme than you plan to browse with, or delete `/tmp/proton-search-prefetch-cache.json` manually.
+- **Search multi-word transliteration**: a two-word transliterated query such as "bezprovodnaya set" currently returns no results; single words ("wifi", "sistema") work as before.
+
+## Build
+
+- **Theme asset versioning**
+  - Bumped the asset version (`__pv`) and the package version to 1.4.5 so updated styles and UI scripts are reloaded by browsers after this release's changes
+
+## Authors
+
+- @cergo666 — header theme-mode switch, search keyboard shortcuts, PWA install, chunked search cache, luci.js versioning, fast CI, package-upload regression fix, real-size temperature chart, self-update hardening, ACL trimming, cleanup and release-notes automation (PRs #91–#102)
+
+## Pull Requests
+
+- #91 — Restore package-upload.js on System > Software (1.4.4 regression)
+- #92 — Version L.require() modules by package changes too
+- #93 — Search index: persist large caches in chunks and fix page parse errors
+- #94 — Self-update: keep installUpdate answering, verify sha256, fix version compare
+- #95 — ACL: drop unused file exec/read grants
+- #96 — Temperature chart: draw at real size instead of stretching
+- #97 — Cleanup: drop dead core.js and console noise, normalize CRLF
+- #98 — CI: build packages in under a minute
+- #99 — Search: open with Ctrl/Cmd+K or /
+- #100 — Header: quick Auto/Light/Dark theme switch
+- #101 — Web app manifest and home-screen icons
+- #102 — CI: release notes from the changelogs, Russian first
+
+---
+
 ## [1.4.4]
 
 ## Changes in version 1.4.4
