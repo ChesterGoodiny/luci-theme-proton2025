@@ -576,6 +576,34 @@ a:active {
     position: relative;
 }
 
+.proton-mode-toggle {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    margin: 0 0 0 4px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--proton-radius);
+    background: transparent;
+    color: var(--proton-text-secondary);
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.proton-mode-toggle:hover,
+.proton-mode-toggle:focus-visible {
+    color: var(--proton-text);
+    background: var(--proton-accent-glow);
+}
+
+.proton-mode-toggle:focus-visible {
+    outline: 2px solid var(--proton-accent);
+    outline-offset: 1px;
+}
+
 .proton-search-wrapper {
     position: relative;
     width: 34px;
