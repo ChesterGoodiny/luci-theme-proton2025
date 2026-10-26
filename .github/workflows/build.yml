@@ -16,6 +16,7 @@ jobs:
   build:
     name: Build ${{ matrix.package_format }} package
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -23,9 +24,11 @@ jobs:
           - package_format: ipk
             artifact_name: luci-theme-proton2025-ipk
             sdk_url: https://downloads.openwrt.org/releases/23.05.5/targets/x86/64/openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+          # A release SDK instead of snapshots: the snapshot SDK changed under
+          # every build and could never be cached.
           - package_format: apk
             artifact_name: luci-theme-proton2025-apk
-            sdk_url: https://downloads.openwrt.org/snapshots/targets/x86/64/openwrt-sdk-x86-64_gcc-14.4.0_musl.Linux-x86_64.tar.zst
+            sdk_url: https://downloads.openwrt.org/releases/25.12.5/targets/x86/64/openwrt-sdk-25.12.5-x86-64_gcc-14.3.0_musl.Linux-x86_64.tar.zst
 
     steps:
       - name: Checkout
@@ -41,21 +44,31 @@ jobs:
 
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> "$GITHUB_ENV"
           echo "PACKAGE_RELEASE=1" >> "$GITHUB_ENV"
+          echo "SDK_ARCHIVE=$RUNNER_TEMP/sdk/$(basename "${{ matrix.sdk_url }}")" >> "$GITHUB_ENV"
 
-      - name: Install host tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y zstd
+      # A release SDK never changes and pins its feeds to fixed commits, so the
+      # archive and the cloned luci feed are cached together, keyed by its URL.
+      - name: Cache OpenWrt SDK
+        id: sdk-cache
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/sdk
+          key: openwrt-sdk-v2-${{ matrix.sdk_url }}
 
       - name: Download OpenWrt SDK
+        if: steps.sdk-cache.outputs.cache-hit != 'true'
         env:
           SDK_URL: ${{ matrix.sdk_url }}
         run: |
-          cd "$RUNNER_TEMP"
-          SDK_ARCHIVE="$RUNNER_TEMP/$(basename "$SDK_URL")"
-          curl -fL "$SDK_URL" -o "$SDK_ARCHIVE"
-          tar -xf "$SDK_ARCHIVE"
-          SDK_DIR="$(find "$RUNNER_TEMP" -maxdepth 1 -type d -name 'openwrt-sdk*' | head -n 1)"
+          mkdir -p "$(dirname "$SDK_ARCHIVE")"
+          curl -fL --retry 3 "$SDK_URL" -o "$SDK_ARCHIVE"
+
+      - name: Extract OpenWrt SDK
+        run: |
+          command -v zstd >/dev/null || sudo apt-get install -y zstd
+          mkdir -p "$RUNNER_TEMP/build"
+          tar -xf "$SDK_ARCHIVE" -C "$RUNNER_TEMP/build"
+          SDK_DIR="$(find "$RUNNER_TEMP/build" -maxdepth 1 -type d -name 'openwrt-sdk*' | head -n 1)"
           if [ -z "$SDK_DIR" ]; then
             echo "OpenWrt SDK directory not found" >&2
             exit 1
@@ -75,8 +88,17 @@ jobs:
             --exclude 'staging_dir' \
             "$GITHUB_WORKSPACE/" package/luci-theme-proton2025/
 
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
+          # Only the luci feed is needed: luci.mk and the luci-base host tools.
+          # Cloning it from git.openwrt.org takes up to a minute, so a cached
+          # copy is reused.
+          FEEDS_CACHE="$(dirname "$SDK_ARCHIVE")/feeds"
+          if [ -f "$FEEDS_CACHE/luci.index" ]; then
+            cp -a "$FEEDS_CACHE" ./feeds
+          else
+            ./scripts/feeds update luci
+            cp -a ./feeds "$FEEDS_CACHE"
+          fi
+          ./scripts/feeds install luci-base
 
           cat >> .config << 'CONFIG_END'
           CONFIG_PACKAGE_luci-theme-proton2025=m
@@ -87,7 +109,14 @@ jobs:
           fi
 
           make defconfig
-          make package/luci-theme-proton2025/compile V=s \
+
+          # The theme compiles nothing (PKGARCH:=all). Without NO_DEPS the SDK
+          # built the whole dependency tree from source (luci-base, uhttpd,
+          # ucode, ubus...), 15-27 minutes per job. It only needs the luci-base
+          # host tools (jsmin, po2lmo), which take a few seconds. The packages
+          # come out byte-identical to the full build.
+          make package/luci-base/host/compile -j"$(nproc)" V=s
+          make package/luci-theme-proton2025/compile NO_DEPS=1 -j"$(nproc)" V=s \
             PROTON_VERSION="$PACKAGE_VERSION" \
             PROTON_RELEASE="$PACKAGE_RELEASE"
 
@@ -109,6 +138,25 @@ jobs:
 
           echo "Built package version: ${PACKAGE_VERSION}-r${PACKAGE_RELEASE}"
           ls -lah "$GITHUB_WORKSPACE/dist/$PACKAGE_FORMAT"
+
+      # A failed minifier leaves empty *.o files next to unminified sources
+      # instead of failing the build; never ship such a package.
+      - name: Check package contents
+        run: |
+          cd "$GITHUB_WORKSPACE/dist/${{ matrix.package_format }}"
+          mkdir -p "$RUNNER_TEMP/check/root"
+          if [ "${{ matrix.package_format }}" = "ipk" ]; then
+            tar -xzOf ./*.ipk ./data.tar.gz | tar -tz > "$RUNNER_TEMP/check/files.txt"
+          else
+            "$SDK_DIR/staging_dir/host/bin/apk" --allow-untrusted extract \
+              --destination "$RUNNER_TEMP/check/root" ./*.apk
+            (cd "$RUNNER_TEMP/check/root" && find . -type f) > "$RUNNER_TEMP/check/files.txt"
+          fi
+          if grep -E '\.(js|css)\.o$' "$RUNNER_TEMP/check/files.txt"; then
+            echo "Minification failed: leftover .o files in the package" >&2
+            exit 1
+          fi
+          grep -q 'luci-static/proton2025/js/package-upload.js' "$RUNNER_TEMP/check/files.txt"
 
       - name: Upload ${{ matrix.package_format }} artifact
         uses: actions/upload-artifact@v7
