@@ -12,7 +12,8 @@
                     "getSystemInfo"
                 ],
                 "luci.proton-search-cache": [
-                    "loadCache"
+                    "loadCache",
+                    "loadCacheChunk"
                 ],
                 "luci.proton-settings": [
                     "getSettings",
@@ -64,6 +65,8 @@
                 ],
                 "luci.proton-search-cache": [
                     "saveCache",
+                    "saveCacheChunk",
+                    "commitCache",
                     "clearCache"
                 ],
                 "luci.proton-packages": [
