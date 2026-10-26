@@ -49,11 +49,18 @@ define Package/$(PKG_NAME)/postinst
 		uci commit uhttpd
 	fi
 	[ -f /etc/uci-defaults/30_luci-theme-proton2025 ] && sh /etc/uci-defaults/30_luci-theme-proton2025 >/dev/null 2>&1 || true
-	/etc/init.d/rpcd restart >/dev/null 2>&1 || true
 	rm -f /tmp/proton-search-prefetch-cache.json /tmp/proton-search-prefetch-cache-meta.json >/dev/null 2>&1 || true
 	rm -rf /tmp/proton-search-cache /tmp/proton-search-cache-meta >/dev/null 2>&1 || true
 	rm -rf /tmp/luci-indexcache* /tmp/luci-modulecache >/dev/null 2>&1 || true
-	/etc/init.d/uhttpd reload >/dev/null 2>&1 || /etc/init.d/uhttpd restart >/dev/null 2>&1 || true
+	# Перезапуск в фоне с задержкой: при обновлении из настроек темы этот
+	# скрипт выполняется внутри RPC-вызова installUpdate, и синхронный
+	# рестарт rpcd/uhttpd обрывал вызов до ответа: UI показывал ошибку,
+	# хотя пакет уже установлен.
+	( trap "" HUP
+	  sleep 3
+	  /etc/init.d/rpcd restart
+	  /etc/init.d/uhttpd reload || /etc/init.d/uhttpd restart
+	) </dev/null >/dev/null 2>&1 &
 }
 
 exit 0
