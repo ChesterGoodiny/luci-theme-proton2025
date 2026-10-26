@@ -1,0 +1,64 @@
+{
+  "files": [
+    "README.md",
+    "README_ru.md"
+  ],
+  "projectName": "luci-theme-proton2025",
+  "projectOwner": "ChesterGoodiny",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "imageSize": 100,
+  "commit": false,
+  "contributorsPerLine": 7,
+  "contributors": [
+    {
+      "login": "ChesterGoodiny",
+      "name": "ChesterGoodiny",
+      "avatar_url": "https://avatars.githubusercontent.com/u/241477052",
+      "profile": "https://github.com/ChesterGoodiny",
+      "contributions": ["code", "maintenance"]
+    },
+    {
+      "login": "fildunsky",
+      "name": "fildunsky",
+      "avatar_url": "https://avatars.githubusercontent.com/u/32987666",
+      "profile": "https://github.com/fildunsky",
+      "contributions": ["code"]
+    },
+    {
+      "login": "cergo666",
+      "name": "cergo666",
+      "avatar_url": "https://avatars.githubusercontent.com/u/24405345",
+      "profile": "https://github.com/cergo666",
+      "contributions": ["code"]
+    },
+    {
+      "login": "frenzydrive",
+      "name": "frenzydrive",
+      "avatar_url": "https://avatars.githubusercontent.com/u/54944468",
+      "profile": "https://github.com/frenzydrive",
+      "contributions": ["code"]
+    },
+    {
+      "login": "smalleaves",
+      "name": "smalleaves",
+      "avatar_url": "https://avatars.githubusercontent.com/u/99544917",
+      "profile": "https://github.com/smalleaves",
+      "contributions": ["doc"]
+    },
+    {
+      "login": "DoubleThePsycho",
+      "name": "DoubleThePsycho",
+      "avatar_url": "https://avatars.githubusercontent.com/u/27337177",
+      "profile": "https://github.com/DoubleThePsycho",
+      "contributions": ["code"]
+    },
+    {
+      "login": "zcluo",
+      "name": "zcluo",
+      "avatar_url": "https://avatars.githubusercontent.com/u/642516",
+      "profile": "https://github.com/zcluo",
+      "contributions": ["code"]
+    }
+  ]
+}
