@@ -565,4 +565,12 @@ window.ProtonTranslations = {
   "Reset the template to factory code":
     "Przywrócić szablon do kodu fabrycznego",
   "Template reset to factory code": "Szablon przywrócony do kodu fabrycznego",
+  "Update log": "Dziennik aktualizacji",
+  "Reload page": "Przeładuj stronę",
+  "Starting the update...": "Uruchamianie aktualizacji...",
+  "Downloading the update...": "Pobieranie aktualizacji...",
+  "Verifying the package...": "Weryfikacja pakietu...",
+  "Installing the package...": "Instalowanie pakietu...",
+  "Reload the page to use the new version.": "Przeładuj stronę, aby używać nowej wersji.",
+  "The connection to the router was interrupted while services restarted. Reload the page to see the result.": "Połączenie z routerem zostało przerwane podczas ponownego uruchamiania usług. Przeładuj stronę, aby zobaczyć wynik.",
 };

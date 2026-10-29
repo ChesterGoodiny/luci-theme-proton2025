@@ -9836,6 +9836,68 @@ html.proton-tabs-proton .proton-tab-button.active {
     margin-top: 4px;
 }
 
+.proton-update-progress {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+    max-width: 640px;
+}
+
+.proton-update-progress[hidden],
+.proton-update-progress [hidden] {
+    display: none;
+}
+
+.proton-update-progress progress {
+    width: 100%;
+    height: 6px;
+    border: 0;
+    border-radius: 999px;
+    overflow: hidden;
+    appearance: none;
+    background: var(--proton-bg-secondary);
+    accent-color: var(--proton-accent);
+}
+
+.proton-update-progress progress::-webkit-progress-bar {
+    background: var(--proton-bg-secondary);
+}
+
+.proton-update-progress progress::-webkit-progress-value {
+    background: var(--proton-accent);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+.proton-update-progress progress::-moz-progress-bar {
+    background: var(--proton-accent);
+    border-radius: 999px;
+}
+
+.proton-update-log-wrap summary {
+    cursor: pointer;
+    color: var(--proton-text-secondary);
+    font-size: 0.85em;
+}
+
+.proton-update-log {
+    max-height: 220px;
+    overflow: auto;
+    margin: 6px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--proton-border);
+    border-radius: var(--proton-radius);
+    background: var(--proton-bg-secondary);
+    font-size: 12px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.proton-update-progress #proton-update-reload {
+    justify-self: start;
+}
+
 @media (max-width: 600px) {
     .proton-settings-card {
         padding: 1rem 0.85rem 0.35rem;

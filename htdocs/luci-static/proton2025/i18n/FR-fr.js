@@ -571,4 +571,12 @@ window.ProtonTranslations = {
   "Reset the template to factory code":
     "Réinitialiser le modèle au code d'usine",
   "Template reset to factory code": "Modèle réinitialisé au code d'usine",
+  "Update log": "Journal de mise à jour",
+  "Reload page": "Recharger la page",
+  "Starting the update...": "Démarrage de la mise à jour...",
+  "Downloading the update...": "Téléchargement de la mise à jour...",
+  "Verifying the package...": "Vérification du paquet...",
+  "Installing the package...": "Installation du paquet...",
+  "Reload the page to use the new version.": "Rechargez la page pour utiliser la nouvelle version.",
+  "The connection to the router was interrupted while services restarted. Reload the page to see the result.": "La connexion au routeur a été interrompue pendant le redémarrage des services. Rechargez la page pour voir le résultat.",
 };

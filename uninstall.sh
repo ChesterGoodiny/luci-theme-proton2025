@@ -134,6 +134,8 @@ rm -f "/usr/share/rpcd/ucode/luci.proton-temp"
 rm -f "/usr/share/rpcd/ucode/luci.proton-system"
 rm -f "/usr/share/rpcd/ucode/luci.proton-settings"
 rm -f "/usr/share/rpcd/ucode/luci.proton-search-cache"
+rm -f "/usr/libexec/proton2025-update"
+rm -rf /tmp/proton2025-update 2>/dev/null || true
 rm -f "/usr/share/rpcd/acl.d/luci-theme-proton2025.json"
 rm -f "/usr/share/luci/menu.d/luci-theme-proton2025.json"
 ok "Removed RPC modules"

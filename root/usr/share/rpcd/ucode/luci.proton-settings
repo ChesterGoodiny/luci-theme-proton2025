@@ -7,7 +7,7 @@
 'use strict';
 
 import { cursor } from 'uci';
-import { popen, readfile, unlink } from 'fs';
+import { popen, readfile, writefile, unlink, stat, mkdir } from 'fs';
 
 const CONFIG_NAME = 'proton2025';
 const SECTION_NAME = 'settings';
@@ -318,7 +318,8 @@ function getReleaseAsset(release, packageManager) {
 
                 return {
                         url: url,
-                        sha256: match(digest, /^sha256:[0-9a-f]{64}$/) ? substr(digest, 7) : ''
+                        sha256: match(digest, /^sha256:[0-9a-f]{64}$/) ? substr(digest, 7) : '',
+                        size: type(asset.size) == 'int' && asset.size > 0 ? asset.size : 0
                 };
         }
 
@@ -586,6 +587,171 @@ function installUpdate() {
 }
 
 
+// --- Background update ------------------------------------------------------
+// startUpdate runs the checks and hands the download/verify/install to
+// /usr/libexec/proton2025-update, detached from rpcd: the package's postinst
+// restarts rpcd, and a synchronous install could lose its reply that way.
+// Progress and the log live in /tmp, so getUpdateStatus lets the settings
+// panel pick a running update up again after a page reload.
+
+const UPDATE_DIR = '/tmp/proton2025-update';
+const UPDATE_WORKER = '/usr/libexec/proton2025-update';
+const UPDATE_LOG_TAIL = 8192;
+const RUNNING_STATES = { downloading: true, verifying: true, installing: true, starting: true };
+
+function readUpdateState() {
+        const raw = readfile(UPDATE_DIR + '/state');
+
+        if (raw == null) {
+                return null;
+        }
+
+        const f = split(rtrim(raw, '\n'), '\n');
+
+        return {
+                state: f[0] ?? '',
+                message: f[1] ?? '',
+                from_version: f[2] ?? '',
+                to_version: f[3] ?? '',
+                started_at: +(f[4] ?? 0),
+                updated_at: +(f[5] ?? 0),
+                total_bytes: +(f[6] ?? 0)
+        };
+}
+
+function updateWorkerAlive() {
+        const pid = trim(readfile(UPDATE_DIR + '/pid') ?? '');
+
+        return match(pid, /^[0-9]+$/) && stat('/proc/' + pid) != null;
+}
+
+function readLogTail() {
+        const log = readfile(UPDATE_DIR + '/log') ?? '';
+
+        return length(log) > UPDATE_LOG_TAIL ? substr(log, length(log) - UPDATE_LOG_TAIL) : log;
+}
+
+function getUpdateStatus() {
+        const st = readUpdateState();
+
+        if (st == null) {
+                return { success: true, state: 'idle', running: false };
+        }
+
+        let running = !!RUNNING_STATES[st.state];
+
+        // The worker died without writing a final state (power loss, kill).
+        if (running && !updateWorkerAlive() && time() - st.updated_at > 5) {
+                st.state = 'failed';
+                st.message = 'The update process stopped unexpectedly';
+                running = false;
+        }
+
+        let downloaded = 0;
+        if (st.state == 'downloading') {
+                downloaded = stat(UPDATE_DIR + '/package.apk')?.size ?? stat(UPDATE_DIR + '/package.ipk')?.size ?? 0;
+        }
+
+        const result = {
+                success: true,
+                state: st.state,
+                running: running,
+                message: st.message,
+                from_version: st.from_version,
+                to_version: st.to_version,
+                started_at: st.started_at,
+                updated_at: st.updated_at,
+                total_bytes: st.total_bytes,
+                downloaded_bytes: downloaded,
+                log: readLogTail(),
+                release_url: RELEASE_PAGE_URL
+        };
+
+        if (st.state == 'done' || st.state == 'failed') {
+                result.installed_version = normalizeVersion(getInstalledThemeVersion(detectPackageManager()));
+        }
+
+        return result;
+}
+
+function startUpdate() {
+        const current = readUpdateState();
+
+        if (current != null && RUNNING_STATES[current.state] && updateWorkerAlive()) {
+                return { success: false, running: true, error: 'An update is already running' };
+        }
+
+        const packageManager = detectPackageManager();
+        const currentVersion = getInstalledThemeVersion(packageManager);
+        const currentNormalized = normalizeVersion(currentVersion);
+
+        if (packageManager == 'unknown') {
+                return { success: false, error: 'Package manager not found', release_url: RELEASE_PAGE_URL };
+        }
+
+        if (!length(currentVersion)) {
+                return { success: false, error: 'Installed theme package version not found', release_url: RELEASE_PAGE_URL };
+        }
+
+        const latest = fetchLatestRelease();
+        const latestTag = latest.release?.tag_name ?? '';
+        const latestVersion = normalizeVersion(latestTag);
+
+        if (!length(latestTag)) {
+                return { success: false, error: latest.error ?? 'Latest GitHub release not found', current_version: currentNormalized, release_url: RELEASE_PAGE_URL };
+        }
+
+        // Never downgrade or reinstall the same version.
+        if (compareVersions(currentVersion, latestVersion) <= 0) {
+                return {
+                        success: true,
+                        started: false,
+                        update_available: false,
+                        current_version: currentNormalized,
+                        latest_version: latestVersion,
+                        release_url: RELEASE_PAGE_URL
+                };
+        }
+
+        const asset = getReleaseAsset(latest.release, packageManager);
+
+        if (asset == null) {
+                return { success: false, error: 'Release package asset not found', current_version: currentNormalized, latest_version: latestVersion, release_url: RELEASE_PAGE_URL };
+        }
+
+        // Everything below ends up quoted in a shell command.
+        const safe = /^[A-Za-z0-9._~+-]+$/;
+        if (!match(currentNormalized, safe) || !match(latestVersion, safe)) {
+                return { success: false, error: 'Unexpected version format', release_url: RELEASE_PAGE_URL };
+        }
+
+        mkdir(UPDATE_DIR);
+        unlink(UPDATE_DIR + '/pid');
+        writefile(UPDATE_DIR + '/log', '');
+        writefile(UPDATE_DIR + '/state', sprintf('starting\nStarting the update\n%s\n%s\n%d\n%d\n%d\n',
+                currentNormalized, latestVersion, time(), time(), asset.size));
+
+        const cmd = sprintf("sh %s '%s' '%s' '%s' '%d' '%s' '%s' </dev/null >/dev/null 2>&1 &",
+                UPDATE_WORKER, packageManager, asset.url,
+                length(asset.sha256) ? asset.sha256 : '-', asset.size,
+                currentNormalized, latestVersion);
+        const proc = popen(cmd, 'r');
+
+        if (proc) {
+                proc.read('all');
+                proc.close();
+        }
+
+        return {
+                success: true,
+                started: true,
+                current_version: currentNormalized,
+                latest_version: latestVersion,
+                total_bytes: asset.size,
+                release_url: RELEASE_PAGE_URL
+        };
+}
+
 // RPC method definitions
 const methods = {
 	getSettings: {
@@ -623,6 +789,16 @@ const methods = {
         installUpdate: {
                 call: function() {
                         return installUpdate();
+                }
+        },
+        startUpdate: {
+                call: function() {
+                        return startUpdate();
+                }
+        },
+        getUpdateStatus: {
+                call: function() {
+                        return getUpdateStatus();
                 }
         }
 

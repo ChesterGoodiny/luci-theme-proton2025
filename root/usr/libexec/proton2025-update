@@ -1,0 +1,98 @@
+#!/bin/sh
+# Copyright 2025-2026 ChesterGoodiny
+# Licensed under the Apache License, Version 2.0.
+# See LICENSE and NOTICE for details.
+#
+# Background installer for the theme update started from the settings panel
+# (luci.proton-settings startUpdate). It runs detached from rpcd, so the
+# rpcd restart done by the package's postinst cannot cut it off, and keeps
+# its progress in /tmp, so the panel can pick it up again after a reload.
+#
+# Usage: proton2025-update <apk|opkg> <url> <sha256|-> <size|0> <from> <to>
+
+DIR=/tmp/proton2025-update
+STATE="$DIR/state"
+LOG="$DIR/log"
+
+PM="$1"
+URL="$2"
+SHA="$3"
+SIZE="$4"
+FROM="$5"
+TO="$6"
+STARTED="$(date +%s)"
+
+case "$PM" in
+	apk) PKG="$DIR/package.apk" ;;
+	opkg) PKG="$DIR/package.ipk" ;;
+	*) exit 2 ;;
+esac
+
+# Keep running when the SSH session or the shell that started us goes away.
+trap '' HUP
+
+mkdir -p "$DIR"
+echo $$ > "$DIR/pid"
+
+# State file: one value per line (state, message, from, to, started,
+# updated, expected size); luci.proton-settings getUpdateStatus reads it.
+set_state() {
+	printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
+		"$1" "$2" "$FROM" "$TO" "$STARTED" "$(date +%s)" "$SIZE" \
+		> "$STATE.tmp" && mv -f "$STATE.tmp" "$STATE"
+}
+
+log() {
+	printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$*" >> "$LOG"
+}
+
+fail() {
+	log "ERROR: $1"
+	rm -f "$PKG"
+	set_state failed "$1"
+	rm -f "$DIR/pid"
+	exit 1
+}
+
+log "Updating Proton2025 $FROM -> $TO ($PM)"
+
+set_state downloading "Downloading the release package"
+log "Downloading $URL"
+rm -f "$PKG"
+wget -q -O "$PKG" --timeout=30 "$URL" >> "$LOG" 2>&1 ||
+	fail "Failed to download release package"
+
+ACTUAL_SIZE="$(wc -c < "$PKG" | tr -d ' ')"
+log "Downloaded $ACTUAL_SIZE bytes"
+if [ "${SIZE:-0}" -gt 0 ] && [ "$ACTUAL_SIZE" != "$SIZE" ]; then
+	fail "Downloaded package size $ACTUAL_SIZE does not match the release ($SIZE)"
+fi
+
+set_state verifying "Verifying the package"
+if [ "$SHA" != "-" ]; then
+	ACTUAL_SHA="$(sha256sum "$PKG" 2>/dev/null | cut -d' ' -f1)"
+	[ "$ACTUAL_SHA" = "$SHA" ] ||
+		fail "Downloaded package does not match the release sha256"
+	log "sha256 OK: $SHA"
+else
+	log "The release lists no sha256 for this asset; size check only"
+fi
+
+set_state installing "Installing the package"
+if [ "$PM" = "apk" ]; then
+	log "apk add --allow-untrusted $PKG"
+	apk add --allow-untrusted "$PKG" >> "$LOG" 2>&1
+else
+	log "opkg install $PKG"
+	opkg install "$PKG" >> "$LOG" 2>&1
+fi
+RC=$?
+rm -f "$PKG"
+rm -rf /tmp/luci-indexcache* /tmp/luci-modulecache >/dev/null 2>&1
+
+[ "$RC" -eq 0 ] || fail "Package installation failed (exit code $RC)"
+
+log "Installed Proton2025 $TO"
+set_state done "Proton2025 $TO installed"
+rm -f "$DIR/pid"
+exit 0
