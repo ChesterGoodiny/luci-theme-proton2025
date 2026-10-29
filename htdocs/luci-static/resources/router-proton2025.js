@@ -175,6 +175,7 @@
     ["cascade-repokeys.css", [["=", "admin-system-admin-repokeys"]]],
     ["cascade-routes.css", [["=", "admin-status-routes"]]],
     ["cascade-startup.css", [["=", "admin-system-startup"]]],
+    ["cascade-statistics.css", [["^", "admin-statistics-graphs"]]],
     ["cascade-status.css", [["^", "admin-status"]]],
     ["cascade-system.css", [["=", "admin-system-system"]]],
     ["cascade-temperature.css", [["=", "admin-status-realtime-temperature"]]],

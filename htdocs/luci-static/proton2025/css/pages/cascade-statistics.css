@@ -1,0 +1,24 @@
+/*
+ * luci-app-statistics: rrdtool renders the graphs as PNG with a white
+ * background and black text, which glares on the dark theme. In dark mode
+ * the images are inverted and turned 180° on the colour wheel: the
+ * background and text become dark/light while the line colours keep their
+ * hue. Light mode shows the original images.
+ */
+:root[data-theme="dark"] body[data-page^="admin-statistics-graphs"] #view img[src^="blob:"],
+:root[data-theme="dark"] body[data-page^="admin-statistics-graphs"] #view img[src*="/statistics/"] {
+    filter: invert(0.9) hue-rotate(180deg) contrast(0.95);
+    border-radius: var(--proton-radius);
+}
+
+body[data-page^="admin-statistics-graphs"] #view img[src^="blob:"],
+body[data-page^="admin-statistics-graphs"] #view img[src*="/statistics/"] {
+    max-width: 100%;
+    height: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    body[data-page^="admin-statistics-graphs"] #view img[src^="blob:"] {
+        transition: filter 0.2s ease;
+    }
+}
