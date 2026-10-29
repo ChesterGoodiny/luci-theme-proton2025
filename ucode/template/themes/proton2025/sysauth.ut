@@ -242,9 +242,13 @@
 html { background-color: {{ serverTheme === 'light' ? '#ffffff' : '#0f1419' }} !important; }
 body.login-page { background-color: {{ serverTheme === 'light' ? '#ffffff' : '#0f1419' }} !important; }
 </style>
-{# Версия должна совпадать с __pv в header.ut: без ?v= браузер отдаёт
+{# Ключ должен совпадать с __pv в header.ut: без ?v= браузер отдаёт
    старый cascade.css на странице логина после обновления темы. #}
-{% let __pv = "1.4.5"; %}
+{# Ключ кэша статики = версия темы + pkgs_update_time (время изменения базы
+   пакетов). Он меняется при любой установке или обновлении пакета, поэтому
+   после обновления темы браузер берёт свежие CSS/JS, даже если версию ниже
+   забыли поднять (так случилось в 1.4.4). В старом LuCI переменной нет. #}
+{% let __pv = "1.4.5" + (pkgs_update_time ? '-' + pkgs_update_time : ''); %}
 <link rel="stylesheet" fetchpriority="high" href="{{ media }}/css/cascade.css?v={{ __pv }}" />
 <link rel="stylesheet" href="{{ media }}/css/login-bg.css?v={{ __pv }}" />
 
