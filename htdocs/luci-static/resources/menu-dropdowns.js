@@ -89,14 +89,47 @@ return baseclass.extend({
     return true;
   },
 
+  // Re-lays a table out when its container changes size: a hidden tab
+  // becoming visible, the side menu collapsing, the page width setting.
+  observeActionTable(table, box, collapseOnMobile) {
+    if (!table || !box || box._protonActionsObserver) return;
+    if (typeof ResizeObserver !== "function") return;
+
+    let raf = 0;
+    const observer = new ResizeObserver(() => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        if (!box.isConnected) {
+          observer.disconnect();
+          return;
+        }
+        this.layoutActionCells(
+          box.querySelectorAll("td.cbi-section-actions"),
+          collapseOnMobile,
+        );
+      });
+    });
+    observer.observe(box);
+    box._protonActionsObserver = observer;
+  },
+
   layoutActionCells(cells, collapseOnMobile) {
     cells = Array.from(cells).filter((cell) => cell._protonActions);
     if (!cells.length) return;
 
-    // Moving the buttons triggers the tables' MutationObservers, which call
-    // this again: only re-measure when a cell is new or the width changed.
     const table = cells[0].closest("table, .table");
     const box = (table && table.parentElement) || document.body;
+    this.observeActionTable(table, box, collapseOnMobile);
+
+    // A table on a hidden tab has no width to measure (LuCI still redraws
+    // its rows while polling); laying it out then gave the actions column
+    // only its padding and the buttons spilled out when the tab was shown.
+    // Leave it alone: the ResizeObserver lays it out once it is visible.
+    if (!box.clientWidth || (table && !table.offsetParent)) return;
+
+    // Moving the buttons triggers the tables' MutationObservers, which call
+    // this again: only re-measure when a cell is new or the width changed.
     const key = `${window.innerWidth}:${box.clientWidth}`;
     if (cells.every((cell) => cell._protonActionsKey === key)) return;
     cells.forEach((cell) => {
