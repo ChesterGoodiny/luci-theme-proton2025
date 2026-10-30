@@ -3071,6 +3071,42 @@ table.assoclist td[data-title="RX Rate / TX Rate"i] {
     pointer-events: none !important;
 }
 
+/* Wide screens show the row actions inline when they fit (the
+   actions-inline class is set by menu-dropdowns.js); the ⋮ menu is only
+   used when they would not fit. */
+#cbi-wireless .cbi-section-actions.actions-inline>div:not(.actions-dropdown),
+#cbi-network-interface td.cbi-section-actions.actions-inline>div:not(.actions-dropdown),
+#cbi-network-device td.cbi-section-actions.actions-inline>div:not(.actions-dropdown) {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    pointer-events: auto !important;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 8px;
+}
+
+#cbi-wireless .cbi-section-actions.actions-inline>div:not(.actions-dropdown)>*,
+#cbi-network-interface td.cbi-section-actions.actions-inline>div:not(.actions-dropdown)>*,
+#cbi-network-device td.cbi-section-actions.actions-inline>div:not(.actions-dropdown)>* {
+    margin: 0 !important;
+    white-space: nowrap;
+}
+
+#cbi-wireless .cbi-section-actions.actions-inline .actions-toggle,
+#cbi-wireless .cbi-section-actions.actions-inline .actions-dropdown,
+#cbi-network-interface td.cbi-section-actions.actions-inline .actions-toggle,
+#cbi-network-interface td.cbi-section-actions.actions-inline .actions-dropdown,
+#cbi-network-device td.cbi-section-actions.actions-inline .actions-toggle,
+#cbi-network-device td.cbi-section-actions.actions-inline .actions-dropdown {
+    display: none !important;
+}
+
 #cbi-network-interface td.cbi-section-actions .actions-toggle {
     display: flex !important;
     align-items: center;

@@ -13,6 +13,109 @@
 
 return baseclass.extend({
   protonMixin: {
+  // Row actions (Restart / Stop / Edit / Delete...) used to be folded into
+  // the ⋮ menu at every width. Each cell remembers its buttons; on wide
+  // screens they are shown inline whenever the whole table still fits, and
+  // folded only when they would overflow the table, wrap onto a second line
+  // or squeeze another cell. Phones keep the per-table default.
+  registerActionCell(cell, wrapper, dropdown, buttons) {
+    cell._protonActions = { wrapper, dropdown, buttons: buttons.slice() };
+  },
+
+  setActionCellInline(cell, inline) {
+    const actions = cell._protonActions;
+    if (!actions) return;
+
+    const target = inline ? actions.wrapper : actions.dropdown;
+    actions.buttons.forEach((btn) => target.appendChild(btn));
+    actions.wrapper.style.display = inline ? "" : "none";
+    actions.dropdown.classList.remove("open", "open-up");
+    cell.classList.toggle("actions-inline", inline);
+    this.setActionColumnWidth(cell, inline);
+  },
+
+  // These tables use table-layout: fixed, so the actions column keeps its
+  // share of the width whatever it holds. Inline buttons get exactly the
+  // width they need (on the cell and on its header cell, which is what a
+  // fixed layout reads); the other columns give up the difference.
+  setActionColumnWidth(cell, inline) {
+    const row = cell.parentElement;
+    const table = cell.closest("table");
+    const index = row ? Array.prototype.indexOf.call(row.children, cell) : -1;
+    const header =
+      table && index >= 0
+        ? table.querySelector("tr.cbi-section-table-titles, thead tr")
+        : null;
+    const headerCell = header && header !== row ? header.children[index] : null;
+
+    let width = "";
+    if (inline) {
+      const cs = getComputedStyle(cell);
+      const needed =
+        cell._protonActions.wrapper.scrollWidth +
+        parseFloat(cs.paddingLeft) +
+        parseFloat(cs.paddingRight) +
+        2;
+      width = `${Math.ceil(needed)}px`;
+    }
+
+    cell.style.width = width;
+    if (headerCell) headerCell.style.width = width;
+  },
+
+  actionCellsFit(cells) {
+    for (const cell of cells) {
+      const actions = cell._protonActions;
+      if (!actions || !cell.offsetParent) continue;
+
+      const tops = new Set(
+        actions.buttons
+          .filter((btn) => btn.offsetParent)
+          .map((btn) => Math.round(btn.getBoundingClientRect().top)),
+      );
+      if (tops.size > 1) return false;
+
+      const row = cell.closest("tr, .tr") || cell.parentElement;
+      for (const other of row ? row.children : []) {
+        if (other.scrollWidth > other.clientWidth + 1) return false;
+      }
+
+      const table = cell.closest("table, .table");
+      const box = table && table.parentElement;
+      if (table && box && table.scrollWidth > box.clientWidth + 1) {
+        return false;
+      }
+    }
+    return true;
+  },
+
+  layoutActionCells(cells, collapseOnMobile) {
+    cells = Array.from(cells).filter((cell) => cell._protonActions);
+    if (!cells.length) return;
+
+    // Moving the buttons triggers the tables' MutationObservers, which call
+    // this again: only re-measure when a cell is new or the width changed.
+    const table = cells[0].closest("table, .table");
+    const box = (table && table.parentElement) || document.body;
+    const key = `${window.innerWidth}:${box.clientWidth}`;
+    if (cells.every((cell) => cell._protonActionsKey === key)) return;
+    cells.forEach((cell) => {
+      cell._protonActionsKey = key;
+    });
+
+    if (window.innerWidth < 800) {
+      cells.forEach((cell) => this.setActionCellInline(cell, !collapseOnMobile));
+      return;
+    }
+
+    // Measure with every row inline; fold all rows if any of them
+    // does not fit, so the table keeps one consistent look.
+    cells.forEach((cell) => this.setActionCellInline(cell, true));
+    if (!this.actionCellsFit(cells)) {
+      cells.forEach((cell) => this.setActionCellInline(cell, false));
+    }
+  },
+
   setupGlobalDropdownHandlers() {
     if (this._globalDropdownHandlersInit) return;
     this._globalDropdownHandlersInit = true;
@@ -111,6 +214,7 @@ return baseclass.extend({
         });
 
         wrapper.style.display = "none";
+        this.registerActionCell(cell, wrapper, dropdown, buttons);
 
         toggle.addEventListener("click", (ev) => {
           ev.stopPropagation();
@@ -143,6 +247,8 @@ return baseclass.extend({
         cell.appendChild(dropdown);
         cell.classList.add("actions-dropdown-ready");
       });
+
+      this.layoutActionCells(actionCells, true);
     };
 
     setTimeout(installDropdowns, 300);
@@ -221,6 +327,7 @@ return baseclass.extend({
         });
 
         wrapper.style.display = "none";
+        this.registerActionCell(cell, wrapper, dropdown, buttons);
 
         toggle.addEventListener("click", (ev) => {
           ev.stopPropagation();
@@ -245,6 +352,8 @@ return baseclass.extend({
         cell.appendChild(dropdown);
         cell.classList.add("actions-dropdown-ready");
       });
+
+      this.layoutActionCells(actionCells, true);
     };
 
     setTimeout(installDropdowns, 300);
@@ -291,8 +400,6 @@ return baseclass.extend({
     this._devicesDropdownInit = true;
 
     const installDropdowns = () => {
-      if (window.innerWidth < 800) return;
-
       const devicesSection = document.querySelector("#cbi-network-device");
       if (!devicesSection) return;
 
@@ -334,6 +441,7 @@ return baseclass.extend({
         });
 
         wrapper.style.display = "none";
+        this.registerActionCell(cell, wrapper, dropdown, buttons);
 
         toggle.addEventListener("click", (ev) => {
           ev.stopPropagation();
@@ -358,6 +466,8 @@ return baseclass.extend({
         cell.appendChild(dropdown);
         cell.classList.add("actions-dropdown-ready");
       });
+
+      this.layoutActionCells(actionCells, false);
     };
 
     setTimeout(installDropdowns, 300);
