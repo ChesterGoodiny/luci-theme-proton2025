@@ -4310,6 +4310,14 @@ html.proton-tabs-proton #packages .cbi-tabmenu li.active a {
         width: calc(100vw - 24px);
     }
 
+    /* The floating alerts sit above the menu drawer (z-index 2200 vs 999)
+       and covered its first entries while it was open. */
+    body:has(#mainmenu.active) .alert-message.proton-alert-floating {
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+    }
+
     .alert-message h4 {
         font-size: 0.9rem;
     }
