@@ -581,4 +581,12 @@ window.ProtonTranslations = {
   "Only .%s files can be installed here":
     "Здесь можно устанавливать только файлы .%s",
   "Uploading %d of %d: %s": "Загрузка %d из %d: %s",
+  "Update log": "Журнал обновления",
+  "Reload page": "Перезагрузить страницу",
+  "Starting the update...": "Запуск обновления...",
+  "Downloading the update...": "Загрузка обновления...",
+  "Verifying the package...": "Проверка пакета...",
+  "Installing the package...": "Установка пакета...",
+  "Reload the page to use the new version.": "Перезагрузите страницу, чтобы использовать новую версию.",
+  "The connection to the router was interrupted while services restarted. Reload the page to see the result.": "Связь с роутером прервалась при перезапуске служб. Перезагрузите страницу, чтобы увидеть результат.",
 };

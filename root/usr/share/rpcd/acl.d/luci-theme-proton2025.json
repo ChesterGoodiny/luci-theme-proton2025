@@ -18,7 +18,8 @@
                 "luci.proton-settings": [
                     "getSettings",
                     "getVersion",
-                    "checkUpdate"
+                    "checkUpdate",
+                    "getUpdateStatus"
                 ],
                 "system": [
                     "board",
@@ -50,7 +51,8 @@
                     "setSetting",
                     "setSettings",
                     "resetSettings",
-                    "installUpdate"
+                    "installUpdate",
+                    "startUpdate"
                 ],
                 "luci.proton-search-cache": [
                     "saveCache",

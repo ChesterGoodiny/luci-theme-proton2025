@@ -470,6 +470,16 @@ return baseclass.extend({
                   "Click the button to check for a new Proton2025 release.",
                 )}</div>
               </div>
+              <div id="proton-update-progress" class="proton-update-progress" hidden>
+                <progress id="proton-update-bar" max="100"></progress>
+                <details id="proton-update-log-wrap" class="proton-update-log-wrap">
+                  <summary>${t("Update log")}</summary>
+                  <pre id="proton-update-log" class="proton-update-log"></pre>
+                </details>
+                <button type="button" id="proton-update-reload" class="cbi-button cbi-button-action" hidden>${t(
+                  "Reload page",
+                )}</button>
+              </div>
             </div>
           </div>
 
@@ -996,35 +1006,190 @@ return baseclass.extend({
 
         loadInstalledThemeVersion();
 
+        // The install runs in the background on the router (startUpdate);
+        // the panel polls getUpdateStatus, shows the step, download progress
+        // and log, and picks a running update up again after a reload.
+        const updateProgress = document.getElementById("proton-update-progress");
+        const updateBar = document.getElementById("proton-update-bar");
+        const updateLogWrap = document.getElementById("proton-update-log-wrap");
+        const updateLog = document.getElementById("proton-update-log");
+        const updateReload = document.getElementById("proton-update-reload");
+        const UPDATE_POLL_MS = 1200;
+        const UPDATE_RESULT_FRESH_S = 15 * 60;
+        let updatePollTimer = null;
+        let updatePollFailures = 0;
+
+        updateReload?.addEventListener("click", () => window.location.reload());
+
+        const setUpdateBusy = (busy) => {
+          if (updateInstallButton) {
+            updateInstallButton.disabled = busy;
+            updateInstallButton.textContent = busy
+              ? t("Installing...")
+              : t("Install Update");
+          }
+          if (updateCheckButton) updateCheckButton.disabled = busy;
+        };
+
+        const renderUpdateState = (st) => {
+          if (!st || st.state === "idle") return false;
+
+          if (updateProgress) updateProgress.hidden = false;
+          if (updateLog) {
+            const atBottom =
+              updateLog.scrollTop + updateLog.clientHeight >=
+              updateLog.scrollHeight - 4;
+            updateLog.textContent = st.log || "";
+            if (atBottom) updateLog.scrollTop = updateLog.scrollHeight;
+          }
+          if (updateLatest && st.to_version) {
+            updateLatest.textContent = st.to_version;
+          }
+
+          const total = Number(st.total_bytes) || 0;
+          const done = Number(st.downloaded_bytes) || 0;
+          const stepText = {
+            starting: t("Starting the update..."),
+            downloading: t("Downloading the update..."),
+            verifying: t("Verifying the package..."),
+            installing: t("Installing the package..."),
+          };
+
+          if (st.running) {
+            setUpdateBusy(true);
+            if (updateReload) updateReload.hidden = true;
+            if (updateBar) updateBar.hidden = false;
+            if (updateBar) {
+              if (st.state === "downloading" && total > 0 && done > 0) {
+                updateBar.value = Math.min(100, Math.round((done / total) * 100));
+              } else if (st.state === "verifying") {
+                updateBar.value = 70;
+              } else if (st.state === "installing") {
+                updateBar.value = 85;
+              } else {
+                updateBar.removeAttribute("value");
+              }
+            }
+            let text = stepText[st.state] || st.message || "";
+            if (st.state === "downloading" && total > 0) {
+              text += ` ${formatBytes(done)} / ${formatBytes(total)}`;
+            }
+            setUpdateStatus(
+              `${st.from_version || "—"} → ${st.to_version || "—"}: ${text}`,
+              false,
+            );
+            return true;
+          }
+
+          setUpdateBusy(false);
+          // A finished update needs no bar: the status line tells the result.
+          if (updateBar) updateBar.hidden = true;
+          if (st.state === "done") {
+            if (updateCurrent) {
+              updateCurrent.textContent =
+                st.installed_version || st.to_version || "—";
+            }
+            setUpdateInstallVisible(false);
+            if (updateReload) updateReload.hidden = false;
+            setUpdateStatus(
+              t("Proton2025 update installed.") +
+                " " +
+                t("Reload the page to use the new version."),
+              false,
+            );
+          } else {
+            if (updateLogWrap) updateLogWrap.open = true;
+            setUpdateInstallVisible(true);
+            setUpdateStatus(
+              t("Failed to install update.") + " " + (st.message || ""),
+              true,
+            );
+          }
+          return false;
+        };
+
+        const pollUpdateStatus = async () => {
+          updatePollTimer = null;
+          let st = null;
+          try {
+            st = await callProtonSettingsRpc("getUpdateStatus");
+          } catch (error) {
+            st = null;
+          }
+
+          if (!st) {
+            // The package's postinst restarts rpcd; calls fail for a moment
+            // and the login session may be gone afterwards.
+            updatePollFailures += 1;
+            if (updatePollFailures >= 4) {
+              setUpdateStatus(
+                t(
+                  "The connection to the router was interrupted while services restarted. Reload the page to see the result.",
+                ),
+                true,
+              );
+              if (updateReload) updateReload.hidden = false;
+            }
+            if (updatePollFailures < 30) {
+              updatePollTimer = setTimeout(pollUpdateStatus, UPDATE_POLL_MS * 2);
+            } else {
+              setUpdateBusy(false);
+            }
+            return;
+          }
+
+          updatePollFailures = 0;
+          if (renderUpdateState(st)) {
+            updatePollTimer = setTimeout(pollUpdateStatus, UPDATE_POLL_MS);
+          }
+        };
+
+        const startUpdatePolling = () => {
+          if (updatePollTimer) clearTimeout(updatePollTimer);
+          updatePollFailures = 0;
+          pollUpdateStatus();
+        };
+
+        // A running (or recently finished) update survives a page reload.
+        callProtonSettingsRpc("getUpdateStatus")
+          .then((st) => {
+            if (!st || st.state === "idle") return;
+            const age = Date.now() / 1000 - (Number(st.updated_at) || 0);
+            if (st.running) {
+              startUpdatePolling();
+            } else if (age < UPDATE_RESULT_FRESH_S) {
+              renderUpdateState(st);
+            }
+          })
+          .catch(() => {});
+
         updateInstallButton?.addEventListener("click", async () => {
-          updateInstallButton.disabled = true;
-          updateCheckButton.disabled = true;
-          updateInstallButton.textContent = t("Installing...");
-          setUpdateStatus(t("Installing Proton2025 update..."), false);
+          setUpdateBusy(true);
+          setUpdateStatus(t("Starting the update..."), false);
+          if (updateLog) updateLog.textContent = "";
+          if (updateLogWrap) updateLogWrap.open = false;
+          if (updateBar) {
+            updateBar.removeAttribute("value");
+            updateBar.hidden = false;
+          }
+          if (updateReload) updateReload.hidden = true;
+          if (updateProgress) updateProgress.hidden = false;
 
           try {
-            const payload = await callProtonSettingsRpc("installUpdate");
+            const payload = await callProtonSettingsRpc("startUpdate");
 
             if (!payload) {
               throw new Error("Empty RPC response");
             }
 
-            if (updateCurrent) {
-              updateCurrent.textContent =
-                payload.installed_version || payload.current_version || "—";
-            }
-
-            if (updateLatest) {
-              updateLatest.textContent =
-                payload.latest_version || payload.latest_tag || "—";
-            }
-
-            if (updateReleaseLink && payload.release_url) {
-              updateReleaseLink.href = payload.release_url;
-              updateReleaseLink.style.display = "";
+            if (payload.running) {
+              startUpdatePolling();
+              return;
             }
 
             if (!payload.success) {
+              setUpdateBusy(false);
+              if (updateProgress) updateProgress.hidden = true;
               setUpdateInstallVisible(true);
               setUpdateStatus(
                 payload.error || t("Failed to install update."),
@@ -1033,18 +1198,18 @@ return baseclass.extend({
               return;
             }
 
-            if (payload.update_available) {
-              setUpdateInstallVisible(true);
-              setUpdateStatus(
-                t("Update installed, but a newer version is still available.") +
-                  ` ${payload.current_version || "—"} → ${payload.latest_version || "—"}`,
-                true,
-              );
-            } else {
+            if (!payload.started) {
+              setUpdateBusy(false);
+              if (updateProgress) updateProgress.hidden = true;
               setUpdateInstallVisible(false);
-              setUpdateStatus(t("Proton2025 update installed."), false);
+              setUpdateStatus(t("Proton2025 is up to date."), false);
+              return;
             }
+
+            startUpdatePolling();
           } catch (error) {
+            setUpdateBusy(false);
+            if (updateProgress) updateProgress.hidden = true;
             setUpdateInstallVisible(true);
             setUpdateStatus(
               t("Failed to install update.") +
@@ -1052,10 +1217,6 @@ return baseclass.extend({
                 (error && error.message ? error.message : String(error || "")),
               true,
             );
-          } finally {
-            updateInstallButton.disabled = false;
-            updateCheckButton.disabled = false;
-            updateInstallButton.textContent = t("Install Update");
           }
         });
 

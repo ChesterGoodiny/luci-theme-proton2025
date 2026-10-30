@@ -538,4 +538,12 @@ window.ProtonTranslations = {
   "Reset to factory code": "重置为出厂代码",
   "Reset the template to factory code": "将模板重置为出厂代码",
   "Template reset to factory code": "模板已重置为出厂代码",
+  "Update log": "更新日志",
+  "Reload page": "重新加载页面",
+  "Starting the update...": "正在开始更新...",
+  "Downloading the update...": "正在下载更新...",
+  "Verifying the package...": "正在校验软件包...",
+  "Installing the package...": "正在安装软件包...",
+  "Reload the page to use the new version.": "请重新加载页面以使用新版本。",
+  "The connection to the router was interrupted while services restarted. Reload the page to see the result.": "服务重启时与路由器的连接中断。请重新加载页面查看结果。",
 };

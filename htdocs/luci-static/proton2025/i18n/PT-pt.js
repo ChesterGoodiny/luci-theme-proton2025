@@ -567,4 +567,12 @@ window.ProtonTranslations = {
     "Redefinir o modelo para o código de fábrica",
   "Template reset to factory code":
     "Modelo redefinido para o código de fábrica",
+  "Update log": "Registo da atualização",
+  "Reload page": "Recarregar página",
+  "Starting the update...": "A iniciar a atualização...",
+  "Downloading the update...": "A transferir a atualização...",
+  "Verifying the package...": "A verificar o pacote...",
+  "Installing the package...": "A instalar o pacote...",
+  "Reload the page to use the new version.": "Recarregue a página para usar a nova versão.",
+  "The connection to the router was interrupted while services restarted. Reload the page to see the result.": "A ligação ao router foi interrompida durante o reinício dos serviços. Recarregue a página para ver o resultado.",
 };

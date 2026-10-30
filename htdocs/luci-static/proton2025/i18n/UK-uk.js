@@ -561,4 +561,12 @@ window.ProtonTranslations = {
   "Reset to factory code": "Скинути до заводського коду",
   "Reset the template to factory code": "Скинути шаблон до заводського коду",
   "Template reset to factory code": "Шаблон скинуто до заводського коду",
+  "Update log": "Журнал оновлення",
+  "Reload page": "Перезавантажити сторінку",
+  "Starting the update...": "Запуск оновлення...",
+  "Downloading the update...": "Завантаження оновлення...",
+  "Verifying the package...": "Перевірка пакета...",
+  "Installing the package...": "Встановлення пакета...",
+  "Reload the page to use the new version.": "Перезавантажте сторінку, щоб використовувати нову версію.",
+  "The connection to the router was interrupted while services restarted. Reload the page to see the result.": "Зв'язок із роутером перервався під час перезапуску служб. Перезавантажте сторінку, щоб побачити результат.",
 };
