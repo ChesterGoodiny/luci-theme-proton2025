@@ -295,7 +295,11 @@ body {
 	}
 }
 </style>
-{% let __pv = "1.4.5"; %}
+{# Ключ кэша статики = версия темы + pkgs_update_time (время изменения базы
+   пакетов). Он меняется при любой установке или обновлении пакета, поэтому
+   после обновления темы браузер берёт свежие CSS/JS, даже если версию ниже
+   забыли поднять (так случилось в 1.4.4). В старом LuCI переменной нет. #}
+{% let __pv = "1.4.5" + (pkgs_update_time ? '-' + pkgs_update_time : ''); %}
 <link rel="stylesheet" media="screen" fetchpriority="high" href="{{ media }}/css/cascade.css?v={{ __pv }}" />
 {#
    Фаза 2B-3: пофайловый per-page CSS. cascade.css содержит только общие
@@ -363,10 +367,10 @@ body {
    качает и не исполняет, но querySelectorAll('script[src*="/luci.js"]') в
    LuCI.__init__ его находит первым и берёт версию отсюда. Сам luci.js
    подключает ядро (template/header.ut) — без этого он грузился дважды. #}
-{# pkgs_update_time меняется при установке/обновлении любого пакета: без него
-   view-модули сторонних luci-app-* оставались закэшированными с ?v темы,
-   пока не поднимется версия темы (issue #84). В старом LuCI переменной нет. #}
-<script type="text/plain" src="{{ resource }}/luci.js?v={{ __pv }}{{ pkgs_update_time ? '-' + pkgs_update_time : '' }}"></script>
+{# __pv уже содержит pkgs_update_time: без него view-модули сторонних
+   luci-app-* оставались закэшированными с ?v темы, пока не поднимется
+   версия темы (issue #84). #}
+<script type="text/plain" src="{{ resource }}/luci.js?v={{ __pv }}"></script>
 <script src="{{ resource }}/cbi.js"></script>
 {# v1.5.29: строки переводов вынесены в пофайловые локали XX-xx.js.
    Грузим только активную локаль (fallback → en). translations.js оставлен
