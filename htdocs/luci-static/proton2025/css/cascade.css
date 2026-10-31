@@ -1187,7 +1187,7 @@ html.proton-hostname-logo #menubar-inner .hostname::before {
     transition: max-height 0.2s ease-in-out;
 }
 
-#mainmenu ul:not(.active)>li.selected>ul,
+#mainmenu ul:not(.active)>li.selected:not(.proton-section-collapsed)>ul,
 #mainmenu li.active>ul {
     max-height: 500px;
     transition: max-height 0.4s ease-in-out;
@@ -5290,7 +5290,7 @@ body.modal-overlay-active #modal_overlay {
         min-width: 0;
     }
 
-    #mainmenu ul:not(.active)>li.selected>ul,
+    #mainmenu ul:not(.active)>li.selected:not(.proton-section-collapsed)>ul,
     #mainmenu li.active>ul {
         max-height: 800px;
         overflow-y: auto;
@@ -6522,7 +6522,7 @@ body.modal-overlay-active #modal_overlay {
     }
 
     html.proton-menu-side #mainmenu .mainmenu.l1>li.active>a:has(+ ul)::after,
-    html.proton-menu-side #mainmenu .mainmenu.l1:not(.active)>li.selected>a:has(+ ul)::after {
+    html.proton-menu-side #mainmenu .mainmenu.l1:not(.active)>li.selected:not(.proton-section-collapsed)>a:has(+ ul)::after {
         transform: rotate(90deg);
     }
 
@@ -6548,7 +6548,7 @@ body.modal-overlay-active #modal_overlay {
         transition: max-height 0.2s ease-in-out;
     }
 
-    html.proton-menu-side #mainmenu ul:not(.active)>li.selected>ul,
+    html.proton-menu-side #mainmenu ul:not(.active)>li.selected:not(.proton-section-collapsed)>ul,
     html.proton-menu-side #mainmenu li.active>ul {
         max-height: 1200px;
         transition: max-height 0.4s ease-in-out;
@@ -6558,7 +6558,7 @@ body.modal-overlay-active #modal_overlay {
         max-height: 0;
     }
 
-    html.proton-menu-side #mainmenu ul:not(.active)>li.selected:hover>ul,
+    html.proton-menu-side #mainmenu ul:not(.active)>li.selected:not(.proton-section-collapsed):hover>ul,
     html.proton-menu-side #mainmenu li.active:hover>ul {
         max-height: 1200px;
     }
@@ -6694,7 +6694,7 @@ body.modal-overlay-active #modal_overlay {
     }
 
     html.proton-menu-side.proton-menu-collapsed #mainmenu li>ul,
-    html.proton-menu-side.proton-menu-collapsed #mainmenu ul:not(.active)>li.selected>ul,
+    html.proton-menu-side.proton-menu-collapsed #mainmenu ul:not(.active)>li.selected:not(.proton-section-collapsed)>ul,
     html.proton-menu-side.proton-menu-collapsed #mainmenu li.active>ul,
     html.proton-menu-side.proton-menu-collapsed #mainmenu li.active:hover>ul {
         max-height: 0;

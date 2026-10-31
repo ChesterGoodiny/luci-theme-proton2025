@@ -926,25 +926,49 @@ return baseclass.extend({
       return;
     }
 
-    document.querySelectorAll("ul.mainmenu.l1 > li.active").forEach((item) => {
-      if (item !== li) item.classList.remove("active");
-    });
-
     if (!ul2) {
+      document
+        .querySelectorAll("ul.mainmenu.l1 > li.active")
+        .forEach((item) => item.classList.remove("active"));
       if (isMobile) {
         this.closeMobileMenu();
       }
       return;
     }
 
-    if (li.classList.contains("active")) {
+    // The section of the current page (li.selected) is open by default
+    // until the reader closes it (proton-section-collapsed). Each click
+    // toggles the clicked section; opening one closes the others, the
+    // current page's section included, so closing it again does not make
+    // the current section pop back open (#76, item 4).
+    const isOpen =
+      li.classList.contains("active") ||
+      (li.classList.contains("selected") &&
+        !li.classList.contains("proton-section-collapsed") &&
+        !ul1.classList.contains("active"));
+
+    if (isOpen) {
       li.classList.remove("active");
-      ul1.classList.remove("active");
+      if (li.classList.contains("selected")) {
+        li.classList.add("proton-section-collapsed");
+      }
+      if (!ul1.querySelector(":scope > li.active")) {
+        ul1.classList.remove("active");
+      }
       a.blur();
       ev.preventDefault();
       ev.stopPropagation();
       return;
     }
+
+    ul1.querySelectorAll(":scope > li").forEach((item) => {
+      if (item === li) return;
+      item.classList.remove("active");
+      if (item.classList.contains("selected")) {
+        item.classList.add("proton-section-collapsed");
+      }
+    });
+    li.classList.remove("proton-section-collapsed");
 
     if (
       !isSideMode &&
@@ -1092,6 +1116,16 @@ return baseclass.extend({
       };
       applySelected("#mainmenu ul.mainmenu.l1 > li", 1);
       applySelected("#mainmenu ul.mainmenu.l2 > li", 2);
+
+      // A new page starts with its own section open, as after a full load.
+      document
+        .querySelectorAll("#mainmenu ul.mainmenu.l1 > li")
+        .forEach((li) => {
+          li.classList.remove("active", "proton-section-collapsed");
+        });
+      document
+        .querySelectorAll("#mainmenu ul.mainmenu.l1.active")
+        .forEach((ul) => ul.classList.remove("active"));
 
       const modemenu = document.querySelector("#modemenu");
       if (modemenu && pathSegments[0]) {
