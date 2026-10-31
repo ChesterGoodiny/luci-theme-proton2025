@@ -5443,6 +5443,17 @@ body.modal-overlay-active #modal_overlay {
         margin-left: 0;
     }
 
+    /* margin-left is dropped above because flex containers space their
+       buttons with gap. Buttons placed straight into a value field or into
+       a plain wrapper (the service-control rows of https-dns-proxy and pbr
+       use an <output> or a bare <div>) have no gap, so they touched each
+       other and the next row (#76). */
+    .cbi-value-field > :is(button, .btn, .cbi-button),
+    .cbi-value-field > :is(output, span, p) > :is(button, .btn, .cbi-button),
+    .cbi-value-field > div:not([class]):not([style*="flex"]):not([style*="grid"]) > :is(button, .btn, .cbi-button) {
+        margin: 0 6px 6px 0;
+    }
+
     .cbi-section-actions>div,
     .control-group {
         display: flex;
