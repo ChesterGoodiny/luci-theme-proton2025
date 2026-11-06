@@ -329,32 +329,27 @@
     if (!table) return;
 
     const rows = table.querySelectorAll("tr");
+    let targetRow = null;
+    let targetSecondCell = null;
+    let loadText = "";
 
-    if (rows.length <= LOAD_AVERAGE_ROW_INDEX) {
-      console.warn(
-        "[Proton2025] Load Average: таблица System содержит меньше 9 строк",
-      );
-      return;
+    for (let i = 0; i < rows.length; i++) {
+      const secondCell = rows[i].querySelector("td:last-child");
+      if (secondCell) {
+        const text = secondCell.textContent.trim();
+        if (LOAD_AVERAGE_PATTERN.test(text)) {
+          targetRow = rows[i];
+          targetSecondCell = secondCell;
+          loadText = text;
+          break;
+        }
+      }
     }
 
-    const row = rows[LOAD_AVERAGE_ROW_INDEX];
-    const firstCell = row.querySelector("td:first-child");
-    const secondCell = row.querySelector("td:last-child");
+    if (!targetRow || !targetSecondCell) return;
 
-    if (!firstCell || !secondCell) return;
-
-    const loadText = secondCell.textContent.trim();
-
-    if (!LOAD_AVERAGE_PATTERN.test(loadText)) {
-      console.warn(
-        "[Proton2025] Load Average: строка 9 не содержит паттерн Load Average.",
-        "Ожидалось: 'X.XX, X.XX, X.XX', получено:",
-        loadText,
-        "| Label:",
-        firstCell.textContent.trim(),
-      );
-      return;
-    }
+    const row = targetRow;
+    const secondCell = targetSecondCell;
 
     if (secondCell.querySelector(".proton-load-average")) return;
 
