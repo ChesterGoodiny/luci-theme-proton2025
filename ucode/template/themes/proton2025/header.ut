@@ -377,12 +377,15 @@ body {
    как рантайм (protonGetLang + protonT). Порядок defer сохраняется:
    translations.js → локаль → translations-search.js. #}
 {%
-	let __langBase = lc(substr(dispatcher.lang ?? 'en', 0, 2));
+	let __rawLang = lc(dispatcher.lang ?? 'en');
+	let __langBase = substr(__rawLang, 0, 2);
 	let __localeMap = {
 		en: 'EN-en', ru: 'RU-ru', de: 'DE-de', uk: 'UK-uk', it: 'IT-it',
-		fr: 'FR-fr', es: 'ES-es', pt: 'PT-pt', pl: 'PL-pl', zh: 'ZH-zh'
+		fr: 'FR-fr', es: 'ES-es', pt: 'PT-pt', pl: 'PL-pl',
+		'zh-tw': 'ZH-tw', 'zh_tw': 'ZH-tw', 'zh-hk': 'ZH-tw', 'zh_hk': 'ZH-tw',
+		zh: 'ZH-zh'
 	};
-	let __localeFile = __localeMap[__langBase] || 'EN-en';
+	let __localeFile = __localeMap[__rawLang] || __localeMap[__langBase] || 'EN-en';
 -%}
 <script src="{{ media }}/js/translations.js?v={{ __pv }}" defer></script>
 <script src="{{ media }}/i18n/{{ __localeFile }}.js?v={{ __pv }}" defer></script>
