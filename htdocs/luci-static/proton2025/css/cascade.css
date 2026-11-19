@@ -1218,8 +1218,8 @@ html.proton-hostname-logo #menubar-inner .hostname::before {
     transition: max-height 0.2s ease-in-out;
 }
 
-#mainmenu ul:not(.active)>li.selected:not(.proton-section-collapsed)>ul,
-#mainmenu li.active>ul {
+:where(html:not(.proton-menu-side.proton-menu-collapsed)) #mainmenu ul:not(.active)>li.selected:not(.proton-section-collapsed)>ul,
+:where(html:not(.proton-menu-side.proton-menu-collapsed)) #mainmenu li.active>ul {
     max-height: 500px;
     transition: max-height 0.4s ease-in-out;
 }
@@ -3590,7 +3590,8 @@ table.assoclist td[data-title="RX Rate / TX Rate"i] {
     pointer-events: none;
 }
 
-.cbi-tabmenu {
+.cbi-tabmenu,
+.proton-tabs-navigation {
     display: inline-flex;
     flex-wrap: wrap;
     gap: 4px;
@@ -3608,7 +3609,8 @@ table.assoclist td[data-title="RX Rate / TX Rate"i] {
     margin: 0;
 }
 
-.cbi-tabmenu>li>a {
+.cbi-tabmenu>li>a,
+.proton-tabs-navigation>.proton-tab-button {
     display: block;
     padding: 8px 16px;
     color: var(--proton-fg-secondary);
@@ -3620,18 +3622,32 @@ table.assoclist td[data-title="RX Rate / TX Rate"i] {
     cursor: pointer;
 }
 
-:root.proton-tab-outline .cbi-tabmenu>li:not(.cbi-tab)>a {
+.proton-tabs-navigation>.proton-tab-button {
+    margin: 0;
+    line-height: 1.6;
+    background: transparent;
+}
+
+.proton-tabs-navigation>.proton-tab-button:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+:root.proton-tab-outline .cbi-tabmenu>li:not(.cbi-tab)>a,
+:root.proton-tab-outline :where(.proton-tabs-navigation)>.proton-tab-button:where(:not(.active)) {
     border-color: var(--proton-border);
 }
 
 @media (min-width: 801px) {
-    .cbi-tabmenu>li>a:hover {
+    .cbi-tabmenu>li>a:hover,
+    .proton-tabs-navigation>.proton-tab-button:hover {
         color: var(--proton-fg);
         background: var(--proton-bg-hover);
     }
 }
 
-.cbi-tabmenu>.cbi-tab>a {
+.cbi-tabmenu>.cbi-tab>a,
+.proton-tabs-navigation>.proton-tab-button.active {
     color: var(--proton-accent);
     background: var(--proton-accent-glow);
     border-color: rgba(var(--proton-accent-rgb), 0.35);
@@ -3703,6 +3719,7 @@ table.assoclist td[data-title="RX Rate / TX Rate"i] {
 }
 
 html.proton-tabs-classic .cbi-tabmenu,
+html.proton-tabs-classic .proton-tabs-navigation,
 html.proton-tabs-classic #tabmenu {
     gap: 0;
     padding: 0;
@@ -3713,6 +3730,7 @@ html.proton-tabs-classic #tabmenu {
 }
 
 html.proton-tabs-classic .cbi-tabmenu>li>a,
+html.proton-tabs-classic .proton-tabs-navigation>.proton-tab-button,
 html.proton-tabs-classic #tabmenu a {
     padding: 8px 12px;
     color: var(--proton-fg-secondary);
@@ -3724,12 +3742,14 @@ html.proton-tabs-classic #tabmenu a {
 }
 
 html.proton-tabs-classic .cbi-tabmenu>li>a:hover,
+html.proton-tabs-classic .proton-tabs-navigation>.proton-tab-button:hover,
 html.proton-tabs-classic #tabmenu a:hover {
     color: var(--proton-fg);
     background: transparent;
 }
 
 html.proton-tabs-classic .cbi-tabmenu>.cbi-tab>a,
+html.proton-tabs-classic .proton-tabs-navigation>.proton-tab-button.active,
 html.proton-tabs-classic #tabmenu li.active a,
 html.proton-tabs-classic #tabmenu li.cbi-tab a,
 html.proton-tabs-classic #tabmenu a.active {
@@ -3768,6 +3788,7 @@ html.proton-tabs-classic #packages .cbi-tabmenu li.active a {
 }
 
 html.proton-tabs-proton .cbi-tabmenu,
+html.proton-tabs-proton .proton-tabs-navigation,
 html.proton-tabs-proton #tabmenu {
     display: flex;
     flex-wrap: wrap;
@@ -3781,11 +3802,13 @@ html.proton-tabs-proton #tabmenu {
 }
 
 html.proton-tabs-proton .cbi-tabmenu>li,
+html.proton-tabs-proton .proton-tabs-navigation>.proton-tab-button,
 html.proton-tabs-proton #tabmenu li {
     margin-bottom: -1px;
 }
 
 html.proton-tabs-proton .cbi-tabmenu>li>a,
+html.proton-tabs-proton .proton-tabs-navigation>.proton-tab-button,
 html.proton-tabs-proton #tabmenu a {
     padding: 8px 10px;
     color: var(--proton-fg-secondary);
@@ -3797,12 +3820,14 @@ html.proton-tabs-proton #tabmenu a {
 }
 
 html.proton-tabs-proton .cbi-tabmenu>li>a:hover,
+html.proton-tabs-proton .proton-tabs-navigation>.proton-tab-button:hover,
 html.proton-tabs-proton #tabmenu a:hover {
     color: var(--proton-fg);
     background: var(--proton-bg-hover);
 }
 
 html.proton-tabs-proton .cbi-tabmenu>.cbi-tab>a,
+html.proton-tabs-proton .proton-tabs-navigation>.proton-tab-button.active,
 html.proton-tabs-proton #tabmenu li.active a,
 html.proton-tabs-proton #tabmenu li.cbi-tab a,
 html.proton-tabs-proton #tabmenu a.active {
@@ -6320,6 +6345,21 @@ body.modal-overlay-active #modal_overlay {
         transform: translateY(0);
     }
 
+    html:not(.proton-menu-side) #mainmenu .mainmenu.l1>li:has(>ul)::before {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        height: 7px;
+    }
+
+    html:not(.proton-menu-side) #mainmenu .mainmenu.l1>li:not(:hover, .active)>ul {
+        transform: translateY(-6px);
+        pointer-events: none;
+    }
+
+
     #mainmenu .mainmenu.l2>li>a {
         display: block;
         position: relative;
@@ -6587,18 +6627,18 @@ body.modal-overlay-active #modal_overlay {
         transition: max-height 0.2s ease-in-out;
     }
 
-    html.proton-menu-side #mainmenu ul:not(.active)>li.selected:not(.proton-section-collapsed)>ul,
-    html.proton-menu-side #mainmenu li.active>ul {
+    html.proton-menu-side:not(.proton-menu-collapsed) #mainmenu ul:not(.active)>li.selected:not(.proton-section-collapsed)>ul,
+    html.proton-menu-side:not(.proton-menu-collapsed) #mainmenu li.active>ul {
         max-height: 1200px;
         transition: max-height 0.4s ease-in-out;
     }
 
-    html.proton-menu-side #mainmenu li:hover>ul {
+    html.proton-menu-side:not(.proton-menu-collapsed) #mainmenu li:hover>ul {
         max-height: 0;
     }
 
-    html.proton-menu-side #mainmenu ul:not(.active)>li.selected:not(.proton-section-collapsed):hover>ul,
-    html.proton-menu-side #mainmenu li.active:hover>ul {
+    html.proton-menu-side:not(.proton-menu-collapsed) #mainmenu ul:not(.active)>li.selected:not(.proton-section-collapsed):hover>ul,
+    html.proton-menu-side:not(.proton-menu-collapsed) #mainmenu li.active:hover>ul {
         max-height: 1200px;
     }
 
@@ -6732,13 +6772,6 @@ body.modal-overlay-active #modal_overlay {
         display: none;
     }
 
-    html.proton-menu-side.proton-menu-collapsed #mainmenu li>ul,
-    html.proton-menu-side.proton-menu-collapsed #mainmenu ul:not(.active)>li.selected:not(.proton-section-collapsed)>ul,
-    html.proton-menu-side.proton-menu-collapsed #mainmenu li.active>ul,
-    html.proton-menu-side.proton-menu-collapsed #mainmenu li.active:hover>ul {
-        max-height: 0;
-    }
-
     html.proton-menu-side.proton-menu-collapsed #proton-menu-toggle {
         justify-content: center;
         gap: 0;
@@ -6767,30 +6800,40 @@ body.modal-overlay-active #modal_overlay {
         height: 100%;
     }
 
-    html.proton-menu-side.proton-menu-collapsed #mainmenu li>ul {
+    html.proton-menu-side.proton-menu-collapsed #mainmenu .mainmenu.l1>li>ul {
         position: absolute;
         top: 0;
         left: calc(100% + 8px);
         z-index: 1;
         min-width: 220px;
+        max-height: min(calc(70vh / var(--proton-zoom, 1)), 600px);
+        overflow-y: auto;
         margin: 0;
         padding: 6px;
         border: 1px solid var(--proton-border);
         border-radius: var(--proton-radius);
         background: var(--proton-card-solid);
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+        box-shadow: var(--proton-shadow-lg);
         opacity: 0;
         visibility: hidden;
-        transition: opacity var(--proton-menu-speed) linear,
-            visibility var(--proton-menu-speed) linear;
+        pointer-events: none;
+        transform: translateX(-6px);
+        transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
     }
 
     html.proton-menu-side.proton-menu-collapsed #mainmenu .mainmenu.l1>li:hover>ul,
     html.proton-menu-side.proton-menu-collapsed #mainmenu .mainmenu.l1>li:focus-within>ul {
-        max-height: min(calc(70vh / var(--proton-zoom, 1)), 600px);
-        overflow-y: auto;
         opacity: 1;
         visibility: visible;
+        pointer-events: auto;
+        transform: translateX(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html.proton-menu-side.proton-menu-collapsed #mainmenu .mainmenu.l1>li>ul {
+            transform: none;
+            transition: none;
+        }
     }
 
     html.proton-menu-side.proton-menu-collapsed #mainmenu .mainmenu.l2 {
@@ -8237,7 +8280,7 @@ body.modal-overlay-active #modal_overlay {
 
 .proton-reboot-modal,
 .proton-confirm-modal {
-    background: var(--proton-bg-secondary);
+    background: var(--proton-card-solid);
     border: 1px solid var(--proton-border);
     border-radius: var(--proton-radius);
     padding: 28px;
@@ -8249,7 +8292,6 @@ body.modal-overlay-active #modal_overlay {
 
 :root[data-theme="light"] .proton-reboot-modal,
 :root[data-theme="light"] .proton-confirm-modal {
-    background: #ffffff;
     border-color: rgba(0, 0, 0, 0.15);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
@@ -8726,23 +8768,25 @@ body.modal-overlay-active #modal_overlay {
     white-space: nowrap;
 }
 
-.proton-search-index-btn-secondary {
-    border-color: var(--proton-border);
-    background: rgba(255, 255, 255, 0.03);
-}
-
-[data-theme="light"] .proton-search-index-btn-secondary {
-    background: rgba(0, 0, 0, 0.02);
-}
-
-.proton-search-index-btn-icon {
-    width: 46px;
-    min-width: 46px;
+.cbi-button.proton-search-index-btn-icon {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
     padding: 0;
+    color: var(--proton-fg-secondary);
+    background: transparent;
+    border-color: transparent;
+}
+
+.cbi-button.proton-search-index-btn-icon:is(:hover, :focus-visible):not(:disabled) {
+    color: var(--proton-danger);
+    background: transparent;
 }
 
 .proton-search-index-icon {
     flex-shrink: 0;
+    width: 22px;
+    height: 22px;
 }
 
 .proton-search-index-status {
@@ -9064,6 +9108,10 @@ body.modal-overlay-active #modal_overlay {
     pointer-events: auto;
 }
 
+#proton-search-index-status {
+    display: none;
+}
+
 .proton-search-index-hud-content {
     min-width: 0;
     flex: 1;
@@ -9107,6 +9155,10 @@ body.modal-overlay-active #modal_overlay {
         gap: 0.5rem;
     }
 
+    #proton-search-index-run {
+        flex-basis: 100%;
+    }
+
     .proton-search-index-log-entry {
         grid-template-columns: 1fr;
         gap: 0.28rem;
@@ -9118,8 +9170,19 @@ body.modal-overlay-active #modal_overlay {
         order: 1;
     }
 
+    .proton-search-index-label {
+        min-width: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .proton-search-index-size {
+        white-space: nowrap;
+    }
+
     .proton-search-index-btn-icon {
         order: 2;
+        flex-shrink: 0;
     }
 
     .proton-search-index-toast {
@@ -9755,103 +9818,6 @@ body.login-page {
     font-weight: 600;
     color: var(--proton-accent);
     white-space: nowrap;
-}
-
-.proton-tabs-navigation {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    list-style: none;
-    margin: 0 0 16px;
-    padding: 4px;
-    background: var(--proton-bg-secondary);
-    border: 1px solid var(--proton-border);
-    border-radius: var(--proton-radius);
-    position: relative;
-    z-index: 1;
-}
-
-.proton-tab-button {
-    display: block;
-    padding: 8px 16px;
-    background: transparent;
-    color: var(--proton-fg-secondary);
-    font-weight: 600;
-    font-size: 0.82rem;
-    border: 1px solid transparent;
-    border-radius: var(--proton-radius-sm);
-    white-space: nowrap;
-    transition: var(--proton-transition);
-    cursor: pointer;
-}
-
-.proton-tab-button:hover {
-    color: var(--proton-fg);
-    background: var(--proton-bg-hover);
-}
-
-.proton-tab-button.active {
-    color: var(--proton-accent);
-    background: var(--proton-accent-glow);
-    border-color: rgba(var(--proton-accent-rgb), 0.35);
-}
-
-html.proton-tabs-classic .proton-tabs-navigation {
-    gap: 0;
-    padding: 0;
-    background: transparent;
-    border: 0;
-    border-bottom: 1px solid var(--proton-border);
-    border-radius: 0;
-}
-
-html.proton-tabs-classic .proton-tab-button {
-    padding: 8px 12px;
-    border: 0;
-    border-bottom: 2px solid transparent;
-    border-radius: 0;
-    margin-bottom: -1px;
-}
-
-html.proton-tabs-classic .proton-tab-button:hover,
-html.proton-tabs-classic .proton-tab-button.active {
-    background: transparent;
-}
-
-html.proton-tabs-classic .proton-tab-button.active {
-    border-bottom-color: var(--proton-accent);
-}
-
-html.proton-tabs-proton .proton-tabs-navigation {
-    gap: 4px;
-    margin-bottom: 12px;
-    padding: 0;
-    background: transparent;
-    border: 0;
-    border-bottom: 1px solid var(--proton-border);
-    border-radius: 0;
-}
-
-html.proton-tabs-proton .proton-tab-button {
-    padding: 8px 10px;
-    color: var(--proton-fg-secondary);
-    font-weight: 500;
-    border: 1px solid transparent;
-    border-bottom: 3px solid transparent;
-    border-radius: var(--proton-radius-sm) var(--proton-radius-sm) 0 0;
-    margin-bottom: -1px;
-}
-
-html.proton-tabs-proton .proton-tab-button:hover {
-    color: var(--proton-fg);
-    background: var(--proton-bg-hover);
-}
-
-html.proton-tabs-proton .proton-tab-button.active {
-    color: var(--proton-accent);
-    background: var(--proton-accent-glow);
-    border-color: transparent;
-    border-bottom-color: var(--proton-accent);
 }
 
 .proton-tab-content {
@@ -11302,5 +11268,219 @@ body.login-page .login-password-toggle:focus-visible {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
+    }
+}
+
+/* Table actions keep the native LuCI buttons and their labels. */
+#cbi-wireless .cbi-section-actions:has(button.cbi-button-add) button.cbi-button-neutral,
+#cbi-network-interface .cbi-section-actions button.reconnect,
+#view button[data-proton-system-action="restart"] {
+    --proton-network-action-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%2012a9%209%200%201%201%202.7%206.4M3%2012V5m0%207h7%22%2F%3E%3C%2Fsvg%3E");
+}
+
+#cbi-wireless .cbi-section-actions:has(button.cbi-button-add) button.cbi-button-action {
+    --proton-network-action-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2210.5%22%20cy%3D%2210.5%22%20r%3D%226.5%22%2F%3E%3Cpath%20d%3D%22m16%2016%204%204%22%2F%3E%3C%2Fsvg%3E");
+}
+
+#cbi-wireless .cbi-section-actions button.cbi-button-add {
+    --proton-network-action-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%205v14M5%2012h14%22%2F%3E%3C%2Fsvg%3E");
+}
+
+#cbi-wireless .cbi-section-actions button.enable-disable {
+    --proton-network-action-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%203v9m-4.7-7a8%208%200%201%200%209.4%200%22%2F%3E%3C%2Fsvg%3E");
+}
+
+#cbi-wireless .cbi-section-actions:not(:has(button.cbi-button-add)) button.cbi-button-action,
+#cbi-network-interface .cbi-section-actions button.cbi-button-edit,
+#cbi-network-device .cbi-section-actions button.cbi-button-edit {
+    --proton-network-action-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m14%205%205%205M4%2020l4-1%2012-12a1.4%201.4%200%200%200%200-2l-1-1a1.4%201.4%200%200%200-2%200L5%2016z%22%2F%3E%3C%2Fsvg%3E");
+}
+
+#cbi-wireless .cbi-section-actions button.cbi-button-negative.remove,
+#cbi-network-interface .cbi-section-actions button.cbi-button-remove {
+    --proton-network-action-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%207h16M9%207V4h6v3M6%207l1%2013h10l1-13M10%2010v7m4-7v7%22%2F%3E%3C%2Fsvg%3E");
+}
+
+#cbi-network-interface .cbi-section-actions button.down,
+#view button[data-proton-system-action="stop"] {
+    --proton-network-action-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%2214%22%20height%3D%2214%22%20rx%3D%222%22%2F%3E%3C%2Fsvg%3E");
+}
+
+#cbi-network-device .cbi-section-actions button.cbi-button-remove {
+    --proton-network-action-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%2010a8%208%200%201%201%201.5%207M4%2010V4m0%206h6%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%221.5%22%20fill%3D%22black%22%20stroke%3D%22none%22%2F%3E%3C%2Fsvg%3E");
+}
+
+#view button[data-proton-system-action="start"] {
+    --proton-network-action-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m8%205%2012%207-12%207z%22%2F%3E%3C%2Fsvg%3E");
+}
+
+#view button[data-proton-system-action="reload"] {
+    --proton-network-action-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M7%203h7l4%204v5M14%203v5h4M6%203H5v18h7m1-5a4%204%200%201%201%201%205m-1-5v-3m0%203h3%22%2F%3E%3C%2Fsvg%3E");
+}
+
+#view button[data-proton-system-action="kill"] {
+    --proton-network-action-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m13%202-8%2012h6l-1%208%209-12h-6z%22%2F%3E%3C%2Fsvg%3E");
+    --proton-action-width: auto;
+    --proton-action-padding: 0 8px;
+    --proton-action-font: 0.8rem;
+    --proton-action-gap: 6px;
+    --proton-action-color: var(--proton-danger);
+}
+
+#view div:has(>button[data-proton-system-action]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+#cbi-wireless .cbi-section-actions:has(>.actions-dropdown>button):not(:has(>.actions-dropdown>:not(button:is(.cbi-button-neutral, .cbi-button-action, .cbi-button-add, .cbi-button-negative.remove))))>.actions-toggle,
+#cbi-network-interface td.cbi-section-actions:has(>.actions-dropdown>button):not(:has(>.actions-dropdown>:not(button:is(.reconnect, .down, .cbi-button-edit, .cbi-button-remove))))>.actions-toggle,
+#cbi-network-device td.cbi-section-actions:has(>.actions-dropdown>button):not(:has(>.actions-dropdown>:not(button:is(.cbi-button-edit, .cbi-button-remove))))>.actions-toggle {
+    display: none !important;
+}
+
+:root :is(
+    #cbi-wireless .cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-neutral, .cbi-button-action, .cbi-button-add, .cbi-button-negative.remove)))),
+    #cbi-network-interface td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.reconnect, .down, .cbi-button-edit, .cbi-button-remove)))),
+    #cbi-network-device td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-edit, .cbi-button-remove))))
+) {
+    display: flex !important;
+    position: static !important;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: auto;
+    min-width: 0;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+@media (min-width: 801px) {
+    #cbi-network-interface table.cbi-section-table td.cbi-section-actions:has(>.actions-dropdown>button.reconnect):not(:has(>.actions-dropdown>:not(button:is(.reconnect, .down, .cbi-button-edit, .cbi-button-remove)))) {
+        box-sizing: content-box;
+        width: var(--proton-interface-actions-width, 148px) !important;
+        min-width: var(--proton-interface-actions-width, 148px) !important;
+    }
+
+    #cbi-network-interface td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.reconnect, .down, .cbi-button-edit, .cbi-button-remove)))) {
+        flex-wrap: nowrap;
+    }
+}
+
+@media (min-width: 801px) and (pointer: coarse) {
+    #cbi-network-interface {
+        --proton-interface-actions-width: 188px;
+    }
+}
+
+#cbi-wireless .cbi-section-actions>div:not(.actions-dropdown):has(>button):not(:has(>:not(button:is(.cbi-button-neutral, .cbi-button-action, .cbi-button-add, .cbi-button-negative.remove)))),
+#cbi-network-interface td.cbi-section-actions>div:not(.actions-dropdown):has(>button):not(:has(>:not(button:is(.reconnect, .down, .cbi-button-edit, .cbi-button-remove)))) {
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
+}
+
+#cbi-wireless .cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-neutral, .cbi-button-action, .cbi-button-add, .cbi-button-negative.remove))))::before,
+#cbi-network-interface td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.reconnect, .down, .cbi-button-edit, .cbi-button-remove))))::before,
+#cbi-network-device td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-edit, .cbi-button-remove))))::before {
+    content: none !important;
+}
+
+:is(
+    #cbi-wireless .cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-neutral, .cbi-button-action, .cbi-button-add, .cbi-button-negative.remove)))),
+    #cbi-network-interface td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.reconnect, .down, .cbi-button-edit, .cbi-button-remove)))),
+    #cbi-network-device td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-edit, .cbi-button-remove))))
+)>button,
+html body #maincontent #view .table .tr button[data-proton-system-action] {
+    display: inline-flex !important;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center !important;
+    width: var(--proton-action-width, 34px) !important;
+    min-width: 0;
+    height: 34px;
+    padding: var(--proton-action-padding, 0) !important;
+    margin: 0 !important;
+    font-size: var(--proton-action-font, 0px) !important;
+    gap: var(--proton-action-gap, 0);
+    color: var(--proton-action-color, var(--proton-fg-secondary)) !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: var(--proton-radius-sm);
+    box-shadow: none !important;
+    transform: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+:is(
+    #cbi-wireless .cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-neutral, .cbi-button-action, .cbi-button-add, .cbi-button-negative.remove)))),
+    #cbi-network-interface td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.reconnect, .down, .cbi-button-edit, .cbi-button-remove)))),
+    #cbi-network-device td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-edit, .cbi-button-remove))))
+)>button:is(:hover, :focus-visible):not(:disabled),
+html body #maincontent #view .table .tr button[data-proton-system-action]:is(:hover, :focus-visible):not(:disabled) {
+    color: var(--proton-accent) !important;
+    background: var(--proton-bg-hover) !important;
+}
+
+:is(
+    #cbi-wireless .cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-neutral, .cbi-button-action, .cbi-button-add, .cbi-button-negative.remove)))),
+    #cbi-network-interface td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.reconnect, .down, .cbi-button-edit, .cbi-button-remove)))),
+    #cbi-network-device td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-edit, .cbi-button-remove))))
+)>button:is(.cbi-button-remove, .cbi-button-negative):is(:hover, :focus-visible):not(:disabled),
+html body #maincontent #view .table .tr button[data-proton-system-action]:is(.cbi-button-remove, .cbi-button-negative):is(:hover, :focus-visible):not(:disabled) {
+    color: var(--proton-danger) !important;
+}
+
+:is(
+    #cbi-wireless .cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-neutral, .cbi-button-action, .cbi-button-add, .cbi-button-negative.remove)))),
+    #cbi-network-interface td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.reconnect, .down, .cbi-button-edit, .cbi-button-remove)))),
+    #cbi-network-device td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-edit, .cbi-button-remove))))
+)>button:focus-visible,
+html body #maincontent #view .table .tr button[data-proton-system-action]:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+}
+
+:is(
+    #cbi-wireless .cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-neutral, .cbi-button-action, .cbi-button-add, .cbi-button-negative.remove)))),
+    #cbi-network-interface td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.reconnect, .down, .cbi-button-edit, .cbi-button-remove)))),
+    #cbi-network-device td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-edit, .cbi-button-remove))))
+)>button:disabled,
+html body #maincontent #view .table .tr button[data-proton-system-action]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+:is(
+    #cbi-wireless .cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-neutral, .cbi-button-action, .cbi-button-add, .cbi-button-negative.remove)))),
+    #cbi-network-interface td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.reconnect, .down, .cbi-button-edit, .cbi-button-remove)))),
+    #cbi-network-device td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-edit, .cbi-button-remove))))
+)>button::before,
+html body #maincontent #view .table .tr button[data-proton-system-action]::before {
+    content: "";
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    background: currentColor;
+    mask: var(--proton-network-action-icon, none) center / contain no-repeat;
+}
+
+@media (pointer: coarse) {
+    :is(
+        #cbi-wireless .cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-neutral, .cbi-button-action, .cbi-button-add, .cbi-button-negative.remove)))),
+        #cbi-network-interface td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.reconnect, .down, .cbi-button-edit, .cbi-button-remove)))),
+        #cbi-network-device td.cbi-section-actions>:is(.actions-dropdown, div:not(.actions-dropdown)):has(>button):not(:has(>:not(button:is(.cbi-button-edit, .cbi-button-remove))))
+    )>button,
+    html body #maincontent #view .table .tr button[data-proton-system-action] {
+        width: var(--proton-action-width, 44px) !important;
+        height: 44px;
     }
 }

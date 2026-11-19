@@ -178,8 +178,10 @@
     ["cascade-statistics.css", [["^", "admin-statistics-graphs"]]],
     ["cascade-status.css", [["^", "admin-status"]]],
     ["cascade-system.css", [["=", "admin-system-system"]]],
+    ["cascade-tachyon.css", [["^", "admin-services-tachyon"]]],
     ["cascade-temperature.css", [["=", "admin-status-realtime-temperature"]]],
     ["cascade-wifihistory.css", [["=", "admin-status-wifihistory"]]],
+    ["cascade-package-manager.css", [["=", "admin-system-package-manager"]]],
   ];
 
   function pageStyleMatches(page, conditions) {

@@ -1,0 +1,52 @@
+/*
+ * Proton2025 — Tachyon compatibility (Services -> Tachyon)
+ * Copyright 2025-2026 ChesterGoodiny
+ * Licensed under Apache License 2.0
+ *
+ * Scope: body[data-page="admin-services-tachyon"] (приложение Dushnilin/tachyon).
+ * Проблема (issue #103): чипы «Трафик секции» / «Соединения» на дашборде
+ * вылезали за границу карточки при её узкой ширине.
+ *
+ * Причина: приложение строит строки метрик на фиксированных ширинах чипов
+ * (`tachyon-traffic-pill` — `flex: 0 0 82px`) и рассчитывает на свои шрифты.
+ * Типографика темы (Inter + letter-spacing) делает подписи строк (~на 8px)
+ * шире, чем ожидает приложение, — и порог «влезания» сдвигается с ~545px
+ * до ~570px ширины карточки; на карточках уже чипы не помещаются и, не имея
+ * права сжиматься, визуально выходят за border.
+ *
+ * Решение: чипам разрешено сжиматься до рамок своей колонки, value-области
+ * строки — распределять доступное место, а контейнеру пары чипов
+ * («↓ / ↑») — переносить чипы на вторую строку, если они всё равно не
+ * помещаются. Чипы остаются внутри карточки на любой ширине; на обычных
+ * десктопных ширинах (карточка ≥ ~600px) компоновка не отличается от
+ * bootstrap-темы. Свои цвета/паттерны Tachyon не затрагиваются: правки
+ * только по раскладке (min-width / flex-shrink / flex-wrap).
+ *
+ * Механизм загрузки: пофайловый per-page CSS (см. header.ut), SPA-роутер
+ * дублирует список в resources/router-proton2025.js.
+ */
+
+body[data-page="admin-services-tachyon"] .tachyon_dashboard-page .tachyon_dashboard-page__widgets-section__item__row__value,
+body[data-page="admin-services-tachyon"] .tachyon_dashboard-page .tachyon-stat--session {
+  min-width: 0;
+}
+
+/* Чип: базис 82px сохранён, но вместо выхода за карточку сжимается до
+   текстовой min-content ширины (flex-shrink упирается в auto → текст всегда
+   внутри графика) */
+body[data-page="admin-services-tachyon"] .tachyon_dashboard-page .tachyon-traffic-pill {
+  flex: 0 1 82px;
+}
+
+/* Чипы «↓ / ↑»: если пара целиком не влезает в колонку — перенос строки
+   вместо вылезания за border */
+body[data-page="admin-services-tachyon"] .tachyon_dashboard-page .tachyon-stat--session {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+/* Статусные чипы в flex-строках (заголовок inbound-карточки и т.п.)
+   могут сжиматься аналогично, а не вылезать */
+body[data-page="admin-services-tachyon"] .tachyon_dashboard-page .tachyon-stat-pill {
+  flex-shrink: 1;
+}

@@ -561,4 +561,34 @@ window.ProtonTranslations = {
   "Reset to factory code": "Скинути до заводського коду",
   "Reset the template to factory code": "Скинути шаблон до заводського коду",
   "Template reset to factory code": "Шаблон скинуто до заводського коду",
+  "free": "вільно",
+  "used": "використано",
+  "/": "/",
+  "Client-side navigation (experimental)": "Клієнтська навігація (експериментально)",
+  "Custom": "Власний",
+  "Custom Color": "Власний колір",
+  "Navigate between pages without full reloads (SPA). Experimental — disable if you notice issues. A full page reload applies the change.":
+    "Перехід між сторінками без повного перезавантаження (SPA). Експериментально — вимкніть у разі проблем. Зміна застосовується після повного перезавантаження сторінки.",
+  "Reload the page to apply the client-side navigation change.":
+    "Перезавантажте сторінку, щоб застосувати зміну клієнтської навігації.",
+  "Only .%s files can be installed here": "Тут можна встановлювати лише файли .%s",
+  "Select one or more package files. They are installed together in one step, so packages that depend on each other can be uploaded at once.":
+    "Виберіть один або кілька файлів пакетів. Вони встановлюються разом за один крок, тому пакети, що залежать один від одного, можна завантажити одразу.",
+  "Too many files (at most %d)": "Забагато файлів (не більше %d)",
+  "Upload packages": "Завантаження пакетів",
+  "Uploading %d of %d: %s": "Завантаження %d з %d: %s",
+  "Temperature thresholds": "Пороги температури",
+  "Now": "Зараз",
+  "Save": "Зберегти",
+  "Neutral": "Нейтральний",
+  "Defaults restored. Click Save to apply.":
+    "Типові значення відновлено. Натисніть «Зберегти», щоб застосувати.",
+  "Failed to save temperature thresholds.": "Не вдалося зберегти пороги температури.",
+  "Saving temperature thresholds…": "Збереження порогів температури…",
+  "Temperature thresholds saved.": "Пороги температури збережено.",
+  "Use whole numbers from 0 to 150°C with Warm < Hot < Critical.":
+    "Використовуйте цілі числа від 0 до 150 °C за умови Тепло < Гаряче < Критично.",
+  "Controls when sensor readings change status. Values must satisfy Warm < Hot < Critical.":
+    "Визначає, коли показники датчиків змінюють статус. Має виконуватися Тепло < Гаряче < Критично.",
+  "Disk space": "Дисковий простір"
 };

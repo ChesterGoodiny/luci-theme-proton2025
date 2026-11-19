@@ -211,6 +211,8 @@ return baseclass.extend({
 
     this.installThemeModeObserver();
 
+    this.installSensitiveActionConfirmation();
+
     this.installSearchIndexLazyTrigger();
     window.addEventListener(SEARCH_INDEX_PANEL_FOCUS_EVENT, () => {
       this.ensureSearchIndexModule().then((ok) => {
@@ -1694,6 +1696,51 @@ return baseclass.extend({
     }
   },
 
+  installSensitiveActionConfirmation() {
+    const sensitive = [
+      "#cbi-wireless td.cbi-section-actions button.enable-disable",
+      "#cbi-wireless td.cbi-section-actions:has(button.cbi-button-add) button.cbi-button-neutral",
+      "#cbi-wireless td.cbi-section-actions button.cbi-button-negative.remove",
+      "#cbi-network-interface td.cbi-section-actions button:is(.reconnect, .down, .cbi-button-remove)",
+      "#cbi-network-device td.cbi-section-actions button.cbi-button-remove",
+      "#view .table .tr button[data-proton-system-action]",
+    ].join(", ");
+    const approved = new WeakSet();
+    let confirming = false;
+
+    document.addEventListener("click", async (event) => {
+      const button = event.target.closest?.(sensitive);
+      if (!button || button.disabled || approved.has(button)) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (confirming) return;
+      confirming = true;
+
+      const label = button.textContent.trim();
+      const description = button.title || label;
+      try {
+        const confirmed = await this.protonConfirm({
+          message: description,
+          confirmLabel: label,
+          focusCancel: true,
+        });
+
+        if (!confirmed || !button.isConnected || button.disabled ||
+            button.textContent.trim() !== label || (button.title || label) !== description) return;
+
+        approved.add(button);
+        try {
+          button.click();
+        } finally {
+          approved.delete(button);
+        }
+      } finally {
+        confirming = false;
+      }
+    }, true);
+  },
+
   protonConfirm(options) {
     const opts = options || {};
     const t = (key) => this.translateThemeText(key);
@@ -1810,7 +1857,7 @@ return baseclass.extend({
       document.addEventListener("keydown", onKeyDown, true);
 
       document.body.appendChild(overlay);
-      requestAnimationFrame(() => confirmBtn.focus());
+      requestAnimationFrame(() => (opts.focusCancel ? cancelBtn : confirmBtn).focus());
     });
   },
 

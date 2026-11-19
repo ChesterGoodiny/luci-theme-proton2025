@@ -567,4 +567,33 @@ window.ProtonTranslations = {
     "Redefinir o modelo para o código de fábrica",
   "Template reset to factory code":
     "Modelo redefinido para o código de fábrica",
+  "Disk space": "Espaço em disco",
+  "free": "livre",
+  "used": "usado",
+  "/": "/",
+  "Client-side navigation (experimental)": "Navegação do lado do cliente (experimental)",
+  "Custom": "Personalizado",
+  "Custom Color": "Cor personalizada",
+  "Navigate between pages without full reloads (SPA). Experimental — disable if you notice issues. A full page reload applies the change.":
+    "Navegar entre páginas sem recarregar totalmente (SPA). Experimental — desative se notar problemas. A alteração é aplicada após recarregar totalmente a página.",
+  "Reload the page to apply the client-side navigation change.":
+    "Recarregue a página para aplicar a alteração da navegação do lado do cliente.",
+  "Only .%s files can be installed here": "Aqui só é possível instalar ficheiros .%s",
+  "Select one or more package files. They are installed together in one step, so packages that depend on each other can be uploaded at once.":
+    "Selecione um ou mais ficheiros de pacote. São instalados em conjunto num único passo, pelo que pacotes que dependem uns dos outros podem ser carregados de uma vez.",
+  "Too many files (at most %d)": "Demasiados ficheiros (no máximo %d)",
+  "Upload packages": "Carregar pacotes",
+  "Uploading %d of %d: %s": "A carregar %d de %d: %s",
+  "Temperature thresholds": "Limites de temperatura",
+  "Now": "Agora",
+  "Save": "Guardar",
+  "Neutral": "Neutro",
+  "Defaults restored. Click Save to apply.": "Predefinições restauradas. Clique em Guardar para aplicar.",
+  "Failed to save temperature thresholds.": "Não foi possível guardar os limites de temperatura.",
+  "Saving temperature thresholds…": "A guardar os limites de temperatura…",
+  "Temperature thresholds saved.": "Limites de temperatura guardados.",
+  "Use whole numbers from 0 to 150°C with Warm < Hot < Critical.":
+    "Use números inteiros de 0 a 150 °C com Morno < Quente < Crítico.",
+  "Controls when sensor readings change status. Values must satisfy Warm < Hot < Critical.":
+    "Define quando as leituras dos sensores mudam de estado. Deve cumprir-se Morno < Quente < Crítico."
 };

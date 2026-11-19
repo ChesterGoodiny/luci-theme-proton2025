@@ -3,14 +3,17 @@
 
   var STORAGE_KEY = "proton-login-animation";
   var currentScript = document.currentScript;
-  var fluidUrl = currentScript && currentScript.getAttribute("data-fluid-src");
+  var fluidVersion = currentScript
+    ? new URL(currentScript.src, window.location.href).searchParams.get("v")
+    : "";
   var fluidRequested = false;
 
   function loadFluid() {
-    if (fluidRequested || !fluidUrl) return;
+    if (fluidRequested) return;
     fluidRequested = true;
     var script = document.createElement("script");
-    script.src = fluidUrl;
+    script.src = "/luci-static/proton2025/js/login-fluid.js" +
+      (fluidVersion ? "?v=" + encodeURIComponent(fluidVersion) : "");
     script.async = true;
     document.head.appendChild(script);
   }

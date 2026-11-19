@@ -2,6 +2,80 @@
 
 All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
 
+## [1.4.6]
+
+## Changes in version 1.4.6
+
+## Features
+
+- **Network table actions**: Wireless, Interfaces and Devices share compact action icons, consistent hover and keyboard focus states, and larger touch targets on touch devices.
+  - Action icons keep their layout when LuCI redraws rows after a network action.
+  - Device settings reset uses a dedicated reset icon.
+  - Inline actions stay flat in light mode, and desktop interface actions stay on one row.
+- **Startup and Processes actions**: Use the same compact icons for row actions. Startup status, Save and force termination keep their text labels.
+- **Sensitive actions**: Network, Startup and Processes row actions that can interrupt service or remove configuration ask for confirmation, with Cancel focused by default.
+
+- **Package Manager page redesign** (System → Software)
+  - New page scaffolding `css/pages/cascade-package-manager.css` + `js/package-manager-header.js`: the stock LuCI header block is rearranged via DOM script, not templates, so the page keeps working on stock LuCI as fallback
+  - Desktop: single header card with compact status chips (installed/available counts, disk usage), redesigned "Update lists…" / "Upload Package…" actions with inline SVG icons
+  - Mobile: dedicated layout at the 720px breakpoint — stacked header, full-width action rows, no horizontal scrolling
+  - Integrated with the theme-settings tabs and the Auto/Light/Dark theme mode; decorations follow the current theme and clean up after themselves
+
+## Fixes
+
+- **Input handling on login and in search**: Logo previews validate image data, the Fluid animation loads a fixed theme resource, and search decodes labels as text and accepts only HTTP(S) navigation URLs.
+
+- **System Overview: find the Load Average row by its values** (PR #114 — author: @228peace)
+  - The renderer scans the table for the load values when custom overview pages place them on a different row.
+
+- **Skip Latin Inter font preloading for CJK locales** (PR #115 — author: @228peace)
+  - Chinese, Japanese and Korean pages load the Latin font on demand if they need it.
+
+- **Desktop header dropdowns**: A fixed hover area under each button bridges the 6 px gap without changing the visible spacing. The panel and its contents animate together.
+- **Collapsed sidebar menus**: Fixed flyouts opening as a thin strip. The full panel now slides and fades in together, matching the feel of the top menu.
+- **Confirmation dialogs**: The theme reset and reboot dialogs now use an opaque background in both light and dark modes, so page content no longer shows through.
+- **Theme settings tabs**: Now share the standard LuCI tab styling, including spacing, hover behavior and inactive tab outlines.
+- **Search index settings on mobile**: The index action now has its own row, and the cache size and clear button fit on narrow screens.
+- **Search index clear button**: Increased the trash icon and its click target, with a transparent background.
+- **Search index progress**: Removed the duplicate status line from Tools. The floating progress indicator and cancel controls remain available.
+
+- **Live-router correctness of the new Package Manager header** (verified on 192.168.1.1, LuCI 26.121, OpenWrt 24.10.4)
+  - Action buttons carry consistent SVG icons; the native button text is moved into the short label (`.pk-act-short`) instead of being hidden with the icon
+  - The install-per-file expander gets its own toggle button instead of relying on the native one
+  - Initialization is now async-render-phase-independent: the view is injected by LuCI after `load()`, the header script waits for the real DOM instead of a once-only DOMContentLoaded, so SPA navigation (experimental client-side router) no longer leaves the page undecorated
+  - Stale decorations are removed when LuCI re-renders the page; the native `.controls` row is hidden via the theme's `.pk-is-hidden` helper (plain `display: none` loses to the theme's `flex !important`)
+
+- **Tachyon dashboard: speed chips escaping the section card** (issue #103)
+  - The theme's widened typography (Inter + letter-spacing) made the metric row key labels ~8px wider than the app expects; at narrow dashboard cards the fixed-width traffic chips (`tachyon-traffic-pill`, `flex: 0 0 82px`) escaped the section card border
+  - Fix shipped as a dedicated per-page stylesheet `css/pages/cascade-tachyon.css` (loaded only on `admin/services/tachyon`, wired in `header.ut` and the SPA `router-proton2025.js`): the row value area is allowed to shrink, traffic chips get `flex: 0 1 82px`, and the session pill container wraps chips onto a second line when they no longer fit — chips stay inside the card at any width, and at normal desktop widths the layout is pixel-identical to the bootstrap theme
+
+## Translations
+
+- **Traditional Chinese for Taiwan and Hong Kong** (PR #116 — author: @228peace)
+  - LuCI now loads the Traditional Chinese dictionary for Taiwanese and Hong Kong locales.
+
+- **Dictionaries fully synchronized across all 9 locales** (verified by scripts, 523 keys each: DE, ES, FR, IT, PL, PT, RU, UK, ZH)
+  - New page strings (Package Manager actions, temperature thresholds, disk space, upload flow) added to every language
+  - Values left identical to the English source are intentional (`1 MIN`, `err.`, `crit.`, `V2 · Radial`, …): time intervals, status abbreviations and visual style names, not missing translations
+
+## Build
+
+- **Theme asset versioning**
+  - Bumped the asset version (`__pv`) and the package version to 1.4.6 so updated styles and UI scripts are reloaded by browsers after this release's changes
+
+## Authors
+
+- @ChesterGoodiny — theme creator and maintainer; Package Manager redesign, desktop menu fixes, and theme settings improvements
+- @228peace — Load Average row detection, CJK font preloading and Traditional Chinese translation (PRs #114–#116)
+
+## Pull Requests
+
+- #114 — Find the Load Average row by its values
+- #115 — Skip Latin Inter font preloading for CJK locales
+- #116 — Add Traditional Chinese for Taiwan and Hong Kong
+
+---
+
 ## [1.4.5]
 
 ## Changes in version 1.4.5

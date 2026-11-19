@@ -1246,11 +1246,16 @@
     });
   }
 
-  function decodeHtmlEntities(value, sourceDocument) {
-    const doc = sourceDocument || document;
-    const textarea = doc.createElement("textarea");
-    textarea.innerHTML = String(value || "");
-    return String(textarea.value || "").trim();
+  function decodeHtmlEntities(value) {
+    const text = String(value || "");
+    try {
+      // Decode character references without treating literal tags as markup.
+      const escaped = text.replace(/</g, "&lt;");
+      const parsed = new DOMParser().parseFromString(escaped, "text/html");
+      return (parsed.body?.textContent || "").trim();
+    } catch (e) {
+      return text.trim();
+    }
   }
 
   function normalizeText(value) {
@@ -1476,8 +1481,11 @@
   }
 
   function normalizeIndexedHref(href) {
+    const value = String(href || "").trim();
+    if (!value || value === "#") return "";
     try {
-      const url = new URL(String(href || ""), window.location.href);
+      const url = new URL(value, window.location.href);
+      if (url.protocol !== "http:" && url.protocol !== "https:") return "";
       const normalizedHref = url.href;
       return url.hash ? normalizedHref : normalizedHref.replace(/#$/, "");
     } catch (e) {
@@ -1622,17 +1630,14 @@
     );
   }
 
-  function getClosestTabTitle(sourceDocument, node) {
+  function getClosestTabTitle(node) {
     const pane =
       node && typeof node.closest === "function"
         ? node.closest("[data-tab][data-tab-title]")
         : null;
     if (!pane) return "";
 
-    return decodeHtmlEntities(
-      pane.getAttribute("data-tab-title") || "",
-      sourceDocument,
-    );
+    return decodeHtmlEntities(pane.getAttribute("data-tab-title") || "");
   }
 
   function getStableTargetNode(node) {
@@ -1646,7 +1651,7 @@
   function getPrefetchedPageContext(sourceDocument, node, pageTitle) {
     return dedupeStrings([
       pageTitle || getDocumentPageTitle(sourceDocument),
-      getClosestTabTitle(sourceDocument, node),
+      getClosestTabTitle(node),
       getClosestSectionText(node),
     ]).join(" › ");
   }
@@ -1724,7 +1729,6 @@
       .forEach((pane) => {
         const title = decodeHtmlEntities(
           pane.getAttribute("data-tab-title") || "",
-          sourceDocument,
         );
         if (!shouldIndexPageText(title)) return;
 
@@ -2352,7 +2356,7 @@
     }
 
     const targetTitle = normalizeText(
-      decodeHtmlEntities(pane.getAttribute("data-tab-title") || "", document),
+      decodeHtmlEntities(pane.getAttribute("data-tab-title") || ""),
     );
     if (!targetTitle) return;
 
@@ -2965,17 +2969,8 @@
     navigateHref,
   ) {
     const normalizedText = String(text || "").trim();
-    const rawHref = String(href || "").trim();
     const normalizedHref = normalizeIndexedHref(href);
-    if (
-      !normalizedText ||
-      !rawHref ||
-      !normalizedHref ||
-      rawHref === "#" ||
-      rawHref.indexOf("javascript:") === 0
-    ) {
-      return null;
-    }
+    if (!normalizedText || !normalizedHref) return null;
 
     const normalizedNavigateHref =
       normalizeIndexedHref(navigateHref || href) || normalizedHref;

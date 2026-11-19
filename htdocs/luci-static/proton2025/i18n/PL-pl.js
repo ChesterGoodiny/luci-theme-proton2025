@@ -565,4 +565,34 @@ window.ProtonTranslations = {
   "Reset the template to factory code":
     "Przywrócić szablon do kodu fabrycznego",
   "Template reset to factory code": "Szablon przywrócony do kodu fabrycznego",
+  "Disk space": "Miejsce na dysku",
+  "free": "wolne",
+  "used": "użyte",
+  "/": "/",
+  "Client-side navigation (experimental)": "Nawigacja po stronie klienta (eksperymentalna)",
+  "Custom": "Własny",
+  "Custom Color": "Własny kolor",
+  "Navigate between pages without full reloads (SPA). Experimental — disable if you notice issues. A full page reload applies the change.":
+    "Przechodzenie między stronami bez pełnego przeładowania (SPA). Eksperymentalne — wyłącz w razie problemów. Zmiana zostanie zastosowana po pełnym przeładowaniu strony.",
+  "Reload the page to apply the client-side navigation change.":
+    "Przeładuj stronę, aby zastosować zmianę nawigacji po stronie klienta.",
+  "Only .%s files can be installed here": "Tutaj można instalować tylko pliki .%s",
+  "Select one or more package files. They are installed together in one step, so packages that depend on each other can be uploaded at once.":
+    "Wybierz jeden lub więcej plików pakietów. Są instalowane razem w jednym kroku, więc pakiety zależne od siebie można przesłać jednocześnie.",
+  "Too many files (at most %d)": "Zbyt wiele plików (maksymalnie %d)",
+  "Upload packages": "Przesyłanie pakietów",
+  "Uploading %d of %d: %s": "Przesyłanie %d z %d: %s",
+  "Temperature thresholds": "Progi temperatury",
+  "Now": "Teraz",
+  "Save": "Zapisz",
+  "Neutral": "Neutralny",
+  "Defaults restored. Click Save to apply.":
+    "Przywrócono ustawienia domyślne. Kliknij Zapisz, aby zastosować.",
+  "Failed to save temperature thresholds.": "Nie udało się zapisać progów temperatury.",
+  "Saving temperature thresholds…": "Zapisywanie progów temperatury…",
+  "Temperature thresholds saved.": "Zapisano progi temperatury.",
+  "Use whole numbers from 0 to 150°C with Warm < Hot < Critical.":
+    "Użyj liczb całkowitych od 0 do 150 °C, przy czym Ciepła < Gorąca < Krytyczna.",
+  "Controls when sensor readings change status. Values must satisfy Warm < Hot < Critical.":
+    "Określa, kiedy odczyty czujników zmieniają status. Musi być spełnione: Ciepła < Gorąca < Krytyczna."
 };

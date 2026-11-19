@@ -37,6 +37,25 @@
   };
   var LOGO_MAX_BYTES = 200 * 1024;
   var LOGO_MAX = 300000;
+  // Restricts stored logos to raster/vector image data URLs. Mirrors the
+  // allowlist used for login branding in header.ut.
+  var LOGO_TYPE_RE =
+    /^data:(image\/(?:png|jpeg|gif|webp|svg\+xml));base64,([A-Za-z0-9+/]+={0,2})$/;
+
+  function createLogoPreviewUrl(value) {
+    if (typeof value !== "string" || value.length > LOGO_MAX) return "";
+    var match = LOGO_TYPE_RE.exec(value);
+    if (!match) return "";
+    try {
+      var bytes = Uint8Array.from(atob(match[2]), function (char) {
+        return char.charCodeAt(0);
+      });
+      if (bytes.length > LOGO_MAX_BYTES) return "";
+      return URL.createObjectURL(new Blob([bytes], { type: match[1] }));
+    } catch (e) {
+      return "";
+    }
+  }
 
   function flushToUci() {
     if (
@@ -341,13 +360,16 @@
       "border:1px solid var(--proton-border);padding:3px;" +
       "background:var(--proton-bg-secondary);";
 
+    var previewUrl = "";
     function refreshStatus() {
       var data = safeStorage.get(LOGO_KEY);
-      status.textContent = data
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = createLogoPreviewUrl(data);
+      status.textContent = previewUrl
         ? tr("Custom logo set")
         : tr("No logo — default icon is used");
-      if (data) {
-        preview.src = data;
+      if (previewUrl) {
+        preview.src = previewUrl;
         preview.style.display = "inline-block";
       } else {
         preview.removeAttribute("src");

@@ -571,4 +571,34 @@ window.ProtonTranslations = {
   "Reset the template to factory code":
     "Réinitialiser le modèle au code d'usine",
   "Template reset to factory code": "Modèle réinitialisé au code d'usine",
+  "Disk space": "Espace disque",
+  "free": "libre",
+  "used": "utilisé",
+  "/": "/",
+  "Client-side navigation (experimental)": "Navigation côté client (expérimentale)",
+  "Custom": "Personnalisé",
+  "Custom Color": "Couleur personnalisée",
+  "Navigate between pages without full reloads (SPA). Experimental — disable if you notice issues. A full page reload applies the change.":
+    "Naviguer entre les pages sans rechargement complet (SPA). Expérimental — désactivez en cas de problème. La modification s'applique après un rechargement complet de la page.",
+  "Reload the page to apply the client-side navigation change.":
+    "Rechargez la page pour appliquer le changement de navigation côté client.",
+  "Only .%s files can be installed here": "Seuls les fichiers .%s peuvent être installés ici",
+  "Select one or more package files. They are installed together in one step, so packages that depend on each other can be uploaded at once.":
+    "Sélectionnez un ou plusieurs fichiers de paquets. Ils sont installés ensemble en une seule étape, afin de pouvoir téléverser d'un coup des paquets qui dépendent les uns des autres.",
+  "Too many files (at most %d)": "Trop de fichiers (au maximum %d)",
+  "Upload packages": "Téléverser des paquets",
+  "Uploading %d of %d: %s": "Téléversement de %d sur %d : %s",
+  "Temperature thresholds": "Seuils de température",
+  "Now": "Maintenant",
+  "Save": "Enregistrer",
+  "Neutral": "Neutre",
+  "Defaults restored. Click Save to apply.":
+    "Valeurs par défaut restaurées. Cliquez sur Enregistrer pour appliquer.",
+  "Failed to save temperature thresholds.": "Impossible d'enregistrer les seuils de température.",
+  "Saving temperature thresholds…": "Enregistrement des seuils de température…",
+  "Temperature thresholds saved.": "Seuils de température enregistrés.",
+  "Use whole numbers from 0 to 150°C with Warm < Hot < Critical.":
+    "Utilisez des nombres entiers de 0 à 150 °C avec Chaud < Très chaud < Critique.",
+  "Controls when sensor readings change status. Values must satisfy Warm < Hot < Critical.":
+    "Définit quand les relevés des capteurs changent d'état. Il faut respecter Chaud < Très chaud < Critique."
 };

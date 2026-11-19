@@ -13,7 +13,7 @@
 	const protonSettings = (protonResp && protonResp.values) ? protonResp.values : {};
 
 	// Resolve the theme mode server-side so the login page renders with the
-	// correct data-theme from the first paint — no flash of the wrong theme.
+	// correct data-theme from the first paint Ã¢â‚¬â€ no flash of the wrong theme.
 	// Mirrors the logic in header.ut.
 	function resolveServerTheme(mode) {
 		if (mode === 'auto') {
@@ -32,7 +32,7 @@
 	const loginName = (customName != null && customName != '') ? customName : (boardinfo.hostname ?? 'Router');
 
 	// Settings copy for the client-side sync, WITHOUT the (potentially
-	// large) logo data URI — it is only needed server-side for the <img>
+	// large) logo data URI Ã¢â‚¬â€ it is only needed server-side for the <img>
 	// above. This keeps the embedded blob small.
 	const clientSettings = {};
 	for (let k in protonSettings)
@@ -75,8 +75,8 @@
         pattern_scale: "proton-pattern-scale",
         custom_font: "proton-custom-font",
         login_animation: "proton-login-animation",
-        // Фолбэк для header.ut: если ubus там недоступен, раскладка меню уже
-        // лежит в localStorage с логина и рельс не мелькнёт верхним меню.
+        // ÃÂ¤ÃÂ¾ÃÂ»ÃÂ±Ã‘ÂÃÂº ÃÂ´ÃÂ»Ã‘Â header.ut: ÃÂµÃ‘ÂÃÂ»ÃÂ¸ ubus Ã‘â€šÃÂ°ÃÂ¼ ÃÂ½ÃÂµÃÂ´ÃÂ¾Ã‘ÂÃ‘â€šÃ‘Æ’ÃÂ¿ÃÂµÃÂ½, Ã‘â‚¬ÃÂ°Ã‘ÂÃÂºÃÂ»ÃÂ°ÃÂ´ÃÂºÃÂ° ÃÂ¼ÃÂµÃÂ½Ã‘Å½ Ã‘Æ’ÃÂ¶ÃÂµ
+        // ÃÂ»ÃÂµÃÂ¶ÃÂ¸Ã‘â€š ÃÂ² localStorage Ã‘Â ÃÂ»ÃÂ¾ÃÂ³ÃÂ¸ÃÂ½ÃÂ° ÃÂ¸ Ã‘â‚¬ÃÂµÃÂ»Ã‘Å’Ã‘Â ÃÂ½ÃÂµ ÃÂ¼ÃÂµÃÂ»Ã‘Å’ÃÂºÃÂ½Ã‘â€˜Ã‘â€š ÃÂ²ÃÂµÃ‘â‚¬Ã‘â€¦ÃÂ½ÃÂ¸ÃÂ¼ ÃÂ¼ÃÂµÃÂ½Ã‘Å½.
         menu_mode: "proton-menu-mode",
         menu_collapsed: "proton-menu-collapsed"
     };
@@ -230,25 +230,25 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="{{ entityencode(boardinfo.hostname ?? 'LuCI', true) }}" />
-{# Установка на главный экран: манифест и PNG-иконки
-   для Android/Chrome, apple-touch-icon для iOS. Браузер предлагает
-   «Установить» только по HTTPS; по HTTP остаётся ярлык на главном экране. #}
+{# ÃÂ£Ã‘ÂÃ‘â€šÃÂ°ÃÂ½ÃÂ¾ÃÂ²ÃÂºÃÂ° ÃÂ½ÃÂ° ÃÂ³ÃÂ»ÃÂ°ÃÂ²ÃÂ½Ã‘â€¹ÃÂ¹ Ã‘ÂÃÂºÃ‘â‚¬ÃÂ°ÃÂ½: ÃÂ¼ÃÂ°ÃÂ½ÃÂ¸Ã‘â€žÃÂµÃ‘ÂÃ‘â€š ÃÂ¸ PNG-ÃÂ¸ÃÂºÃÂ¾ÃÂ½ÃÂºÃÂ¸
+   ÃÂ´ÃÂ»Ã‘Â Android/Chrome, apple-touch-icon ÃÂ´ÃÂ»Ã‘Â iOS. Ãâ€˜Ã‘â‚¬ÃÂ°Ã‘Æ’ÃÂ·ÃÂµÃ‘â‚¬ ÃÂ¿Ã‘â‚¬ÃÂµÃÂ´ÃÂ»ÃÂ°ÃÂ³ÃÂ°ÃÂµÃ‘â€š
+   Ã‚Â«ÃÂ£Ã‘ÂÃ‘â€šÃÂ°ÃÂ½ÃÂ¾ÃÂ²ÃÂ¸Ã‘â€šÃ‘Å’Ã‚Â» Ã‘â€šÃÂ¾ÃÂ»Ã‘Å’ÃÂºÃÂ¾ ÃÂ¿ÃÂ¾ HTTPS; ÃÂ¿ÃÂ¾ HTTP ÃÂ¾Ã‘ÂÃ‘â€šÃÂ°Ã‘â€˜Ã‘â€šÃ‘ÂÃ‘Â Ã‘ÂÃ‘â‚¬ÃÂ»Ã‘â€¹ÃÂº ÃÂ½ÃÂ° ÃÂ³ÃÂ»ÃÂ°ÃÂ²ÃÂ½ÃÂ¾ÃÂ¼ Ã‘ÂÃÂºÃ‘â‚¬ÃÂ°ÃÂ½ÃÂµ. #}
 <link rel="manifest" href="{{ media }}/manifest.json" />
 <link rel="apple-touch-icon" href="{{ media }}/img/apple-touch-icon.png" />
-{# Критический фон: задаём сразу в head, чтобы браузер не рисовал белый фон
-   до загрузки cascade.css. Значение совпадает с тем, что выставляет
-   inline-скрипт ниже и login-bg.css. #}
+{# ÃÅ¡Ã‘â‚¬ÃÂ¸Ã‘â€šÃÂ¸Ã‘â€¡ÃÂµÃ‘ÂÃÂºÃÂ¸ÃÂ¹ Ã‘â€žÃÂ¾ÃÂ½: ÃÂ·ÃÂ°ÃÂ´ÃÂ°Ã‘â€˜ÃÂ¼ Ã‘ÂÃ‘â‚¬ÃÂ°ÃÂ·Ã‘Æ’ ÃÂ² head, Ã‘â€¡Ã‘â€šÃÂ¾ÃÂ±Ã‘â€¹ ÃÂ±Ã‘â‚¬ÃÂ°Ã‘Æ’ÃÂ·ÃÂµÃ‘â‚¬ ÃÂ½ÃÂµ Ã‘â‚¬ÃÂ¸Ã‘ÂÃÂ¾ÃÂ²ÃÂ°ÃÂ» ÃÂ±ÃÂµÃÂ»Ã‘â€¹ÃÂ¹ Ã‘â€žÃÂ¾ÃÂ½
+   ÃÂ´ÃÂ¾ ÃÂ·ÃÂ°ÃÂ³Ã‘â‚¬Ã‘Æ’ÃÂ·ÃÂºÃÂ¸ cascade.css. Ãâ€”ÃÂ½ÃÂ°Ã‘â€¡ÃÂµÃÂ½ÃÂ¸ÃÂµ Ã‘ÂÃÂ¾ÃÂ²ÃÂ¿ÃÂ°ÃÂ´ÃÂ°ÃÂµÃ‘â€š Ã‘Â Ã‘â€šÃÂµÃÂ¼, Ã‘â€¡Ã‘â€šÃÂ¾ ÃÂ²Ã‘â€¹Ã‘ÂÃ‘â€šÃÂ°ÃÂ²ÃÂ»Ã‘ÂÃÂµÃ‘â€š
+   inline-Ã‘ÂÃÂºÃ‘â‚¬ÃÂ¸ÃÂ¿Ã‘â€š ÃÂ½ÃÂ¸ÃÂ¶ÃÂµ ÃÂ¸ login-bg.css. #}
 <style>
 html { background-color: {{ serverTheme === 'light' ? '#ffffff' : '#0f1419' }} !important; }
 body.login-page { background-color: {{ serverTheme === 'light' ? '#ffffff' : '#0f1419' }} !important; }
 </style>
-{# Ключ должен совпадать с __pv в header.ut: без ?v= браузер отдаёт
-   старый cascade.css на странице логина после обновления темы. #}
-{# Ключ кэша статики = версия темы + pkgs_update_time (время изменения базы
-   пакетов). Он меняется при любой установке или обновлении пакета, поэтому
-   после обновления темы браузер берёт свежие CSS/JS, даже если версию ниже
-   забыли поднять (так случилось в 1.4.4). В старом LuCI переменной нет. #}
-{% let __pv = "1.4.5" + (pkgs_update_time ? '-' + pkgs_update_time : ''); %}
+{# ÃÅ¡ÃÂ»Ã‘Å½Ã‘â€¡ ÃÂ´ÃÂ¾ÃÂ»ÃÂ¶ÃÂµÃÂ½ Ã‘ÂÃÂ¾ÃÂ²ÃÂ¿ÃÂ°ÃÂ´ÃÂ°Ã‘â€šÃ‘Å’ Ã‘Â __pv ÃÂ² header.ut: ÃÂ±ÃÂµÃÂ· ?v= ÃÂ±Ã‘â‚¬ÃÂ°Ã‘Æ’ÃÂ·ÃÂµÃ‘â‚¬ ÃÂ¾Ã‘â€šÃÂ´ÃÂ°Ã‘â€˜Ã‘â€š
+   Ã‘ÂÃ‘â€šÃÂ°Ã‘â‚¬Ã‘â€¹ÃÂ¹ cascade.css ÃÂ½ÃÂ° Ã‘ÂÃ‘â€šÃ‘â‚¬ÃÂ°ÃÂ½ÃÂ¸Ã‘â€ ÃÂµ ÃÂ»ÃÂ¾ÃÂ³ÃÂ¸ÃÂ½ÃÂ° ÃÂ¿ÃÂ¾Ã‘ÂÃÂ»ÃÂµ ÃÂ¾ÃÂ±ÃÂ½ÃÂ¾ÃÂ²ÃÂ»ÃÂµÃÂ½ÃÂ¸Ã‘Â Ã‘â€šÃÂµÃÂ¼Ã‘â€¹. #}
+{# ÃÅ¡ÃÂ»Ã‘Å½Ã‘â€¡ ÃÂºÃ‘ÂÃ‘Ë†ÃÂ° Ã‘ÂÃ‘â€šÃÂ°Ã‘â€šÃÂ¸ÃÂºÃÂ¸ = ÃÂ²ÃÂµÃ‘â‚¬Ã‘ÂÃÂ¸Ã‘Â Ã‘â€šÃÂµÃÂ¼Ã‘â€¹ + pkgs_update_time (ÃÂ²Ã‘â‚¬ÃÂµÃÂ¼Ã‘Â ÃÂ¸ÃÂ·ÃÂ¼ÃÂµÃÂ½ÃÂµÃÂ½ÃÂ¸Ã‘Â ÃÂ±ÃÂ°ÃÂ·Ã‘â€¹
+   ÃÂ¿ÃÂ°ÃÂºÃÂµÃ‘â€šÃÂ¾ÃÂ²). ÃÅ¾ÃÂ½ ÃÂ¼ÃÂµÃÂ½Ã‘ÂÃÂµÃ‘â€šÃ‘ÂÃ‘Â ÃÂ¿Ã‘â‚¬ÃÂ¸ ÃÂ»Ã‘Å½ÃÂ±ÃÂ¾ÃÂ¹ Ã‘Æ’Ã‘ÂÃ‘â€šÃÂ°ÃÂ½ÃÂ¾ÃÂ²ÃÂºÃÂµ ÃÂ¸ÃÂ»ÃÂ¸ ÃÂ¾ÃÂ±ÃÂ½ÃÂ¾ÃÂ²ÃÂ»ÃÂµÃÂ½ÃÂ¸ÃÂ¸ ÃÂ¿ÃÂ°ÃÂºÃÂµÃ‘â€šÃÂ°, ÃÂ¿ÃÂ¾Ã‘ÂÃ‘â€šÃÂ¾ÃÂ¼Ã‘Æ’
+   ÃÂ¿ÃÂ¾Ã‘ÂÃÂ»ÃÂµ ÃÂ¾ÃÂ±ÃÂ½ÃÂ¾ÃÂ²ÃÂ»ÃÂµÃÂ½ÃÂ¸Ã‘Â Ã‘â€šÃÂµÃÂ¼Ã‘â€¹ ÃÂ±Ã‘â‚¬ÃÂ°Ã‘Æ’ÃÂ·ÃÂµÃ‘â‚¬ ÃÂ±ÃÂµÃ‘â‚¬Ã‘â€˜Ã‘â€š Ã‘ÂÃÂ²ÃÂµÃÂ¶ÃÂ¸ÃÂµ CSS/JS, ÃÂ´ÃÂ°ÃÂ¶ÃÂµ ÃÂµÃ‘ÂÃÂ»ÃÂ¸ ÃÂ²ÃÂµÃ‘â‚¬Ã‘ÂÃÂ¸Ã‘Å½ ÃÂ½ÃÂ¸ÃÂ¶ÃÂµ
+   ÃÂ·ÃÂ°ÃÂ±Ã‘â€¹ÃÂ»ÃÂ¸ ÃÂ¿ÃÂ¾ÃÂ´ÃÂ½Ã‘ÂÃ‘â€šÃ‘Å’ (Ã‘â€šÃÂ°ÃÂº Ã‘ÂÃÂ»Ã‘Æ’Ã‘â€¡ÃÂ¸ÃÂ»ÃÂ¾Ã‘ÂÃ‘Å’ ÃÂ² 1.4.4). Ãâ€™ Ã‘ÂÃ‘â€šÃÂ°Ã‘â‚¬ÃÂ¾ÃÂ¼ LuCI ÃÂ¿ÃÂµÃ‘â‚¬ÃÂµÃÂ¼ÃÂµÃÂ½ÃÂ½ÃÂ¾ÃÂ¹ ÃÂ½ÃÂµÃ‘â€š. #}
+{% let __pv = "1.4.6" + (pkgs_update_time ? '-' + pkgs_update_time : ''); %}
 <link rel="stylesheet" fetchpriority="high" href="{{ media }}/css/cascade.css?v={{ __pv }}" />
 <link rel="stylesheet" href="{{ media }}/css/login-bg.css?v={{ __pv }}" />
 
@@ -318,8 +318,8 @@ body.login-page { background-color: {{ serverTheme === 'light' ? '#ffffff' : '#0
 							<path d="M8 10V7a4 4 0 0 1 8 0v3" />
 						</svg>
 					</span>
-					<!-- Имя предзаполнено ('root'), поэтому фокус сразу на пароле,
-					     как в bootstrap. Если имя пустое, скрипт ниже вернёт фокус ему. -->
+					<!-- ÃËœÃÂ¼Ã‘Â ÃÂ¿Ã‘â‚¬ÃÂµÃÂ´ÃÂ·ÃÂ°ÃÂ¿ÃÂ¾ÃÂ»ÃÂ½ÃÂµÃÂ½ÃÂ¾ ('root'), ÃÂ¿ÃÂ¾Ã‘ÂÃ‘â€šÃÂ¾ÃÂ¼Ã‘Æ’ Ã‘â€žÃÂ¾ÃÂºÃ‘Æ’Ã‘Â Ã‘ÂÃ‘â‚¬ÃÂ°ÃÂ·Ã‘Æ’ ÃÂ½ÃÂ° ÃÂ¿ÃÂ°Ã‘â‚¬ÃÂ¾ÃÂ»ÃÂµ,
+					     ÃÂºÃÂ°ÃÂº ÃÂ² bootstrap. Ãâ€¢Ã‘ÂÃÂ»ÃÂ¸ ÃÂ¸ÃÂ¼Ã‘Â ÃÂ¿Ã‘Æ’Ã‘ÂÃ‘â€šÃÂ¾ÃÂµ, Ã‘ÂÃÂºÃ‘â‚¬ÃÂ¸ÃÂ¿Ã‘â€š ÃÂ½ÃÂ¸ÃÂ¶ÃÂµ ÃÂ²ÃÂµÃ‘â‚¬ÃÂ½Ã‘â€˜Ã‘â€š Ã‘â€žÃÂ¾ÃÂºÃ‘Æ’Ã‘Â ÃÂµÃÂ¼Ã‘Æ’. -->
 					<input type="password" id="luci_password" name="luci_password"
 						autocomplete="current-password" autofocus />
 					<button class="login-password-toggle" type="button" aria-label="{{ _('Show password') }}" aria-pressed="false">
@@ -349,8 +349,8 @@ body.login-page { background-color: {{ serverTheme === 'light' ? '#ffffff' : '#0
 </div>
 
 <script>
-// Autofocus стоит на поле пароля (имя предзаполнено). Если имя всё же
-// пустое — например, сборка убрала дефолт 'root' — фокус нужен ему.
+// Autofocus Ã‘ÂÃ‘â€šÃÂ¾ÃÂ¸Ã‘â€š ÃÂ½ÃÂ° ÃÂ¿ÃÂ¾ÃÂ»ÃÂµ ÃÂ¿ÃÂ°Ã‘â‚¬ÃÂ¾ÃÂ»Ã‘Â (ÃÂ¸ÃÂ¼Ã‘Â ÃÂ¿Ã‘â‚¬ÃÂµÃÂ´ÃÂ·ÃÂ°ÃÂ¿ÃÂ¾ÃÂ»ÃÂ½ÃÂµÃÂ½ÃÂ¾). Ãâ€¢Ã‘ÂÃÂ»ÃÂ¸ ÃÂ¸ÃÂ¼Ã‘Â ÃÂ²Ã‘ÂÃ‘â€˜ ÃÂ¶ÃÂµ
+// ÃÂ¿Ã‘Æ’Ã‘ÂÃ‘â€šÃÂ¾ÃÂµ Ã¢â‚¬â€ ÃÂ½ÃÂ°ÃÂ¿Ã‘â‚¬ÃÂ¸ÃÂ¼ÃÂµÃ‘â‚¬, Ã‘ÂÃÂ±ÃÂ¾Ã‘â‚¬ÃÂºÃÂ° Ã‘Æ’ÃÂ±Ã‘â‚¬ÃÂ°ÃÂ»ÃÂ° ÃÂ´ÃÂµÃ‘â€žÃÂ¾ÃÂ»Ã‘â€š 'root' Ã¢â‚¬â€ Ã‘â€žÃÂ¾ÃÂºÃ‘Æ’Ã‘Â ÃÂ½Ã‘Æ’ÃÂ¶ÃÂµÃÂ½ ÃÂµÃÂ¼Ã‘Æ’.
 (function () {
 	var username = document.getElementById('luci_username');
 	if (username && !username.value) username.focus();
@@ -471,6 +471,6 @@ body.login-page { background-color: {{ serverTheme === 'light' ? '#ffffff' : '#0
   if (submitBtn) submitBtn.addEventListener('click', freezeLogin);
 })();
 </script>
-<script src="{{ media }}/js/login-particles.js?v={{ __pv }}" data-fluid-src="{{ media }}/js/login-fluid.js?v={{ __pv }}"></script>
+<script src="{{ media }}/js/login-particles.js?v={{ __pv }}"></script>
 </body>
 </html>

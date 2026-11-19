@@ -572,4 +572,34 @@ window.ProtonTranslations = {
     "Restablecer la plantilla al código de fábrica",
   "Template reset to factory code":
     "Plantilla restablecida al código de fábrica",
+  "Disk space": "Espacio en disco",
+  "free": "libre",
+  "used": "usado",
+  "/": "/",
+  "Client-side navigation (experimental)": "Navegación del lado del cliente (experimental)",
+  "Custom": "Personalizado",
+  "Custom Color": "Color personalizado",
+  "Navigate between pages without full reloads (SPA). Experimental — disable if you notice issues. A full page reload applies the change.":
+    "Cambiar entre páginas sin recargar por completo (SPA). Experimental: desactívelo si nota problemas. El cambio se aplica tras recargar la página por completo.",
+  "Reload the page to apply the client-side navigation change.":
+    "Recargue la página para aplicar el cambio de navegación del lado del cliente.",
+  "Only .%s files can be installed here": "Aquí solo se pueden instalar archivos .%s",
+  "Select one or more package files. They are installed together in one step, so packages that depend on each other can be uploaded at once.":
+    "Seleccione uno o varios archivos de paquete. Se instalan juntos en un solo paso, por lo que los paquetes que dependen entre sí se pueden subir a la vez.",
+  "Too many files (at most %d)": "Demasiados archivos (máximo %d)",
+  "Upload packages": "Subir paquetes",
+  "Uploading %d of %d: %s": "Subiendo %d de %d: %s",
+  "Temperature thresholds": "Umbrales de temperatura",
+  "Now": "Ahora",
+  "Save": "Guardar",
+  "Neutral": "Neutro",
+  "Defaults restored. Click Save to apply.":
+    "Valores predeterminados restaurados. Pulse Guardar para aplicar.",
+  "Failed to save temperature thresholds.": "No se pudieron guardar los umbrales de temperatura.",
+  "Saving temperature thresholds…": "Guardando los umbrales de temperatura…",
+  "Temperature thresholds saved.": "Umbrales de temperatura guardados.",
+  "Use whole numbers from 0 to 150°C with Warm < Hot < Critical.":
+    "Use números enteros de 0 a 150 °C con Cálido < Caliente < Crítico.",
+  "Controls when sensor readings change status. Values must satisfy Warm < Hot < Critical.":
+    "Define cuándo los valores del sensor cambian de estado. Debe cumplirse Cálido < Caliente < Crítico."
 };

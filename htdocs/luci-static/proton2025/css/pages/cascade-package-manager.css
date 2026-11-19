@@ -1,0 +1,955 @@
+/*
+ * Proton2025 — Package Manager header (System -> Packages)
+ * Copyright 2025-2026 ChesterGoodiny
+ * Licensed under Apache License 2.0
+ *
+ * Scope строго: body[data-page="admin-system-package-manager"].
+ * Все цвета/радиусы/тени — только через var(--proton-*).
+ */
+
+/* ===== PANEL: одна карточка на заголовок, тулбар и табы (как в превью) ===== */
+body[data-page="admin-system-package-manager"] .pk-panel {
+  --pk-pad: 1.25rem;
+  background: var(--proton-bg-secondary);
+  border: 1px solid var(--proton-border);
+  border-radius: var(--proton-radius-lg);
+  box-shadow: var(--proton-shadow-sm);
+  padding: 1.1rem var(--pk-pad) 0;
+  margin-bottom: 1rem;
+}
+
+/* ===== HEADER: заголовок + предупреждение + диск-пилюля ===== */
+/* Заголовок и нотка — в одну строку, пилюля диска всегда справа (как в превью) */
+body[data-page="admin-system-package-manager"] .pk-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+body[data-page="admin-system-package-manager"] .pk-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  column-gap: 0.85rem;
+  row-gap: 0.25rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+body[data-page="admin-system-package-manager"] .pk-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--proton-fg);
+  letter-spacing: -0.2px;
+}
+
+body[data-page="admin-system-package-manager"] .pk-header .cbi-map-descr {
+  font-size: 0.8rem;
+  color: var(--proton-muted);
+  line-height: 1.55;
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Warn-иконка нотки (как в превью .note .ic) */
+body[data-page="admin-system-package-manager"] .pk-header .cbi-map-descr svg.pk-warn-ic {
+  width: 14px;
+  height: 14px;
+  color: var(--proton-warning);
+  vertical-align: -2px;
+  margin-right: 6px;
+  flex: none;
+}
+
+/* Диск-пилюля (вместо полосы-простыни) */
+body[data-page="admin-system-package-manager"] .pk-disk-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-left: auto;
+  padding: 0.3rem 0.9rem 0.3rem 0.45rem;
+  background: var(--proton-bg-secondary);
+  border: 1px solid var(--proton-border);
+  border-radius: 99px;
+  color: var(--proton-fg-secondary);
+  font-size: 0.85rem;
+}
+
+body[data-page="admin-system-package-manager"] .pk-disk-pill b {
+  color: var(--proton-fg);
+  font-weight: 600;
+}
+
+body[data-page="admin-system-package-manager"] .pk-disk-pill .pk-pct {
+  font-weight: 600;
+  color: var(--proton-accent);
+  font-size: 0.8rem;
+}
+
+body[data-page="admin-system-package-manager"] .pk-ring {
+  width: 30px;
+  height: 30px;
+  transform: rotate(-90deg);
+  flex: none;
+}
+
+body[data-page="admin-system-package-manager"] .pk-ring circle {
+  fill: none;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+}
+
+body[data-page="admin-system-package-manager"] .pk-ring-bg {
+  stroke: var(--proton-bg-hover);
+}
+
+body[data-page="admin-system-package-manager"] .pk-ring-val {
+  stroke: var(--proton-accent);
+  stroke-dasharray: 97.4;
+  transition: stroke-dashoffset var(--proton-transition);
+}
+
+/* ===== TOOLBAR: поиск, действия, сегмент, раскрытие ===== */
+body[data-page="admin-system-package-manager"] .pk-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  background: var(--proton-bg-secondary);
+  border: 1px solid var(--proton-border);
+  border-radius: var(--proton-radius);
+  padding: 0.6rem 0.75rem;
+}
+
+body[data-page="admin-system-package-manager"] .pk-search {
+  order: 1;
+  flex: 1 1 210px;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 38px;
+  padding: 0 0.9rem;
+  background: var(--proton-bg);
+  border: 1px solid var(--proton-border);
+  border-radius: 99px;
+  transition:
+    border-color var(--proton-transition),
+    box-shadow var(--proton-transition);
+}
+
+body[data-page="admin-system-package-manager"] .pk-search:focus-within {
+  border-color: var(--proton-accent);
+  box-shadow: 0 0 0 3px rgba(var(--proton-accent-rgb), 0.14);
+}
+
+body[data-page="admin-system-package-manager"] .pk-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--proton-fg);
+  font: inherit;
+  font-size: 0.9rem;
+  /* Рамку и кольцо фокуса рисует только контейнер-пилюля: у нативного
+     input в теме своё кольцо, которое торчало из пилюли и давало
+     «двойную обводку». */
+  box-shadow: none !important;
+}
+
+body[data-page="admin-system-package-manager"] .pk-search input::placeholder {
+  color: var(--proton-muted);
+}
+
+body[data-page="admin-system-package-manager"] .pk-search svg.pk-ic {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: var(--proton-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+
+body[data-page="admin-system-package-manager"] .pk-search kbd {
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--proton-muted);
+  background: var(--proton-bg-hover);
+  border: 1px solid var(--proton-border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 2px 6px;
+}
+
+/* Нативная кнопка сброса фильтра — «✕» в пилюле, видна только при вводе */
+body[data-page="admin-system-package-manager"] .pk-search .pk-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--proton-muted);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: var(--proton-transition);
+}
+
+body[data-page="admin-system-package-manager"] .pk-search input:not(:placeholder-shown) ~ .pk-clear {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body[data-page="admin-system-package-manager"] .pk-search .pk-clear:hover {
+  color: var(--proton-fg);
+  background: var(--proton-bg-hover);
+}
+
+body[data-page="admin-system-package-manager"] .pk-search .pk-clear svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Иконочные действия */
+body[data-page="admin-system-package-manager"] .pk-actions {
+  order: 2;
+  display: flex;
+  gap: 0.5rem;
+}
+
+body[data-page="admin-system-package-manager"] .pk-act {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--proton-radius-sm);
+  color: var(--proton-fg-secondary);
+  cursor: pointer;
+  transition: var(--proton-transition);
+}
+
+body[data-page="admin-system-package-manager"] .pk-act:active {
+  transform: scale(0.97);
+}
+
+/* Клики по иконке/подписи должны попадать в саму кнопку: нативные
+   обработчики LuCI читают data-command у ev.target. Без этого клик по
+   <svg>/<span> давал target без атрибута → «opkg null» и ошибка. */
+body[data-page="admin-system-package-manager"] .pk-act > * {
+  pointer-events: none;
+}
+
+body[data-page="admin-system-package-manager"] .pk-act:hover {
+  color: var(--proton-fg);
+  background: var(--proton-bg-hover);
+  border-color: var(--proton-border);
+}
+
+body[data-page="admin-system-package-manager"] .pk-act--green:hover {
+  color: var(--proton-success);
+}
+
+body[data-page="admin-system-package-manager"] .pk-act--toggle {
+  width: auto;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  padding: 0 14px;
+  gap: 0.4rem;
+  background: var(--proton-bg-hover);
+  border-color: var(--proton-border);
+}
+
+body[data-page="admin-system-package-manager"] .pk-act--toggle.is-open {
+  color: var(--proton-accent);
+  background: rgba(var(--proton-accent-rgb), 0.14);
+  border-color: rgba(var(--proton-accent-rgb), 0.45);
+}
+
+/* Чеврон раскрытия: разворот при открытии (как в превью) */
+body[data-page="admin-system-package-manager"] .pk-act svg.pk-chev {
+  width: 14px;
+  height: 14px;
+  transition: transform var(--proton-transition);
+}
+
+body[data-page="admin-system-package-manager"] .pk-act--toggle.is-open svg.pk-chev {
+  transform: rotate(180deg);
+}
+
+body[data-page="admin-system-package-manager"] .pk-act svg.pk-ic {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+
+/* Нативным кнопкам LuCI (btn cbi-button-*) сбрасываем сплошной фон акцента —
+   иконки-плитки прозрачные, подсветка только на hover */
+body[data-page="admin-system-package-manager"] #view .pk-toolbar .pk-actions .pk-act:not(.pk-act--toggle) {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--proton-fg-secondary);
+}
+body[data-page="admin-system-package-manager"] #view .pk-toolbar .pk-actions .pk-act:not(.pk-act--toggle):hover {
+  color: var(--proton-fg);
+  background: var(--proton-bg-hover);
+  border-color: var(--proton-border);
+}
+
+body[data-page="admin-system-package-manager"] .pk-act .pk-act-full,
+body[data-page="admin-system-package-manager"] .pk-act .pk-act-short {
+  display: none;
+}
+
+body[data-page="admin-system-package-manager"] .pk-act--toggle .pk-act-full {
+  display: inline;
+}
+
+body[data-page="admin-system-package-manager"] .pk-act--toggle .pk-act-short {
+  display: none;
+}
+
+body[data-page="admin-system-package-manager"] .pk-act.busy svg.pk-ic {
+  animation: pk-spin 0.8s linear infinite;
+}
+
+@keyframes pk-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Вертикальный разделитель */
+body[data-page="admin-system-package-manager"] .pk-vsep {
+  order: 3;
+  width: 1px;
+  height: 24px;
+  background: var(--proton-border);
+}
+
+/* Сегмент локализаций */
+body[data-page="admin-system-package-manager"] .pk-seg {
+  order: 4;
+  display: inline-flex;
+  background: var(--proton-bg);
+  border: 1px solid var(--proton-border);
+  border-radius: var(--proton-radius);
+  padding: 3px;
+  gap: 2px;
+}
+
+body[data-page="admin-system-package-manager"] .pk-seg label {
+  cursor: pointer;
+  display: inline-flex;
+}
+
+body[data-page="admin-system-package-manager"] .pk-seg input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+body[data-page="admin-system-package-manager"] .pk-seg-btn {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: calc(var(--proton-radius) - 2px);
+  color: var(--proton-fg-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: var(--proton-transition);
+  white-space: nowrap;
+}
+
+body[data-page="admin-system-package-manager"] .pk-seg-btn:hover {
+  color: var(--proton-fg);
+}
+
+body[data-page="admin-system-package-manager"] .pk-seg input[type="radio"]:checked + .pk-seg-btn,
+body[data-page="admin-system-package-manager"] .pk-seg-btn.is-on {
+  background: rgba(var(--proton-accent-rgb), 0.14);
+  color: var(--proton-accent);
+  box-shadow: inset 0 0 0 1px rgba(var(--proton-accent-rgb), 0.35);
+}
+
+/* Раскрытие «Установить по URL» */
+body[data-page="admin-system-package-manager"] .pk-expand {
+  order: 5;
+  flex-basis: 100%;
+  max-height: 0;
+  opacity: 0;
+  visibility: hidden;
+  overflow: hidden;
+  transition:
+    max-height var(--proton-transition),
+    opacity var(--proton-transition),
+    margin-top var(--proton-transition),
+    visibility 0s var(--proton-transition);
+  width: 100%;
+}
+
+body[data-page="admin-system-package-manager"] .pk-expand.is-open {
+  max-height: 120px;
+  opacity: 1;
+  visibility: visible;
+  margin-top: 0.6rem;
+  transition:
+    max-height var(--proton-transition),
+    opacity var(--proton-transition),
+    margin-top var(--proton-transition);
+}
+
+body[data-page="admin-system-package-manager"] .pk-input-group {
+  display: flex;
+  width: 100%;
+  border-radius: var(--proton-radius-sm);
+}
+
+body[data-page="admin-system-package-manager"] .pk-input-group input {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+  width: 100%;
+  background: var(--proton-bg);
+  border: 1px solid var(--proton-border);
+  border-right: none;
+  border-radius: var(--proton-radius-sm) 0 0 var(--proton-radius-sm);
+  padding: 10px 14px;
+  color: var(--proton-fg);
+  outline: none;
+  font: inherit;
+  font-size: 0.9rem;
+  transition:
+    border-color var(--proton-transition),
+    box-shadow var(--proton-transition);
+}
+
+body[data-page="admin-system-package-manager"] .pk-input-group input::placeholder {
+  color: var(--proton-muted);
+}
+
+/* Кольцо фокуса — ВНУТРЬ поля: наружное кольцо (0 0 0 3px) обрезалось
+   overflow'ом раскрытия и давало «косяки» на углах. */
+body[data-page="admin-system-package-manager"] .pk-input-group:focus-within input {
+  border-color: var(--proton-accent);
+  box-shadow: inset 0 0 0 1px rgba(var(--proton-accent-rgb), 0.35);
+}
+
+body[data-page="admin-system-package-manager"] .pk-input-group .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--proton-fg);
+  background: var(--proton-accent);
+  border: 1px solid var(--proton-accent);
+  border-radius: 0 var(--proton-radius-sm) var(--proton-radius-sm) 0;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: var(--proton-transition);
+}
+
+body[data-page="admin-system-package-manager"] .pk-input-group .btn:hover {
+  background: var(--proton-accent-hover);
+  border-color: var(--proton-accent-hover);
+}
+
+/* ===== TABS: подчёркивание с бегущим акцентом ===== */
+/* Табы входят в карточку: фон/рамку нативного cbi-tabmenu снимаем, оставляем
+   только верхний разделитель; отрицательные margin'ы дают полную ширину. */
+body[data-page="admin-system-package-manager"] .pk-tabs {
+  display: flex;
+  gap: 1.6rem;
+  margin: 1rem calc(var(--pk-pad) * -1) 0;
+  padding: 0 var(--pk-pad);
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--proton-border);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body[data-page="admin-system-package-manager"] .pk-tabs li {
+  list-style: none;
+  position: relative;
+}
+
+body[data-page="admin-system-package-manager"] .pk-tabs button,
+body[data-page="admin-system-package-manager"] .pk-tabs a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: none;
+  color: var(--proton-fg-secondary);
+  font: inherit;
+  font-size: 0.875rem;
+  padding: 0.8rem 0.2rem 1rem;
+  cursor: pointer;
+  position: relative;
+  transition: color var(--proton-transition);
+}
+
+body[data-page="admin-system-package-manager"] .pk-tabs button:hover,
+body[data-page="admin-system-package-manager"] .pk-tabs a:hover {
+  color: var(--proton-fg);
+}
+
+body[data-page="admin-system-package-manager"] .pk-tabs li.cbi-tab button,
+body[data-page="admin-system-package-manager"] .pk-tabs li.cbi-tab a {
+  color: var(--proton-fg);
+  font-weight: 600;
+}
+
+body[data-page="admin-system-package-manager"] .pk-tabs li.cbi-tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--proton-accent);
+  border-radius: 2px;
+}
+
+body[data-page="admin-system-package-manager"] .pk-tabs .pk-count {
+  font-size: 11px;
+  background: var(--proton-bg-hover);
+  border: 1px solid var(--proton-border);
+  color: var(--proton-muted);
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+body[data-page="admin-system-package-manager"] .pk-tabs li.cbi-tab .pk-count {
+  color: var(--proton-accent);
+  border-color: rgba(var(--proton-accent-rgb), 0.4);
+  background: rgba(var(--proton-accent-rgb), 0.14);
+}
+
+/* Нативный .controls перекомпонован в тулбар — прячем. Тема держит его
+   открытым через display:flex !important (#view>.controls:has(.cbi-progressbar)),
+   поэтому скрываем тем же оружием и большей специфичностью. */
+body[data-page="admin-system-package-manager"] #view > .controls.pk-is-hidden {
+  display: none !important;
+}
+
+/* ===== v3: двухкарточная композиция (шапка + список) =====
+   Уровни поверхностей:
+     0 — фон страницы,
+     1 — карточки (.pk-panel шапка, .pk-list-card список),
+     2 — врезка-тулбар: окно в фон страницы (var(--proton-bg-image)),
+     3 — поля и чипы внутри врезки (скрим поверх градиента). */
+body[data-page="admin-system-package-manager"] {
+  --pk-field: rgba(0, 0, 0, 0.16);
+}
+
+html[data-theme="light"] body[data-page="admin-system-package-manager"] {
+  --pk-field: rgba(0, 0, 0, 0.035);
+}
+
+/* --- 2. Врезка-тулбар: окно в фон страницы, одна ступень от карточки --- */
+body[data-page="admin-system-package-manager"] .pk-toolbar {
+  border: none;
+  border-radius: var(--proton-radius);
+  padding: 0.6rem 0.75rem;
+  box-shadow: none;
+}
+
+/* --- 3. Поля/чипы внутри врезки --- */
+body[data-page="admin-system-package-manager"] .pk-search,
+body[data-page="admin-system-package-manager"] .pk-seg,
+body[data-page="admin-system-package-manager"] .pk-input-group input {
+  background: var(--pk-field);
+}
+
+body[data-page="admin-system-package-manager"] .pk-search:focus-within {
+  border-color: var(--proton-accent);
+  box-shadow: 0 0 0 3px rgba(var(--proton-accent-rgb), 0.14);
+}
+
+/* Чипы на врезке: hover — тон карточки, а не ярче врезки */
+body[data-page="admin-system-package-manager"] .pk-act:hover {
+  background: var(--proton-bg-secondary);
+  border-color: var(--proton-border);
+}
+
+body[data-page="admin-system-package-manager"] .pk-act--toggle {
+  background: var(--proton-bg-secondary);
+  border-color: var(--proton-border);
+}
+
+body[data-page="admin-system-package-manager"] .pk-act--toggle:hover {
+  border-color: rgba(var(--proton-accent-rgb), 0.5);
+}
+
+/* Активная доля сегмента — акцентная заливка */
+body[data-page="admin-system-package-manager"] .pk-seg input[type="radio"]:checked + .pk-seg-btn,
+body[data-page="admin-system-package-manager"] .pk-seg-btn.is-on {
+  background: rgba(var(--proton-accent-rgb), 0.16);
+  color: var(--proton-accent);
+  box-shadow: inset 0 0 0 1px rgba(var(--proton-accent-rgb), 0.4);
+}
+
+/* --- 4. КАРТОЧКА-СПИСОК: pager-крышка + таблица + pager-подвал ---
+   Обёртку .pk-list-card собирает JS переносом нативных узлов (pager,
+   таблица, pager), чтобы не зависеть от :has() в старых браузерах. */
+body[data-page="admin-system-package-manager"] .pk-list-card {
+  background: var(--proton-bg-secondary);
+  border: 1px solid var(--proton-border);
+  border-radius: var(--proton-radius-lg);
+  box-shadow: var(--proton-shadow-sm);
+  margin-bottom: 1rem;
+}
+
+/* Полосы пагинации — часть карточки, а не отдельные острова */
+body[data-page="admin-system-package-manager"] .pk-list-card > .controls {
+  background: var(--proton-bg-secondary);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0 !important;
+  padding: 0.4rem 0.75rem !important;
+}
+
+body[data-page="admin-system-package-manager"] .pk-list-card > .controls:first-child {
+  border-bottom: 1px solid var(--proton-border);
+  border-radius: var(--proton-radius-lg) var(--proton-radius-lg) 0 0;
+}
+
+body[data-page="admin-system-package-manager"] .pk-list-card > .controls:last-child {
+  border-top: 1px solid var(--proton-border);
+  border-radius: 0 0 var(--proton-radius-lg) var(--proton-radius-lg);
+}
+
+/* Центр пейджера — простой текст, кнопки — призраки */
+body[data-page="admin-system-package-manager"] .pk-list-card .pager .text {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 0.5rem !important;
+  color: var(--proton-fg-secondary) !important;
+  font-weight: 500 !important;
+  font-size: 0.85rem !important;
+}
+
+body[data-page="admin-system-package-manager"] .pk-list-card .pager button {
+  width: 34px !important;
+  min-width: 34px !important;
+  max-width: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--proton-radius-sm) !important;
+  box-shadow: none !important;
+  color: var(--proton-fg-secondary) !important;
+  font-size: 1rem !important;
+}
+
+body[data-page="admin-system-package-manager"] .pk-list-card .pager button:hover:not([disabled]) {
+  background: var(--proton-bg-hover) !important;
+  border-color: var(--proton-border) !important;
+  color: var(--proton-fg) !important;
+  box-shadow: none !important;
+  transform: none;
+}
+
+/* Таблица — тело карточки: без внешних отступов, hover — лёгкий акцент.
+   Убираем собственную «карточку» таблицы (тема даёт ей фон, радиус 12px и
+   тень): внутри карточки списка она давала вторые, несовпадающие углы. */
+body[data-page="admin-system-package-manager"] .pk-list-card #packages {
+  margin: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Шапка таблицы — ряд внутри карточки, а не её верх: скруглений быть не
+   должно (верх карточки — полоса пагинации). Убираем и её тень, чтобы
+   sticky-шапка не давала прямоугольного «острова». */
+body[data-page="admin-system-package-manager"] .pk-list-card #packages .tr.cbi-section-table-titles {
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+}
+
+body[data-page="admin-system-package-manager"] .pk-list-card #packages .tr:hover {
+  background: rgba(var(--proton-accent-rgb), 0.05);
+}
+
+/* [C] Колонка «Версия»: тема красит .version в лёгкий акцентный тон —
+   возвращаем остальным ячейкам общий фон строки. Селектор темы
+   (#packages .td.col-2:nth-child(2)) специфичнее, поэтому !important. */
+body[data-page="admin-system-package-manager"] #packages td.version,
+body[data-page="admin-system-package-manager"] #packages th.version,
+body[data-page="admin-system-package-manager"] #packages .td:nth-child(2),
+body[data-page="admin-system-package-manager"] #packages .th:nth-child(2),
+body[data-page="admin-system-package-manager"] #packages a {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* [D] Установка/обновление в строках: контурный акцент вместо зелёной
+   градиентной заливки. Тема задаёт её через background: ... !important,
+   поэтому перекрываем тоже с !important. */
+body[data-page="admin-system-package-manager"] #packages [data-action="install"],
+body[data-page="admin-system-package-manager"] #packages [data-action="upgrade"],
+body[data-page="admin-system-package-manager"] #packages .cbi-button-positive {
+  background: transparent !important;
+  background-image: none !important;
+  border: 1px solid rgba(var(--proton-accent-rgb), 0.45) !important;
+  color: var(--proton-accent) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+body[data-page="admin-system-package-manager"] #packages [data-action="install"]:hover,
+body[data-page="admin-system-package-manager"] #packages [data-action="upgrade"]:hover,
+body[data-page="admin-system-package-manager"] #packages .cbi-button-positive:hover {
+  background: rgba(var(--proton-accent-rgb), 0.12) !important;
+  background-image: none !important;
+  border-color: rgba(var(--proton-accent-rgb), 0.7) !important;
+}
+
+/* ===== Анимации выключены ===== */
+html.proton-no-animations body[data-page="admin-system-package-manager"] * {
+  transition: none !important;
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-page="admin-system-package-manager"] * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ===== МОБАЙЛ (720px) ===== */
+@media (max-width: 720px) {
+  body[data-page="admin-system-package-manager"] .pk-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-header h2 {
+    font-size: 1rem;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-title-row {
+    flex-wrap: wrap;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-header .cbi-map-descr {
+    flex-basis: 100%;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-disk-pill {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    background: transparent;
+    border: none;
+    padding: 0;
+    gap: 0.75rem;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-search {
+    flex: none;
+    height: 42px;
+    border-radius: var(--proton-radius);
+    background: var(--proton-bg-secondary);
+    border: 1px solid var(--proton-border);
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-search kbd {
+    display: none;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-actions {
+    display: grid;
+    /* 3 плитки в ряд + «Загрузить и установить» на всю ширину ниже.
+       minmax(0,1fr) обязателен: иначе длинная подпись распирает грид
+       и кнопки вылезают за карточку. */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-act {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-width: 0;
+    height: auto;
+    padding: 0.75rem 0.25rem 0.6rem;
+    font-size: 11px;
+    background: var(--proton-bg-secondary);
+    border-color: var(--proton-border);
+    border-radius: var(--proton-radius);
+    overflow: hidden;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-act svg.pk-ic {
+    width: 19px;
+    height: 19px;
+    margin-bottom: 0.25rem;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-act .pk-act-short {
+    display: block;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-act--toggle .pk-act-full {
+    display: none;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-act--toggle .pk-act-short {
+    display: block;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-act--toggle {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: center;
+    gap: 0.45rem;
+    background: var(--proton-bg-secondary);
+    border-color: var(--proton-border);
+    padding: 0.7rem 0.6rem;
+    font-size: 12px;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-act--toggle svg.pk-ic {
+    margin-bottom: 0;
+  }
+
+  /* Длинные подписи не должны распирать плитки: переносим на 2 строки */
+  body[data-page="admin-system-package-manager"] .pk-act .pk-act-short,
+  body[data-page="admin-system-package-manager"] .pk-act .pk-act-full {
+    max-width: 100%;
+    overflow: hidden;
+    text-align: center;
+    line-height: 1.15;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-act--toggle .pk-act-short {
+    white-space: nowrap;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-vsep {
+    display: none;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-seg {
+    order: 4;
+    width: 100%;
+    min-width: 0;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-seg label {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-seg-btn {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-expand {
+    order: 3;
+    flex: none;
+    width: 100%;
+    min-width: 0;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-expand.is-open {
+    max-height: 200px;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-input-group {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-input-group input {
+    border-radius: var(--proton-radius);
+    border-right: 1px solid var(--proton-border);
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-input-group .btn {
+    border-radius: var(--proton-radius);
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-panel {
+    --pk-pad: 0.875rem;
+    padding-top: 1rem;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-tabs {
+    gap: 1.2rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0 var(--pk-pad);
+    margin: 0.75rem calc(var(--pk-pad) * -1) 0;
+    border-top: 1px solid var(--proton-border);
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  body[data-page="admin-system-package-manager"] .pk-tabs button,
+  body[data-page="admin-system-package-manager"] .pk-tabs a {
+    white-space: nowrap;
+    font-size: 0.9rem;
+    padding: 0.75rem 0.2rem 0.85rem;
+  }
+}

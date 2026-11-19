@@ -10,6 +10,61 @@
 (function () {
   "use strict";
 
+  const pages = {
+    "admin-system-startup": [
+      ["Start", "start"],
+      ["Restart", "restart"],
+      ["Reload", "reload"],
+      ["Stop", "stop"],
+    ],
+    "admin-status-processes": [
+      ["Hang Up", "restart", "SIGHUP"],
+      ["Terminate", "stop", "SIGTERM"],
+      ["Kill", "kill", "SIGKILL"],
+    ],
+  };
+
+  const content = document.getElementById("maincontent");
+  if (!content) return;
+
+  let scheduled = false;
+  function decorate() {
+    scheduled = false;
+    const actions = pages[document.body.dataset.page];
+    if (!actions) return;
+
+    const translate = typeof window._ === "function" ? window._ : (key) => key;
+    const byLabel = new Map(
+      actions.map(([key, action, signal]) => [translate(key), { action, signal }]),
+    );
+
+    content
+      .querySelectorAll("#view .table .tr button:not([data-proton-system-action])")
+      .forEach((button) => {
+        const label = button.textContent.trim();
+        const match = byLabel.get(label);
+        if (!match) return;
+        button.dataset.protonSystemAction = match.action;
+        if (!button.title) {
+          button.title = match.signal ? `${label} (${match.signal})` : label;
+        }
+      });
+  }
+
+  const observer = new MutationObserver(() => {
+    if (!pages[document.body.dataset.page] || scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(decorate);
+  });
+
+  observer.observe(content, { childList: true, subtree: true });
+  observer.observe(document.body, { attributes: true, attributeFilter: ["data-page"] });
+  decorate();
+})();
+
+(function () {
+  "use strict";
+
   try {
     if (typeof L !== "undefined" && L.env) {
       let canonical = null;
@@ -1489,8 +1544,6 @@
 
       const modal = document.createElement("div");
       modal.className = "proton-reboot-modal";
-      modal.style.cssText =
-        "background: var(--proton-bg-secondary); border: 1px solid var(--proton-border); border-radius: var(--proton-radius); padding: 28px; max-width: 440px; width: calc(100% - 40px); box-shadow: var(--proton-shadow-lg); animation: slideUp 0.3s ease;";
 
       const header = document.createElement("div");
       header.style.cssText =

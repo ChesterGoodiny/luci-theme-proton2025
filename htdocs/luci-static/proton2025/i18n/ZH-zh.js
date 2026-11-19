@@ -538,4 +538,31 @@ window.ProtonTranslations = {
   "Reset to factory code": "重置为出厂代码",
   "Reset the template to factory code": "将模板重置为出厂代码",
   "Template reset to factory code": "模板已重置为出厂代码",
+  "free": "空闲",
+  "used": "已用",
+  "/": "/",
+  "Client-side navigation (experimental)": "客户端导航（实验性）",
+  "Custom": "自定义",
+  "Custom Color": "自定义颜色",
+  "Navigate between pages without full reloads (SPA). Experimental — disable if you notice issues. A full page reload applies the change.":
+    "在页面之间切换而无需完全重新加载（SPA）。实验性功能——如遇到问题请禁用。更改在页面完全重新加载后生效。",
+  "Reload the page to apply the client-side navigation change.": "重新加载页面以应用客户端导航更改。",
+  "Only .%s files can be installed here": "此处只能安装 .%s 文件",
+  "Select one or more package files. They are installed together in one step, so packages that depend on each other can be uploaded at once.":
+    "选择一个或多个软件包文件。它们会在一个步骤中一起安装，因此相互依赖的软件包可以一次上传。",
+  "Too many files (at most %d)": "文件过多（最多 %d 个）",
+  "Upload packages": "上传软件包",
+  "Uploading %d of %d: %s": "正在上传第 %d 个，共 %d 个：%s",
+  "Temperature thresholds": "温度阈值",
+  "Now": "现在",
+  "Save": "保存",
+  "Neutral": "中性",
+  "Defaults restored. Click Save to apply.": "已恢复默认值。点击“保存”以应用。",
+  "Failed to save temperature thresholds.": "无法保存温度阈值。",
+  "Saving temperature thresholds…": "正在保存温度阈值…",
+  "Temperature thresholds saved.": "温度阈值已保存。",
+  "Use whole numbers from 0 to 150°C with Warm < Hot < Critical.": "请使用 0 到 150°C 的整数，并满足 温暖 < 过热 < 危险。",
+  "Controls when sensor readings change status. Values must satisfy Warm < Hot < Critical.":
+    "定义传感器读数何时改变状态。必须满足 温暖 < 过热 < 危险。",
+  "Disk space": "磁盘空间"
 };

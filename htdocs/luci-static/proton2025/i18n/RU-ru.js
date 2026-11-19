@@ -121,8 +121,6 @@ window.ProtonTranslations = {
   "Choose theme accent color": "Выберите акцентный цвет темы",
   Custom: "Свой",
   "Custom Color": "Свой цвет",
-  "Pick a color or enter a HEX value (#rrggbb)":
-    "Выберите цвет или введите HEX-значение (#rrggbb)",
   Blue: "Синий",
   Purple: "Фиолетовый",
   Green: "Зелёный",
@@ -454,11 +452,6 @@ window.ProtonTranslations = {
   "value…": "значение…",
   "click key → Value · shift+click → Label":
     "клик по ключу → Value · shift+клик → Label",
-  "click key → active field · shift+click → title":
-    "клик по ключу → активное поле · shift+клик → заголовок",
-  "Click a key → fills": "Клик по ключу → заполнит",
-  primary: "основное",
-  title: "заголовок",
   "Field mapping": "Маппинг полей",
   "Template variables": "Переменные шаблона",
   "varmap hint":
@@ -581,4 +574,21 @@ window.ProtonTranslations = {
   "Only .%s files can be installed here":
     "Здесь можно устанавливать только файлы .%s",
   "Uploading %d of %d: %s": "Загрузка %d из %d: %s",
+  "free": "свободно",
+  "used": "использовано",
+  "/": "/",
+  "Temperature thresholds": "Пороги температуры",
+  "Now": "Сейчас",
+  "Save": "Сохранить",
+  "Neutral": "Нейтральный",
+  "Defaults restored. Click Save to apply.":
+    "Значения по умолчанию восстановлены. Нажмите «Сохранить», чтобы применить.",
+  "Failed to save temperature thresholds.": "Не удалось сохранить пороги температуры.",
+  "Saving temperature thresholds…": "Сохранение порогов температуры…",
+  "Temperature thresholds saved.": "Пороги температуры сохранены.",
+  "Use whole numbers from 0 to 150°C with Warm < Hot < Critical.":
+    "Используйте целые числа от 0 до 150 °C при условии Тепло < Горячо < Критично.",
+  "Controls when sensor readings change status. Values must satisfy Warm < Hot < Critical.":
+    "Определяет, когда показания датчиков меняют статус. Должно выполняться Тепло < Горячо < Критично.",
+  "Disk space": "Дисковое пространство"
 };

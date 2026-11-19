@@ -5,4 +5,8 @@ window.ProtonTranslations = {
   "Old Proton tabs": "Old Proton tabs",
   "Choose the appearance of LuCI page tabs. Navigation and page addresses stay unchanged.":
     "Choose the appearance of LuCI page tabs. Navigation and page addresses stay unchanged.",
+  "Disk space": "Disk space",
+  "free": "free",
+  "used": "used",
+  "/": "/"
 };

@@ -565,4 +565,34 @@ window.ProtonTranslations = {
   "Reset to factory code": "Auf Werkscode zurücksetzen",
   "Reset the template to factory code": "Vorlage auf Werkscode zurücksetzen",
   "Template reset to factory code": "Vorlage auf Werkscode zurückgesetzt",
+  "Disk space": "Festplattenspeicher",
+  "free": "frei",
+  "used": "benutzt",
+  "/": "/",
+  "Client-side navigation (experimental)": "Clientseitige Navigation (experimentell)",
+  "Custom": "Benutzerdefiniert",
+  "Custom Color": "Benutzerdefinierte Farbe",
+  "Navigate between pages without full reloads (SPA). Experimental — disable if you notice issues. A full page reload applies the change.":
+    "Wechsel zwischen Seiten ohne vollständiges Neuladen (SPA). Experimentell — bei Problemen deaktivieren. Die Änderung wird nach einem vollständigen Neuladen der Seite wirksam.",
+  "Reload the page to apply the client-side navigation change.":
+    "Laden Sie die Seite neu, um die Änderung der clientseitigen Navigation anzuwenden.",
+  "Only .%s files can be installed here": "Hier können nur .%s-Dateien installiert werden",
+  "Select one or more package files. They are installed together in one step, so packages that depend on each other can be uploaded at once.":
+    "Wählen Sie eine oder mehrere Paketdateien. Sie werden in einem Schritt zusammen installiert, sodass voneinander abhängige Pakete auf einmal hochgeladen werden können.",
+  "Too many files (at most %d)": "Zu viele Dateien (maximal %d)",
+  "Upload packages": "Pakete hochladen",
+  "Uploading %d of %d: %s": "Hochladen von %d von %d: %s",
+  "Temperature thresholds": "Temperaturschwellen",
+  "Now": "Jetzt",
+  "Save": "Speichern",
+  "Neutral": "Neutral",
+  "Defaults restored. Click Save to apply.":
+    "Standardeinstellungen wiederhergestellt. Zum Anwenden auf Speichern klicken.",
+  "Failed to save temperature thresholds.": "Temperaturschwellen konnten nicht gespeichert werden.",
+  "Saving temperature thresholds…": "Temperaturschwellen werden gespeichert…",
+  "Temperature thresholds saved.": "Temperaturschwellen gespeichert.",
+  "Use whole numbers from 0 to 150°C with Warm < Hot < Critical.":
+    "Ganze Zahlen von 0 bis 150 °C verwenden, mit Warm < Heiß < Kritisch.",
+  "Controls when sensor readings change status. Values must satisfy Warm < Hot < Critical.":
+    "Legt fest, wann Sensorwerte den Status ändern. Es muss gelten: Warm < Heiß < Kritisch."
 };
