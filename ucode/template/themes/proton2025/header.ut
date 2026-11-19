@@ -190,7 +190,9 @@
    «Установить» только по HTTPS; по HTTP остаётся ярлык на главном экране. #}
 <link rel="manifest" href="{{ media }}/manifest.json" />
 <link rel="apple-touch-icon" href="{{ media }}/img/apple-touch-icon.png" />
+{% if (!(lc(substr(dispatcher.lang ?? '', 0, 2)) in [ 'zh', 'ja', 'ko' ])): %}
 <link rel="preload" href="{{ media }}/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+{% endif %}
 {# Кириллицу предзагружаем только для кириллических локалей: на остальных
    языках preload не использовался и браузер ругался в консоли. Если
    кириллический глиф всё же встретится, unicode-range подгрузит сабсет. #}
