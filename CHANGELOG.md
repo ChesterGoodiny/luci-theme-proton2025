@@ -60,6 +60,7 @@ All notable changes to luci-theme-proton2025. Source of truth: GitHub Releases.
 
 ## Build
 
+- The IPK build uses Ubuntu 24.04 to provide the GNU `install` utility required by the OpenWrt 23.05 SDK.
 - **Theme asset versioning**
   - Bumped the asset version (`__pv`) and the package version to 1.4.6 so updated styles and UI scripts are reloaded by browsers after this release's changes
 
