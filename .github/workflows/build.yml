@@ -15,7 +15,7 @@ permissions:
 jobs:
   build:
     name: Build ${{ matrix.package_format }} package
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -23,11 +23,14 @@ jobs:
         include:
           - package_format: ipk
             artifact_name: luci-theme-proton2025-ipk
+            # OpenWrt 23.05 requires GNU install; Ubuntu 26.04 uses uutils.
+            runner: ubuntu-24.04
             sdk_url: https://downloads.openwrt.org/releases/23.05.5/targets/x86/64/openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
           # A release SDK instead of snapshots: the snapshot SDK changed under
           # every build and could never be cached.
           - package_format: apk
             artifact_name: luci-theme-proton2025-apk
+            runner: ubuntu-latest
             sdk_url: https://downloads.openwrt.org/releases/25.12.5/targets/x86/64/openwrt-sdk-25.12.5-x86-64_gcc-14.3.0_musl.Linux-x86_64.tar.zst
 
     steps:
