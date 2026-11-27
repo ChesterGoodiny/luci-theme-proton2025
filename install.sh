@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck shell=ash
 # Copyright 2025-2026 ChesterGoodiny
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,8 +30,12 @@ THEME_NAME="proton2025"
 REPO="ChesterGoodiny/luci-theme-proton2025"
 API_URL="https://api.github.com/repos/${REPO}/releases/latest"
 ATOM_URL="https://github.com/${REPO}/releases.atom"
-DOWNLOAD_DIR="/tmp/proton2025-install"
+DOWNLOAD_DIR=""
 ATTEMPTS=3
+CONNECT_TIMEOUT=15
+DOWNLOAD_TIMEOUT=120
+AUTO_INSTALL_CURL="${AUTO_INSTALL_CURL:-1}"
+CURL_INSTALL_ATTEMPTED=0
 
 # Dashboard widgets live in a separate package that isn't released yet.
 WITH_DASHBOARD="${WITH_DASHBOARD:-0}"
@@ -41,6 +46,7 @@ PKG_IS_APK=0
 command -v apk >/dev/null 2>&1 && PKG_IS_APK=1
 
 DOWNLOADER=""
+FETCH_RESPONSE=""
 ASSET_URL=""
 ASSET_FILE=""
 
@@ -58,21 +64,11 @@ printf "\n"
 
 check_system() {
     if [ -f /etc/openwrt_release ]; then
+        # shellcheck source=/dev/null
         . /etc/openwrt_release
         ok "Detected: ${DISTRIB_DESCRIPTION}"
     else
         warn "This doesn't appear to be an OpenWrt system, continuing anyway"
-    fi
-
-    if command -v wget >/dev/null 2>&1; then
-        DOWNLOADER="wget"
-    elif command -v curl >/dev/null 2>&1; then
-        DOWNLOADER="curl"
-    else
-        err "Neither wget nor curl found. Install one of them first:"
-        printf "  opkg update && opkg install wget-ssl\n"
-        printf "  apk update && apk add wget\n"
-        exit 1
     fi
 
     if [ "$PKG_IS_APK" -eq 1 ]; then
@@ -83,14 +79,168 @@ check_system() {
         err "Neither apk nor opkg found, cannot install a package"
         exit 1
     fi
+
+    if command -v wget >/dev/null 2>&1; then
+        DOWNLOADER="wget"
+    elif command -v curl >/dev/null 2>&1; then
+        DOWNLOADER="curl"
+    elif ensure_curl; then
+        DOWNLOADER="curl"
+    else
+        err "No usable downloader available"
+        exit 1
+    fi
+
+    ok "Primary downloader: $DOWNLOADER"
+}
+
+ensure_curl() {
+    if command -v curl >/dev/null 2>&1; then
+        return 0
+    fi
+
+    if [ "$AUTO_INSTALL_CURL" != "1" ]; then
+        warn "Automatic curl installation is disabled"
+        return 1
+    fi
+
+    if [ "$CURL_INSTALL_ATTEMPTED" -eq 1 ]; then
+        return 1
+    fi
+
+    CURL_INSTALL_ATTEMPTED=1
+
+    warn "curl is not installed"
+
+    if [ "$PKG_IS_APK" -eq 1 ]; then
+        info "Installing curl using apk..."
+
+        if ! apk add curl; then
+            warn "Initial installation failed, updating package indexes..."
+
+            if apk update; then
+                apk add curl || return 1
+            else
+                return 1
+            fi
+        fi
+    else
+        info "Installing curl using opkg..."
+
+        if ! opkg install curl; then
+            warn "Initial installation failed, updating package indexes..."
+
+            if opkg update; then
+                opkg install curl || return 1
+            else
+                return 1
+            fi
+        fi
+    fi
+
+    if command -v curl >/dev/null 2>&1; then
+        ok "curl installed successfully"
+        return 0
+    fi
+
+    err "curl installation failed"
+    return 1
+}
+
+download_with() {
+    local method="$1"
+    local url="$2"
+    local output="$3"
+    local status
+
+    rm -f "$output"
+
+    info "Downloading using $method..."
+
+    if [ "$method" = "curl" ]; then
+        if curl -fsSL \
+            --connect-timeout "$CONNECT_TIMEOUT" \
+            --max-time "$DOWNLOAD_TIMEOUT" \
+            -o "$output" "$url"; then
+            status=0
+        else
+            status=$?
+        fi
+    else
+        set --
+        if wget --version 2>/dev/null | grep -q "GNU Wget"; then
+            set -- -t 1
+        fi
+
+        if wget "$@" -T "$CONNECT_TIMEOUT" -O "$output" "$url"; then
+            status=0
+        else
+            status=$?
+        fi
+    fi
+
+    if [ "$status" -eq 0 ] && [ -s "$output" ]; then
+        return 0
+    fi
+
+    if [ "$status" -ne 0 ]; then
+        warn "$method failed (exit code: $status)"
+    else
+        warn "$method returned an empty file"
+    fi
+
+    rm -f "$output"
+    return 1
+}
+
+download_with_fallback() {
+    local url="$1"
+    local output="$2"
+    local primary="$DOWNLOADER"
+    local fallback
+
+    if download_with "$primary" "$url" "$output"; then
+        return 0
+    fi
+
+    if [ "$primary" = "wget" ]; then
+        if ! ensure_curl; then
+            warn "curl fallback is unavailable"
+            return 1
+        fi
+        fallback="curl"
+    else
+        if ! command -v wget >/dev/null 2>&1; then
+            warn "wget fallback is unavailable"
+            return 1
+        fi
+        fallback="wget"
+    fi
+
+    warn "$primary failed, falling back to $fallback..."
+
+    if download_with "$fallback" "$url" "$output"; then
+        DOWNLOADER="$fallback"
+        return 0
+    fi
+
+    return 1
 }
 
 fetch() {
-    if [ "$DOWNLOADER" = "curl" ]; then
-        curl -fsSL "$1" 2>/dev/null || true
-    else
-        wget -qO- "$1" 2>/dev/null || true
+    local url="$1"
+    local output="${DOWNLOAD_DIR}/release-metadata"
+
+    FETCH_RESPONSE=""
+
+    if download_with_fallback "$url" "$output"; then
+        FETCH_RESPONSE=$(cat "$output")
+        rm -f "$output"
+        return 0
     fi
+
+    rm -f "$output"
+    return 1
 }
 
 # The ipk and apk assets don't share a naming scheme, so the exact file name is
@@ -101,7 +251,10 @@ resolve_asset() {
     ext="ipk"
     [ "$PKG_IS_APK" -eq 1 ] && ext="apk"
 
-    response=$(fetch "$API_URL")
+    response=""
+    if fetch "$API_URL"; then
+        response="$FETCH_RESPONSE"
+    fi
 
     if echo "$response" | grep -q "API rate limit"; then
         warn "GitHub API rate limit reached, using the releases feed instead"
@@ -112,7 +265,11 @@ resolve_asset() {
         grep -o "https://[^\"]*${PKG_NAME}[^\"]*\.${ext}" | head -n1)
 
     if [ -z "$ASSET_URL" ]; then
-        tag=$(fetch "$ATOM_URL" | grep -o "releases/tag/[^\"]*" | head -n1 | sed 's|.*/||')
+        tag=""
+        if fetch "$ATOM_URL"; then
+            tag=$(printf "%s" "$FETCH_RESPONSE" |
+                grep -o "releases/tag/[^\"]*" | head -n1 | sed 's|.*/||')
+        fi
 
         if [ -z "$tag" ]; then
             err "Could not determine the latest release"
@@ -134,32 +291,29 @@ resolve_asset() {
 }
 
 download_asset() {
-    rm -rf "$DOWNLOAD_DIR"
-    mkdir -p "$DOWNLOAD_DIR"
+    local attempt=1
 
-    attempt=1
     while [ "$attempt" -le "$ATTEMPTS" ]; do
         info "Downloading package (attempt ${attempt}/${ATTEMPTS})..."
 
-        if [ "$DOWNLOADER" = "curl" ]; then
-            curl -fsSL -o "$ASSET_FILE" "$ASSET_URL" || true
-        else
-            wget -q -O "$ASSET_FILE" "$ASSET_URL" || true
-        fi
-
-        if [ -s "$ASSET_FILE" ]; then
-            ok "Downloaded successfully"
+        if download_with_fallback "$ASSET_URL" "$ASSET_FILE"; then
+            ok "Downloaded successfully using $DOWNLOADER"
             return 0
         fi
 
-        rm -f "$ASSET_FILE"
         attempt=$((attempt + 1))
     done
 
     err "Download failed: $ASSET_URL"
+    err "Check network connectivity and the downloader errors above."
     err "On an SSL error install the CA bundle first:"
-    printf "  opkg update && opkg install ca-bundle ca-certificates\n"
-    printf "  apk update && apk add ca-bundle ca-certificates\n"
+
+    if [ "$PKG_IS_APK" -eq 1 ]; then
+        printf "  apk update && apk add ca-bundle ca-certificates\n"
+    else
+        printf "  opkg update && opkg install ca-bundle ca-certificates\n"
+    fi
+
     exit 1
 }
 
@@ -200,10 +354,15 @@ activate_theme() {
 }
 
 cleanup() {
-    rm -rf "$DOWNLOAD_DIR"
+    if [ -n "$DOWNLOAD_DIR" ]; then
+        rm -rf "$DOWNLOAD_DIR"
+    fi
 }
 
 main() {
+    DOWNLOAD_DIR=$(mktemp -d /tmp/proton2025-install.XXXXXX)
+    trap cleanup EXIT
+
     check_system
     resolve_asset
     download_asset
